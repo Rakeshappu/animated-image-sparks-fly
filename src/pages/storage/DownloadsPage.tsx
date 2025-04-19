@@ -1,18 +1,14 @@
 
 import React, { useState } from 'react';
 import { Download, FileText, Star, Trash } from 'lucide-react';
+import { useDownloads } from '../../hooks/useDownloads';
+import { Skeleton } from '../../components/ui/skeleton';
 
 export const DownloadsPage = () => {
-  const [downloadedItems, setDownloadedItems] = useState([
-    { id: 1, name: 'Machine Learning Notes.pdf', type: 'PDF', size: '3.7 MB', date: '2023-10-17' },
-    { id: 2, name: 'Network Security.pptx', type: 'PowerPoint', size: '5.2 MB', date: '2023-10-12' },
-    { id: 3, name: 'Programming Fundamentals.zip', type: 'Archive', size: '12.8 MB', date: '2023-10-05' },
-    { id: 4, name: 'Calculus Reference.pdf', type: 'PDF', size: '1.9 MB', date: '2023-09-20' },
-  ]);
+  const { downloadedItems, isLoading } = useDownloads();
+  const [starredIds, setStarredIds] = useState<string[]>([]);
 
-  const [starredIds, setStarredIds] = useState<number[]>([]);
-
-  const toggleStar = (id: number) => {
+  const toggleStar = (id: string) => {
     if (starredIds.includes(id)) {
       setStarredIds(starredIds.filter(itemId => itemId !== id));
     } else {
@@ -20,9 +16,26 @@ export const DownloadsPage = () => {
     }
   };
 
-  const removeFromDownloads = (id: number) => {
-    setDownloadedItems(downloadedItems.filter(item => item.id !== id));
+  const removeFromDownloads = async (id: string) => {
+    try {
+      await api.delete(`/api/user/downloads/${id}`);
+      setDownloadedItems(downloadedItems.filter(item => item.id !== id));
+    } catch (error) {
+      console.error('Error removing download:', error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6">
