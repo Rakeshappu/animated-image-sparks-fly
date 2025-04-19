@@ -6,51 +6,46 @@ import { UserBanner } from '../user/UserBanner';
 import { AnalyticsCard } from '../analytics/AnalyticsCard';
 import { QuickAccess } from '../resources/QuickAccess';
 import { ActivityFeed } from '../activities/ActivityFeed';
-import { useAuth } from '../../contexts/AuthContext';
-import { getResources } from '../../services/resource.service';
+import { useAuth } from '../../hooks/useAuth';
+import api from '../../services/api';
 
 export const Dashboard = () => {
-  const { user: currentUser } = useAuth();
-  const [resources, setResources] = useState([]);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalResources: 0,
     totalViews: 0
   });
+  const [recentActivities, setRecentActivities] = useState([]);
 
   useEffect(() => {
-    const fetchResources = async () => {
+    const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        if (currentUser?.semester) {
-          const fetchedResources = await getResources({ semester: currentUser.semester });
+        if (user?.semester) {
+          // Fetch resources and stats for the user's semester
+          const response = await api.get(`/api/resources/stats?semester=${user.semester}`);
           
-          if (Array.isArray(fetchedResources)) {
-            setResources(fetchedResources);
-            
-            // Calculate semester-specific stats
-            const totalResources = fetchedResources.length;
-            const totalViews = fetchedResources.reduce((total, resource: any) => 
-              total + (resource.stats?.views || 0), 0);
-            
-            setStats({
-              totalResources,
-              totalViews
-            });
-          }
+          setStats({
+            totalResources: response.data.totalResources || 0,
+            totalViews: response.data.totalViews || 0
+          });
+
+          // Fetch recent activities
+          const activitiesResponse = await api.get('/api/user/activity?limit=5');
+          setRecentActivities(activitiesResponse.data.activities);
         }
       } catch (err) {
-        console.error('Failed to fetch resources:', err);
-        setResources([]);
+        console.error('Failed to fetch dashboard data:', err);
       } finally {
         setLoading(false);
       }
     };
     
-    if (currentUser) {
-      fetchResources();
+    if (user) {
+      fetchDashboardData();
     }
-  }, [currentUser]);
+  }, [user]);
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900">
@@ -79,16 +74,9 @@ export const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          {loading ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-            </div>
-          ) : (
-            <ActivityFeed />
-          )}
+          <ActivityFeed activities={recentActivities} />
         </div>
       </div>
     </div>
   );
 };
-
