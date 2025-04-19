@@ -1,0 +1,133 @@
+[33mcommit de875b5903f982956024f2c817c94970c8a3d1da[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Fri Apr 11 07:51:09 2025 +0000
+
+    Fix: Resource.findById is not a function
+    
+    Fixes an issue where resource notifications were not being sent due to a type error in the `notifyResourceUpload` function.
+
+[33mcommit 4cfcf5043ce1273fd1ca97105720f7bfd790a7b6[m
+Author: Rakesssrh <unknownrh2@gmail.com>
+Date:   Fri Apr 11 13:13:08 2025 +0530
+
+    updated
+
+[33mcommit 96aa09a28da62740d0eb6447450e588a6274138d[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Thu Apr 10 17:39:21 2025 +0000
+
+    Fix: Resolve import and model errors
+    
+    Fixes import errors in App.tsx and User.ts, and resolves a 404 error.
+
+[33mcommit 4a0e784b4495b4337b9d5e0949308a9394ad76d0[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Tue Apr 8 18:11:56 2025 +0000
+
+    Fix: Profile picture and study materials display
+    
+    - Updated profile picture display after upload.
+    - Fixed study materials to navigate to subject folders instead of expanding.
+    - Addressed socket connection timeout and WebSocket errors.
+
+[33mcommit 4376a0e0ac2f9ebaf6b3408955591266118d6aa1[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Tue Apr 8 16:40:40 2025 +0000
+
+    Fix: Resolve model initialization errors
+    
+    Fixes issues with undefined properties in User and Notification models and ensures proper functionality of admin dashboard features.
+
+[33mcommit d02e12c66a6f6ba03e21f9493bc0e1c9b2e3ba46[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Tue Apr 8 16:34:14 2025 +0000
+
+    Fix: Profile image update and error handling
+    
+    - Updated profile image handling to update the banner and header profile picture.
+    - Improved error handling and logging across multiple files.
+
+[33mcommit 8a5ab9f5a8cf982fb3b60edef44e5745568b442a[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Tue Apr 8 16:20:10 2025 +0000
+
+    Fix: Resolve Resource model initialization error
+    
+    Implement real analytics and data display in admin dashboard.
+
+[33mcommit a811f547af37f459ebdcca58a01f658fa931e14c[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Tue Apr 8 16:04:36 2025 +0000
+
+    Fix: Resolve User model initialization error
+    
+    Implement loading animations and skeletons for improved UX.
+
+[33mcommit a86505fa66b754c51255c94d7672826cb5efc1e4[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Mon Apr 7 18:53:00 2025 +0000
+
+    Fix: Resolve User model initialization error
+    
+    Implement real-time features and animations.
+
+[33mcommit 3298063a1c9ffb21ea59b6a889e20402e5781275[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Mon Apr 7 18:44:15 2025 +0000
+
+    Fix: User profile update and error handling
+    
+    - Fixed an issue where the user profile picture was not updating in the header after an update.
+    - Resolved a TypeError related to reading 'User' properties.
+
+[33mcommit 2f1ec6a6d90498bce0c27f739d0c082455e9e3b7[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Mon Apr 7 18:27:27 2025 +0000
+
+    Fix: Notifications not showing and add faculty notifications
+    
+    - Fixed an issue where notifications were not displaying correctly for students after a resource upload.
+    - Implemented notifications for faculty when students like or comment on their resources.
+
+[33mcommit 00c9fd07e2318f5bb3e1a79fac950e8e7d3c09fb[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Mon Apr 7 18:11:42 2025 +0000
+
+    Fix: Notification and profile picture issues
+    
+    - Fixed the notification icon not working in the header.
+    - Resolved the profile picture not updating after changes.
+    - Addressed the issue of profile data not persisting after logout/login.
+
+[33mcommit 276accf5ffcf0a361bd8aff67d53844f69d96b9b[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Mon Apr 7 17:36:40 2025 +0000
+
+    Fix: Implement real-time notifications and profile updates
+    
+    - Added real-time notifications for new resource uploads to semester 5 students.
+    - Fixed profile update functionality to save profile photo and phone number.
+
+[33mcommit 20e52bda13b5b8a1332f18d29160fe204d6354a6[m
+Author: Rakesssrh <unknownrh2@gmail.com>
+Date:   Mon Apr 7 21:16:23 2025 +0530
+
+    realAnalytics
+
+[33mcommit b7fc33641280b7dea123643e71dd7586e58a3aec[m
+Author: Rakesssrh <unknownrh2@gmail.com>
+Date:   Mon Apr 7 21:14:45 2025 +0530
+
+    realAnalytics
+
+[33mcommit 71ea8858dc8337ff9acfe0473eaa2c02e089c0c7[m
+Author: Rakesssrh <unknownrh2@gmail.com>
+Date:   Mon Apr 7 20:59:14 2025 +0530
+
+    realAnalytics
+
+[33mcommit eccfe0e8886070a53a802cd10490fbf6cd0d8b4d[m
+Author: Rakesssrh <unknownrh2@gmail.com>
+Date:   Mon Apr 7 20:55:44 2025 +0530
+
+    RealAnalytics
