@@ -68,7 +68,7 @@ export const Sidebar = () => {
       <SidebarLink icon={<FolderOpen />} text="My Files" path="/dashboard" active={isActive('/dashboard')} />
       <SidebarLink icon={<FileText />} text="Study Materials" path="/study-materials" active={isActive('/study-materials')} />
       <SidebarLink icon={<Star />} text="Starred" path="/starred" active={isActive('/starred')} />
-      <SidebarLink icon={<Trash />} text="Trash" path="/trash" active={isActive('/trash')} />
+      {/* Trash link removed for students */}
     </>
   );
 

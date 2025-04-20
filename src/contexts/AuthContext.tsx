@@ -69,8 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (serverUserData) {
               const updatedUser = {
                 ...userData,
+                ...serverUserData, // Override with server data for any fields that exist there
                 role: serverUserData.role || userData.role,
                 isVerified: serverUserData.isVerified || userData.isVerified,
+                avatar: serverUserData.avatar || userData.avatar
               };
               
               localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -169,6 +171,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updatedUser = { ...user, ...updatedData };
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      // Dispatch a custom event to notify other components about the update
+      const event = new CustomEvent('profileUpdated', { 
+        detail: updatedData 
+      });
+      window.dispatchEvent(event);
+      
+      // If the avatar is updated, add a timestamp to force refresh across components
+      if (updatedData.avatar) {
+        // Clean URL from any existing timestamps
+        let cleanAvatarUrl = updatedData.avatar;
+        if (cleanAvatarUrl.includes('?t=')) {
+          cleanAvatarUrl = cleanAvatarUrl.split('?t=')[0];
+        }
+        
+        // Update with new timestamp
+        const avatarWithTimestamp = `${cleanAvatarUrl}?t=${Date.now()}`;
+        const userWithUpdatedAvatar = { ...updatedUser, avatar: avatarWithTimestamp };
+        
+        // Update state and localStorage with the timestamped avatar
+        setUser(userWithUpdatedAvatar);
+        localStorage.setItem('user', JSON.stringify(userWithUpdatedAvatar));
+      }
     }
   };
   

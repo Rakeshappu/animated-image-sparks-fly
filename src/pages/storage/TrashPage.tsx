@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Trash, FileText, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { format, parseISO, addDays } from 'date-fns';
+import { formatDateSafely, addDaysSafely } from '../../utils/dateUtils';
 
 interface TrashedItem {
   id: string;
@@ -46,7 +46,13 @@ export const TrashPage = () => {
       }
 
       const data = await response.json();
-      setTrashedItems(data.items);
+      
+      // Filter to ensure we only get items with deletedAt value
+      const validTrashedItems = Array.isArray(data.items) ? 
+        data.items.filter(item => item.deletedAt && item.deletedAt !== null && item.deletedAt !== 'null') : 
+        [];
+      
+      setTrashedItems(validTrashedItems);
     } catch (error) {
       console.error('Error fetching trashed items:', error);
       setError('Failed to fetch trashed items');
@@ -106,34 +112,6 @@ export const TrashPage = () => {
     } catch (error) {
       console.error('Error deleting item permanently:', error);
       toast.error('Failed to delete item permanently');
-    }
-  };
-
-  // Helper function to safely format dates
-  const formatDateSafely = (dateString: string, formatter: string) => {
-    try {
-      // Check if the string is valid before parsing
-      if (!dateString || dateString === 'null' || dateString === 'undefined') {
-        return 'Unknown date';
-      }
-      return format(parseISO(dateString), formatter);
-    } catch (err) {
-      console.error('Error formatting date:', dateString, err);
-      return 'Invalid date';
-    }
-  };
-
-  // Helper function to safely add days to a date
-  const addDaysSafely = (dateString: string, days: number, formatter: string) => {
-    try {
-      if (!dateString || dateString === 'null' || dateString === 'undefined') {
-        return 'Unknown date';
-      }
-      const date = parseISO(dateString);
-      return format(addDays(date, days), formatter);
-    } catch (err) {
-      console.error('Error adding days to date:', dateString, err);
-      return 'Invalid date';
     }
   };
 
