@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { Trash, FileText, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { format, addDays, parseISO } from 'date-fns';
+import { format, parseISO, addDays } from 'date-fns';
 
 interface TrashedItem {
   id: string;
@@ -110,6 +110,34 @@ export const TrashPage = () => {
     }
   };
 
+  // Helper function to safely format dates
+  const formatDateSafely = (dateString: string, formatter: string) => {
+    try {
+      // Check if the string is valid before parsing
+      if (!dateString || dateString === 'null' || dateString === 'undefined') {
+        return 'Unknown date';
+      }
+      return format(parseISO(dateString), formatter);
+    } catch (err) {
+      console.error('Error formatting date:', dateString, err);
+      return 'Invalid date';
+    }
+  };
+
+  // Helper function to safely add days to a date
+  const addDaysSafely = (dateString: string, days: number, formatter: string) => {
+    try {
+      if (!dateString || dateString === 'null' || dateString === 'undefined') {
+        return 'Unknown date';
+      }
+      const date = parseISO(dateString);
+      return format(addDays(date, days), formatter);
+    } catch (err) {
+      console.error('Error adding days to date:', dateString, err);
+      return 'Invalid date';
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
@@ -155,10 +183,10 @@ export const TrashPage = () => {
                         <span className="mx-1">•</span>
                         <span>{item.size}</span>
                         <span className="mx-1">•</span>
-                        <span>Deleted on {format(parseISO(item.deletedAt), 'MMM dd, yyyy')}</span>
+                        <span>Deleted on {formatDateSafely(item.deletedAt, 'MMM dd, yyyy')}</span>
                       </p>
                       <p className="text-xs text-red-500">
-                        Will be deleted permanently on {format(addDays(parseISO(item.deletedAt), 30), 'MMM dd, yyyy')}
+                        Will be deleted permanently on {addDaysSafely(item.deletedAt, 30, 'MMM dd, yyyy')}
                       </p>
                     </div>
                   </div>
