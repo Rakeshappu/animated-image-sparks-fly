@@ -8,6 +8,7 @@ import { QuickAccess } from '../resources/QuickAccess';
 import { ActivityFeed } from '../activities/ActivityFeed';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
+import toast from 'react-hot-toast';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -28,15 +29,25 @@ export const Dashboard = () => {
           
           setStats({
             totalResources: response.data.totalResources || 0,
-            totalViews: response.data.totalViews || 0
+            totalViews: response.data.dailyStats ? 
+              response.data.dailyStats.reduce((sum, day) => sum + day.views, 0) : 0
           });
 
           // Fetch recent activities
-          const activitiesResponse = await api.get('/api/user/activity?limit=5');
-          setRecentActivities(activitiesResponse.data.activities);
+          try {
+            const activitiesResponse = await api.get('/api/user/activity?limit=5');
+            if (activitiesResponse.data && activitiesResponse.data.activities) {
+              setRecentActivities(activitiesResponse.data.activities);
+            } else {
+              console.error('Invalid activities response format:', activitiesResponse.data);
+            }
+          } catch (activityErr) {
+            console.error('Failed to fetch user activities:', activityErr);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
+        toast.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }

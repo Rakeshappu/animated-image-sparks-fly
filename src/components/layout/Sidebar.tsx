@@ -1,14 +1,12 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { 
   BarChart2, 
   Users, 
   Settings, 
   FolderOpen, 
   Upload, 
-  Download, 
   Star, 
   Trash, 
   Menu, 
@@ -17,8 +15,7 @@ import {
   Share2,
   ShieldCheck,
   Database,
-  GraduationCap,
-  Code
+  GraduationCap
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -45,7 +42,6 @@ export const Sidebar = () => {
     }
   };
 
-  // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const sidebar = document.getElementById('sidebar');
@@ -71,8 +67,6 @@ export const Sidebar = () => {
       <SidebarLink icon={<FolderOpen />} text="My Files" path="/dashboard" active={isActive('/dashboard')} />
       <SidebarLink icon={<FileText />} text="Study Materials" path="/study-materials" active={isActive('/study-materials')} />
       <SidebarLink icon={<Star />} text="Starred" path="/starred" active={isActive('/starred')} />
-      <SidebarLink icon={<Download />} text="Downloads" path="/downloads" active={isActive('/downloads')} />
-      <SidebarLink icon={<Code />} text="Competitive Programming" path="/competitive-programming" active={isActive('/competitive-programming')} />
     </>
   );
 
@@ -118,7 +112,6 @@ export const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile toggle button that appears in the header */}
       <button 
         id="sidebar-toggle"
         className="md:hidden fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 p-2 rounded-md shadow-md"
@@ -127,7 +120,6 @@ export const Sidebar = () => {
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
       
-      {/* Sidebar */}
       <aside 
         id="sidebar"
         className={`bg-white dark:bg-gray-800 shadow-lg fixed inset-y-0 left-0 z-40 transition-transform duration-300 
