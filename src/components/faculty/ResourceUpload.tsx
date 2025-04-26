@@ -14,8 +14,8 @@ interface ResourceUploadProps {
 
 export const ResourceUpload = ({ 
   onUpload, 
-  initialSubject, 
-  initialSemester, 
+  initialSubject,
+  initialSemester,
   initialCategory,
   isPlacementResource = false,
   placementCategory
@@ -31,7 +31,7 @@ export const ResourceUpload = ({
     description: '',
     type: 'document',
     subject: initialSubject || '',
-    semester: initialSemester || 1,
+    semester: initialSemester || selectedSemester,
     file: undefined,
     link: '',
     category: initialCategory,
@@ -44,20 +44,11 @@ export const ResourceUpload = ({
     }
     
     const allSubjectFolders = window.subjectFolders || [];
-    
     const filteredSubjects = allSubjectFolders.filter(
       folder => folder.semester === selectedSemester
     );
     
     setSemesterSubjects(filteredSubjects);
-    
-    if (formData.semester !== selectedSemester) {
-      setFormData(prev => ({
-        ...prev,
-        semester: selectedSemester,
-        subject: initialSubject || ''
-      }));
-    }
   }, [selectedSemester, formData.semester, isPlacementResource, initialSubject]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
