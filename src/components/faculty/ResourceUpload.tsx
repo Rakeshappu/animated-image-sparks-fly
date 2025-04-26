@@ -41,7 +41,7 @@ export const ResourceUpload = ({
     placementCategory: placementCategory
   });
 
-  // This effect runs when the selected semester changes
+  // This effect runs when the selectedSemester changes
   useEffect(() => {
     if (isPlacementResource) {
       return;
@@ -64,10 +64,10 @@ export const ResourceUpload = ({
     }
   }, [selectedSemester, formData.semester, isPlacementResource, initialSubject]);
 
-  // This effect runs when initialSemester changes (from props)
+  // Initialize selectedSemester based on initialSemester
   useEffect(() => {
     if (initialSemester !== undefined) {
-      console.log("Updating semester from initialSemester prop:", initialSemester);
+      console.log("Setting semester from prop:", initialSemester);
       setSelectedSemester(initialSemester);
       setFormData(prev => ({
         ...prev,

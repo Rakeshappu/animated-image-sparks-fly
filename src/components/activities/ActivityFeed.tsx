@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from 'react';
 import { Clock, Book, Eye } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
 
 // Define the Activity type to match the backend structure
 interface Activity {
@@ -34,7 +33,6 @@ interface ActivityFeedProps {
 export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
 
   useEffect(() => {
     if (propActivities && propActivities.length > 0) {
@@ -101,11 +99,6 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
                   {new Date(activity.timestamp).toLocaleTimeString()}
                 </p>
               </div>
-              {activity.resource && (
-                <span className="text-sm font-medium text-indigo-600">
-                  {activity.resource.title}
-                </span>
-              )}
             </div>
           ))}
         </div>
