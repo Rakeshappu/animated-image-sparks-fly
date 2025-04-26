@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Upload, FileText } from 'lucide-react';
 import { UploadFormData, SubjectFolder } from '../../types/faculty';
@@ -24,7 +23,9 @@ export const ResourceUpload = ({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [selectedSemester, setSelectedSemester] = useState<number>(initialSemester || 1);
+  const [selectedSemester, setSelectedSemester] = useState<number>(
+    initialSemester !== undefined ? initialSemester : 1
+  );
   const [semesterSubjects, setSemesterSubjects] = useState<SubjectFolder[]>([]);
   
   const [formData, setFormData] = useState<UploadFormData>({
@@ -32,7 +33,7 @@ export const ResourceUpload = ({
     description: '',
     type: 'document',
     subject: initialSubject || '',
-    semester: initialSemester || 1,
+    semester: initialSemester !== undefined ? initialSemester : 1,
     file: undefined,
     link: '',
     category: initialCategory,
@@ -60,6 +61,16 @@ export const ResourceUpload = ({
       }));
     }
   }, [selectedSemester, formData.semester, isPlacementResource, initialSubject]);
+
+  useEffect(() => {
+    if (initialSemester !== undefined) {
+      setSelectedSemester(initialSemester);
+      setFormData(prev => ({
+        ...prev,
+        semester: initialSemester
+      }));
+    }
+  }, [initialSemester]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

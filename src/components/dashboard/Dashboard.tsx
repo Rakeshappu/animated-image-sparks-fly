@@ -27,10 +27,29 @@ export const Dashboard = () => {
           // Fetch resources and stats for the user's semester
           const response = await api.get(`/api/resources/stats?semester=${user.semester}`);
           
+          // Calculate total views from all resources of the current semester
+          let semesterTotalViews = 0;
+          
+          // If we have resources array with stats data for the semester
+          if (window.sharedResources && Array.isArray(window.sharedResources)) {
+            // Filter resources for user's semester
+            const semesterResources = window.sharedResources.filter(
+              resource => resource.semester === user.semester
+            );
+            
+            // Sum up views from all semester resources
+            semesterTotalViews = semesterResources.reduce(
+              (sum, resource) => sum + (resource.stats?.views || 0), 
+              0
+            );
+          }
+          
           setStats({
             totalResources: response.data.totalResources || 0,
-            totalViews: response.data.dailyStats ? 
-              response.data.dailyStats.reduce((sum, day) => sum + day.views, 0) : 0
+            totalViews: semesterTotalViews || (
+              response.data.dailyStats ? 
+                response.data.dailyStats.reduce((sum, day) => sum + day.views, 0) : 0
+            )
           });
 
           // Fetch recent activities
