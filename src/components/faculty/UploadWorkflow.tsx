@@ -29,7 +29,7 @@ export const UploadWorkflow = ({
   const [selectedSemester, setSelectedSemester] = useState<SemesterNumber | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<{id: string, name: string} | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
+  
   // Get existing subjects
   const existingSubjects: SubjectFolder[] = window.subjectFolders || [];
 
@@ -39,14 +39,17 @@ export const UploadWorkflow = ({
     } else if (option === 'subject-folder') {
       setStep('subject-creation');
     } else if (option === 'placement') {
+      // For placement resources, go to placement categories
       setStep('placement-category');
     } else if (option === 'common') {
+      // For common resources, skip semester selection
       onSelectOption('direct-upload', { 
         resourceType: 'common',
         subject: 'Common Resources',
         category: 'common'
       });
     } else {
+      // For direct upload, pass directly to parent
       onSelectOption(option);
     }
   };
@@ -57,45 +60,15 @@ export const UploadWorkflow = ({
   };
 
   const handlePlacementCategorySelect = (categoryId: string, categoryName: string) => {
+    console.log('Selected placement category:', categoryId, categoryName);
     setSelectedCategory({ id: categoryId, name: categoryName });
     setStep('placement-upload');
   };
 
-  const handleCreateSubjectFolders = async (newSubjects: SubjectData[]) => {
-    try {
-      const response = await fetch('/api/subject-folders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ subjects: newSubjects })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create subject folders');
-      }
-
-      const data = await response.json();
-      if (window.subjectFolders) {
-        window.subjectFolders = [...window.subjectFolders, ...data.folders];
-      }
-
-      onSelectOption('direct-upload', { 
-        semester: selectedSemester,
-        subjects: data.folders
-      });
-
-      toast.success(`Created ${data.folders.length} subject folders!`);
-    } catch (err) {
-      console.error('Error creating subject folders:', err);
-      toast.error('Failed to create subject folders');
-    }
-  };
-
-  const handleSkipToUpload = () => {
-    onSelectOption('direct-upload', { 
-      semester: selectedSemester,
-      subjects: existingSubjects.filter(subject => subject.semester === selectedSemester)
+  const handleCreateSubjectFolders = (newSubjects: SubjectData[]) => {
+    onSelectOption('create-subject-folders', { 
+      semester: selectedSemester, 
+      subjects: newSubjects 
     });
   };
 

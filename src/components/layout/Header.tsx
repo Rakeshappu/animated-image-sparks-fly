@@ -8,7 +8,6 @@ import { Notification } from '../../types/auth';
 import api from '../../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationSkeleton } from '../ui/LoadingSkeletons';
-import Logo from '../common/Logo';
 
 export const Header = () => {
   const { user, logout } = useAuth();
@@ -259,11 +258,10 @@ export const Header = () => {
   };
   
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          <div className="flex items-center">
-            <Logo className="mr-4" />
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="px-4 py-3 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center flex-1">
             <div className="relative w-full max-w-3xl mx-auto" ref={searchRef}>
               <form onSubmit={handleSearch}>
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3">
