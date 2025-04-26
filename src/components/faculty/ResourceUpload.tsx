@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Upload, FileText } from 'lucide-react';
 import { UploadFormData, SubjectFolder } from '../../types/faculty';
@@ -40,6 +41,7 @@ export const ResourceUpload = ({
     placementCategory: placementCategory
   });
 
+  // This effect runs when the selected semester changes
   useEffect(() => {
     if (isPlacementResource) {
       return;
@@ -62,8 +64,10 @@ export const ResourceUpload = ({
     }
   }, [selectedSemester, formData.semester, isPlacementResource, initialSubject]);
 
+  // This effect runs when initialSemester changes (from props)
   useEffect(() => {
     if (initialSemester !== undefined) {
+      console.log("Updating semester from initialSemester prop:", initialSemester);
       setSelectedSemester(initialSemester);
       setFormData(prev => ({
         ...prev,
@@ -86,7 +90,9 @@ export const ResourceUpload = ({
   };
   
   const handleSemesterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSemester(Number(e.target.value));
+    const newSemester = Number(e.target.value);
+    console.log("Changing semester to:", newSemester);
+    setSelectedSemester(newSemester);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

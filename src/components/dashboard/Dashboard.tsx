@@ -59,9 +59,51 @@ export const Dashboard = () => {
               setRecentActivities(activitiesResponse.data.activities);
             } else {
               console.error('Invalid activities response format:', activitiesResponse.data);
+              
+              // Create fallback activities from shared resources if API call fails
+              if (window.sharedResources && Array.isArray(window.sharedResources)) {
+                const semesterResources = window.sharedResources
+                  .filter(resource => resource.semester === user.semester)
+                  .sort((a, b) => new Date(b.stats?.lastViewed || 0).getTime() - new Date(a.stats?.lastViewed || 0).getTime())
+                  .slice(0, 5);
+                  
+                const fallbackActivities = semesterResources.map(resource => ({
+                  _id: resource.id,
+                  type: 'view',
+                  timestamp: resource.stats?.lastViewed || new Date().toISOString(),
+                  message: `Viewed ${resource.title}`,
+                  resource: {
+                    _id: resource.id,
+                    title: resource.title
+                  }
+                }));
+                
+                setRecentActivities(fallbackActivities);
+              }
             }
           } catch (activityErr) {
             console.error('Failed to fetch user activities:', activityErr);
+            
+            // Create fallback activities from shared resources if API call fails
+            if (window.sharedResources && Array.isArray(window.sharedResources)) {
+              const semesterResources = window.sharedResources
+                .filter(resource => resource.semester === user.semester)
+                .sort((a, b) => new Date(b.stats?.lastViewed || 0).getTime() - new Date(a.stats?.lastViewed || 0).getTime())
+                .slice(0, 5);
+                
+              const fallbackActivities = semesterResources.map(resource => ({
+                _id: resource.id,
+                type: 'view',
+                timestamp: resource.stats?.lastViewed || new Date().toISOString(),
+                message: `Viewed ${resource.title}`,
+                resource: {
+                  _id: resource.id,
+                  title: resource.title
+                }
+              }));
+              
+              setRecentActivities(fallbackActivities);
+            }
           }
         }
       } catch (err) {
