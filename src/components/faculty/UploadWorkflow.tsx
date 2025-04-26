@@ -72,6 +72,13 @@ export const UploadWorkflow = ({
     });
   };
 
+  const handleSkipToUpload = () => {
+    // When skipping to direct upload, pass the selected semester
+    onSelectOption('direct-upload', { 
+      semester: selectedSemester 
+    });
+  };
+
   const handlePlacementUpload = async (data: any) => {
     try {
       setIsUploading(true);
@@ -167,7 +174,7 @@ export const UploadWorkflow = ({
         <SubjectCreationForm
           selectedSemester={selectedSemester}
           onBack={() => selectedSemester ? setStep('semester-selection') : setStep('initial')}
-          onSkipToUpload={() => onSelectOption('direct-upload')}
+          onSkipToUpload={handleSkipToUpload}
           onCreateSubjectFolders={handleCreateSubjectFolders}
           existingSubjectsForSemester={existingSubjectsForSemester}
           showAvailableSubjects={showAvailableSubjects}
