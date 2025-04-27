@@ -10,7 +10,6 @@ import api from '../../services/api';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
-// Access the shared resources
 declare global {
   interface Window {
     sharedResources: FacultyResource[];
@@ -18,7 +17,6 @@ declare global {
   }
 }
 
-// Initialize if needed
 if (typeof window !== 'undefined') {
   if (!window.sharedResources) {
     window.sharedResources = [];
@@ -69,19 +67,16 @@ export const AdminDashboard = () => {
     downloads: 0
   });
 
-  // Fetch real analytics data
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
         setIsLoading(true);
         
-        // Use fetch directly instead of axios to avoid issues
         const token = localStorage.getItem('token');
         if (!token) {
           throw new Error('Not authenticated');
         }
 
-        // Fetch resources stats
         const resourcesStatsResponse = await fetch('/api/resources/stats', {
           method: 'GET',
           headers: {
@@ -95,7 +90,6 @@ export const AdminDashboard = () => {
         
         const resourcesStatsData = await resourcesStatsResponse.json();
         
-        // Fetch users count by role
         const usersResponse = await fetch('/api/user/stats', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -107,7 +101,6 @@ export const AdminDashboard = () => {
           usersData = await usersResponse.json();
         }
         
-        // Fetch activity stats
         const activityResponse = await fetch('/api/user/activity/stats', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -119,7 +112,22 @@ export const AdminDashboard = () => {
           activityData = await activityResponse.json();
         }
         
-        // Calculate today's uploads and downloads
+        let dailyActivityChartData = [];
+        
+        if (activityData && activityData.dailyActivity && activityData.dailyActivity.length > 0) {
+          dailyActivityChartData = activityData.dailyActivity;
+        } else if (resourcesStatsData && resourcesStatsData.dailyActivity && resourcesStatsData.dailyActivity.length > 0) {
+          dailyActivityChartData = resourcesStatsData.dailyActivity;
+        } else {
+          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          dailyActivityChartData = days.map(day => ({
+            name: day,
+            uploads: 0,
+            downloads: 0,
+            views: 0
+          }));
+        }
+        
         const today = new Date().toISOString().split('T')[0];
         let todayUploads = 0;
         let todayDownloads = 0;
@@ -134,7 +142,6 @@ export const AdminDashboard = () => {
           downloads: todayDownloads
         });
         
-        // Update analytics state with real data
         setAnalytics({
           users: { 
             total: usersData?.totalUsers || 0, 
@@ -157,7 +164,7 @@ export const AdminDashboard = () => {
             loading: false
           },
           dailyActivity: {
-            data: resourcesStatsData?.dailyActivity || [],
+            data: dailyActivityChartData,
             loading: false
           }
         });
@@ -165,7 +172,6 @@ export const AdminDashboard = () => {
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching analytics:', error);
-        // Don't use mock data, instead show empty states
         setAnalytics({
           users: { total: 0, loading: false },
           resources: { total: resources.length, loading: false },
@@ -186,7 +192,6 @@ export const AdminDashboard = () => {
 
     fetchAnalytics();
     
-    // Poll for resource updates to simulate real-time
     const intervalId = setInterval(() => {
       if (window.sharedResources !== resources) {
         setResources([...window.sharedResources]);
@@ -196,7 +201,6 @@ export const AdminDashboard = () => {
     return () => clearInterval(intervalId);
   }, [resources]);
 
-  // Fetch real resources
   useEffect(() => {
     const fetchResources = async () => {
       try {
@@ -273,14 +277,12 @@ export const AdminDashboard = () => {
   const handleUpload = async (data: UploadFormData) => {
     console.log('Uploading resource:', data);
     
-    // For file uploads, read the file content to make it accessible
     let fileContent = '';
     let fileName = '';
     
     if (data.file) {
       fileName = data.file.name;
       
-      // Read file data to store it
       if (data.type !== 'link') {
         try {
           fileContent = await readFileAsBase64(data.file);
@@ -291,7 +293,6 @@ export const AdminDashboard = () => {
     }
     
     try {
-      // Create a FormData object to send to the API
       const formData = new FormData();
       formData.append('title', data.title);
       formData.append('description', data.description);
@@ -307,7 +308,6 @@ export const AdminDashboard = () => {
         formData.append('link', data.link);
       }
       
-      // Send the API request
       const response = await api.post('/api/resources', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -330,7 +330,6 @@ export const AdminDashboard = () => {
         }
       };
       
-      // Update both local state and shared resources for real-time updates
       window.sharedResources = [newResource, ...window.sharedResources];
       setResources([newResource, ...resources]);
       
@@ -342,8 +341,7 @@ export const AdminDashboard = () => {
       toast.error('Failed to upload resource');
     }
   };
-  
-  // Function to read file as base64 string
+
   const readFileAsBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -362,7 +360,6 @@ export const AdminDashboard = () => {
   };
 
   const handleViewAnalytics = (resourceId: string) => {
-    // Admin would manage resources, not view analytics
     console.log(`View details for resource ${resourceId}`);
   };
 
@@ -372,7 +369,6 @@ export const AdminDashboard = () => {
     setCurrentView('dashboard');
   };
 
-  // Colors for charts
   const COLORS = ['#4F46E5', '#7C3AED', '#EC4899', '#10B981', '#F59E0B', '#6366F1'];
 
   if (isLoading) {
@@ -399,7 +395,6 @@ export const AdminDashboard = () => {
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Admin Dashboard</h1>
           </motion.div>
 
-          {/* Stats Cards */}
           <motion.div 
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
             variants={itemVariants}
@@ -436,7 +431,6 @@ export const AdminDashboard = () => {
             />
           </motion.div>
 
-          {/* Quick Action Buttons */}
           <motion.div 
             className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
             variants={itemVariants}
@@ -470,12 +464,10 @@ export const AdminDashboard = () => {
             </motion.button>
           </motion.div>
 
-          {/* Analytics Charts */}
           <motion.div 
             className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
             variants={itemVariants}
           >
-            {/* Daily Activity Chart */}
             <motion.div 
               className="bg-white dark:bg-gray-800 shadow rounded-lg p-6"
               variants={itemVariants}
@@ -506,7 +498,6 @@ export const AdminDashboard = () => {
               </div>
             </motion.div>
 
-            {/* Resource Type Distribution */}
             <motion.div 
               className="bg-white dark:bg-gray-800 shadow rounded-lg p-6"
               variants={itemVariants}
@@ -547,7 +538,6 @@ export const AdminDashboard = () => {
             </motion.div>
           </motion.div>
 
-          {/* Subject Folders Section */}
           {window.subjectFolders && window.subjectFolders.length > 0 && (
             <motion.div 
               className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg mb-8"

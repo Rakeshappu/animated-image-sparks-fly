@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Clock, Book, Eye } from 'lucide-react';
+import { Clock, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -9,7 +9,7 @@ interface Activity {
   _id: string;
   type: 'view';
   timestamp: string;
-  resource?: {
+  resourceId?: {
     _id: string;
     title: string;
     fileUrl?: string;
@@ -108,12 +108,12 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
             <div 
               key={activity._id} 
               className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
-              onClick={() => activity.resource && handleResourceClick(activity.resource._id)}
+              onClick={() => activity.resourceId && handleResourceClick(activity.resourceId._id)}
             >
               {getActivityIcon(activity.type)}
               <div className="flex-1">
                 <p className="text-sm text-gray-700">
-                  {activity.resource?.title || 'Untitled Resource'}
+                  {activity.resourceId?.title || 'Untitled Resource'}
                 </p>
                 <p className="text-xs text-gray-500">
                   {formatTime(activity.timestamp)}

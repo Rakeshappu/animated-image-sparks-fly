@@ -35,14 +35,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       // Get only view activities for the current user, sorted by most recent
       const activities = await Activity.find({ 
-        userId: user._id,
+        user: user._id,
         type: 'view'
       })
         .sort({ timestamp: -1 })
         .limit(limit)
-        .populate('resourceId', 'title fileUrl');
+        .populate('resource', 'title fileUrl')
+        .lean();
       
-      return res.status(200).json({ activities });
+      // Format the data to match the expected format in the ActivityFeed component
+      const formattedActivities = activities.map(activity => ({
+        ...activity,
+        resourceId: activity.resource
+      }));
+      
+      return res.status(200).json({ activities: formattedActivities });
     }
     
     return res.status(405).json({ error: 'Method not allowed' });
