@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Clock, Book, Eye } from 'lucide-react';
+import { Clock, Book, Eye, ThumbsUp, MessageCircle, Share2 } from 'lucide-react';
 
 // Define the Activity type to match the backend structure
 interface Activity {
@@ -21,6 +21,12 @@ const getActivityIcon = (type: Activity['type']) => {
     case 'upload':
     case 'download':
       return <Book className="h-5 w-5 text-blue-500" />;
+    case 'like':
+      return <ThumbsUp className="h-5 w-5 text-red-500" />;
+    case 'comment':
+      return <MessageCircle className="h-5 w-5 text-green-500" />;
+    case 'share':
+      return <Share2 className="h-5 w-5 text-orange-500" />;
     default:
       return <Clock className="h-5 w-5 text-gray-500" />;
   }
@@ -84,6 +90,17 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
     }
   };
 
+  const formatTime = (timestamp: string) => {
+    try {
+      return new Date(timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return 'Recent';
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activities</h3>
@@ -96,7 +113,7 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
               <div className="flex-1">
                 <p className="text-sm text-gray-700">{formatMessage(activity)}</p>
                 <p className="text-xs text-gray-500">
-                  {new Date(activity.timestamp).toLocaleTimeString()}
+                  {formatTime(activity.timestamp)}
                 </p>
               </div>
             </div>

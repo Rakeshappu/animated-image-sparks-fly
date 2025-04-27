@@ -2,7 +2,7 @@
 import { X, FolderPlus, Upload, Book, Briefcase, FolderOpen } from 'lucide-react';
 import { SubjectFolder } from '../../../types/faculty';
 
-type UploadOption = 'semester' | 'common' | 'placement' | 'subject-folder' | 'direct-upload';
+type UploadOption = 'semester' | 'placement' | 'subject-folder' | 'direct-upload';
 
 interface UploadOptionSelectionProps {
   onSelectOption: (option: UploadOption) => void;
@@ -28,7 +28,7 @@ export const UploadOptionSelection = ({
 
       <p className="text-gray-600">What type of content would you like to upload?</p>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
           onClick={() => onSelectOption('semester')}
           className="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
@@ -36,15 +36,6 @@ export const UploadOptionSelection = ({
           <Book className="h-12 w-12 text-indigo-500 mb-3" />
           <span className="text-gray-800 font-medium">Semester Resources</span>
           <span className="text-xs text-gray-500 mt-1">Upload to specific semester</span>
-        </button>
-        
-        <button
-          onClick={() => onSelectOption('common')}
-          className="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-200 transition-colors"
-        >
-          <FolderOpen className="h-12 w-12 text-green-500 mb-3" />
-          <span className="text-gray-800 font-medium">Common Resources</span>
-          <span className="text-xs text-gray-500 mt-1">Available to all students</span>
         </button>
         
         <button

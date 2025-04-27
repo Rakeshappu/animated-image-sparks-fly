@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { createResource } from '../../services/resource.service';
 
-type UploadOption = 'semester' | 'common' | 'placement' | 'subject-folder' | 'direct-upload';
+type UploadOption = 'semester' | 'placement' | 'subject-folder' | 'direct-upload';
 type SemesterNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 interface UploadWorkflowProps {
@@ -25,7 +25,7 @@ export const UploadWorkflow = ({
   showAvailableSubjects = false
 }: UploadWorkflowProps) => {
   const navigate = useNavigate();
-  const [step, setStep] = useState<'initial' | 'semester-selection' | 'subject-creation' | 'placement-category' | 'placement-upload'>('initial');
+  const [step, setStep] = useState<'initial' | 'semester-selection' | 'subject-creation' | 'placement-category' | 'placement-upload' | 'direct-upload'>('initial');
   const [selectedSemester, setSelectedSemester] = useState<SemesterNumber | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<{id: string, name: string} | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -41,16 +41,13 @@ export const UploadWorkflow = ({
     } else if (option === 'placement') {
       // For placement resources, go to placement categories
       setStep('placement-category');
-    } else if (option === 'common') {
-      // For common resources, skip semester selection
-      onSelectOption('direct-upload', { 
-        resourceType: 'common',
-        subject: 'Common Resources',
-        category: 'common'
-      });
-    } else {
-      // For direct upload, pass directly to parent
-      onSelectOption(option);
+    } else if (option === 'direct-upload') {
+      // For direct upload, pass directly to parent with current semester if selected
+      if (selectedSemester) {
+        onSelectOption('direct-upload', { semester: selectedSemester });
+      } else {
+        setStep('direct-upload');
+      }
     }
   };
 
@@ -206,6 +203,25 @@ export const UploadWorkflow = ({
           />
         </div>
       )}
+      
+      {step === 'direct-upload' && (
+        <div>
+          <button
+            onClick={() => setStep('initial')}
+            className="mb-4 text-indigo-600 hover:text-indigo-700 flex items-center"
+          >
+            ← Back to Options
+          </button>
+          <ResourceUpload 
+            onUpload={(data) => {
+              setIsUploading(true);
+              onUpload(data).finally(() => setIsUploading(false));
+            }}
+            initialSemester={selectedSemester || 1}
+          />
+        </div>
+      )}
     </div>
   );
 };
+
