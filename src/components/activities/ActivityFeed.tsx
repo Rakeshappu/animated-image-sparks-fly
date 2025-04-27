@@ -1,16 +1,18 @@
 
 import { useEffect, useState } from 'react';
-import { Clock, Book, Eye, ThumbsUp, MessageCircle, Share2 } from 'lucide-react';
+import { Clock, Book, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
+import toast from 'react-hot-toast';
 
-// Define the Activity type to match the backend structure
 interface Activity {
   _id: string;
-  type: 'view' | 'download' | 'like' | 'comment' | 'upload' | 'share';
+  type: 'view';
   timestamp: string;
-  message?: string;
   resource?: {
     _id: string;
     title: string;
+    fileUrl?: string;
   };
 }
 
@@ -18,15 +20,6 @@ const getActivityIcon = (type: Activity['type']) => {
   switch (type) {
     case 'view':
       return <Eye className="h-5 w-5 text-purple-500" />;
-    case 'upload':
-    case 'download':
-      return <Book className="h-5 w-5 text-blue-500" />;
-    case 'like':
-      return <ThumbsUp className="h-5 w-5 text-red-500" />;
-    case 'comment':
-      return <MessageCircle className="h-5 w-5 text-green-500" />;
-    case 'share':
-      return <Share2 className="h-5 w-5 text-orange-500" />;
     default:
       return <Clock className="h-5 w-5 text-gray-500" />;
   }
@@ -39,16 +32,52 @@ interface ActivityFeedProps {
 export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (propActivities && propActivities.length > 0) {
-      setActivities(propActivities);
-      setIsLoading(false);
-    } else {
-      setActivities([]);
+    fetchRecentActivities();
+  }, []);
+
+  const fetchRecentActivities = async () => {
+    try {
+      const response = await api.get('/api/user/activity?limit=3');
+      if (response.data && response.data.activities) {
+        setActivities(response.data.activities);
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+      // If API fails, try to use prop activities or create fallback
+      if (propActivities && propActivities.length > 0) {
+        setActivities(propActivities.slice(0, 3));
+      }
+    } finally {
       setIsLoading(false);
     }
-  }, [propActivities]);
+  };
+
+  const handleResourceClick = async (resourceId: string) => {
+    try {
+      // Increment view count
+      await api.post(`/api/resources/${resourceId}/view`);
+      
+      // Navigate to the resource
+      navigate(`/resources/${resourceId}`);
+    } catch (error) {
+      console.error('Error viewing resource:', error);
+      toast.error('Failed to open resource');
+    }
+  };
+
+  const formatTime = (timestamp: string) => {
+    try {
+      return new Date(timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return 'Recent';
+    }
+  };
 
   if (isLoading) {
     return (
@@ -69,38 +98,6 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
     );
   }
 
-  const formatMessage = (activity: Activity) => {
-    if (activity.message) return activity.message;
-    
-    switch (activity.type) {
-      case 'view':
-        return `Viewed ${activity.resource?.title || 'a resource'}`;
-      case 'download':
-        return `Downloaded ${activity.resource?.title || 'a resource'}`;
-      case 'upload':
-        return `Uploaded ${activity.resource?.title || 'a resource'}`;
-      case 'like':
-        return `Liked ${activity.resource?.title || 'a resource'}`;
-      case 'comment':
-        return `Commented on ${activity.resource?.title || 'a resource'}`;
-      case 'share':
-        return `Shared ${activity.resource?.title || 'a resource'}`;
-      default:
-        return `Interacted with ${activity.resource?.title || 'a resource'}`;
-    }
-  };
-
-  const formatTime = (timestamp: string) => {
-    try {
-      return new Date(timestamp).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (e) {
-      return 'Recent';
-    }
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activities</h3>
@@ -108,10 +105,16 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
       {activities && activities.length > 0 ? (
         <div className="space-y-4">
           {activities.map((activity) => (
-            <div key={activity._id} className="flex items-center space-x-3">
+            <div 
+              key={activity._id} 
+              className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
+              onClick={() => activity.resource && handleResourceClick(activity.resource._id)}
+            >
               {getActivityIcon(activity.type)}
               <div className="flex-1">
-                <p className="text-sm text-gray-700">{formatMessage(activity)}</p>
+                <p className="text-sm text-gray-700">
+                  {activity.resource?.title || 'Untitled Resource'}
+                </p>
                 <p className="text-xs text-gray-500">
                   {formatTime(activity.timestamp)}
                 </p>

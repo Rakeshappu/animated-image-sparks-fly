@@ -1,10 +1,9 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/db/connect';
-import { Activity } from '../../../lib/db/models';
+import { Activity, Resource } from '../../../lib/db/models';
 import jwt from 'jsonwebtoken';
 
-// Authentication middleware
 const authenticateUser = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const authHeader = req.headers.authorization;
@@ -28,45 +27,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await connectDB();
     
-    // Check authentication
     const user = await authenticateUser(req, res);
-    if (!user) {
-      return;
-    }
+    if (!user) return;
     
-    // GET request - fetch activities
     if (req.method === 'GET') {
-      const limit = parseInt(req.query.limit as string) || 10;
+      const limit = parseInt(req.query.limit as string) || 3;
       
-      // Get activities for the current user
-      const activities = await Activity.find({ userId: user._id })
+      // Get only view activities for the current user, sorted by most recent
+      const activities = await Activity.find({ 
+        userId: user._id,
+        type: 'view'
+      })
         .sort({ timestamp: -1 })
         .limit(limit)
-        .populate('resourceId', 'title type');
+        .populate('resourceId', 'title fileUrl');
       
       return res.status(200).json({ activities });
     }
     
-    // POST request - create new activity
-    if (req.method === 'POST') {
-      const { type, resourceId, message } = req.body;
-      
-      if (!type || !message) {
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
-      
-      const activity = await Activity.create({
-        userId: user._id,
-        type,
-        resourceId,
-        message,
-        timestamp: new Date()
-      });
-      
-      return res.status(201).json({ success: true, activity });
-    }
-    
-    // Method not allowed
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     console.error('Activity API error:', error);
