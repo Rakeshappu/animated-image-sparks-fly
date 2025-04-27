@@ -1,5 +1,5 @@
 
-import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 type SemesterNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -9,36 +9,59 @@ interface SemesterSelectionProps {
 }
 
 export const SemesterSelection = ({ onSemesterSelect, onBack }: SemesterSelectionProps) => {
+  const [selectedSemester, setSelectedSemester] = useState<SemesterNumber | null>(null);
+  
+  // Load saved semester from localStorage on component mount
+  useEffect(() => {
+    const savedSemester = localStorage.getItem('selectedSemester');
+    if (savedSemester) {
+      const semester = parseInt(savedSemester) as SemesterNumber;
+      if (semester >= 1 && semester <= 8) {
+        setSelectedSemester(semester);
+      }
+    }
+  }, []);
+  
+  const handleSelectSemester = (semester: SemesterNumber) => {
+    setSelectedSemester(semester);
+    // Save to localStorage
+    localStorage.setItem('selectedSemester', semester.toString());
+    onSemesterSelect(semester);
+  };
+  
+  const semesters: SemesterNumber[] = [1, 2, 3, 4, 5, 6, 7, 8];
+  
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-800">Select Semester</h2>
-        <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
-          <X className="h-5 w-5" />
+      <div>
+        <button onClick={onBack} className="text-indigo-600 hover:text-indigo-800 mb-4 inline-flex items-center">
+          ← Back
         </button>
+        <h2 className="text-xl font-semibold mb-1">Select a Semester</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Choose the semester for which you want to upload resources
+        </p>
       </div>
-
-      <p className="text-gray-600">Select a semester for your resources:</p>
       
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {semesters.map((semester) => (
           <button
-            key={sem}
-            onClick={() => onSemesterSelect(sem as SemesterNumber)}
-            className="py-3 px-4 border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors text-center"
+            key={semester}
+            onClick={() => handleSelectSemester(semester)}
+            className={`p-6 rounded-lg border-2 ${
+              selectedSemester === semester
+                ? 'border-indigo-600 bg-indigo-50'
+                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+            } transition-colors duration-200 focus:outline-none`}
           >
-            <span className="text-lg font-semibold text-gray-800">Semester {sem}</span>
+            <p className={`text-xl font-bold ${
+              selectedSemester === semester ? 'text-indigo-600' : 'text-gray-700'
+            }`}>
+              {semester}
+            </p>
+            <p className="text-sm text-gray-500">Semester</p>
           </button>
         ))}
-      </div>
-      
-      <div className="flex justify-between pt-4">
-        <button
-          onClick={onBack}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800"
-        >
-          Back
-        </button>
       </div>
     </div>
   );

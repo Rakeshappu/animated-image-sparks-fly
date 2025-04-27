@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SubjectData, SubjectFolder } from '../../types/faculty';
 import { UploadOptionSelection } from './upload/UploadOptionSelection';
 import { SemesterSelection } from './upload/SemesterSelection';
@@ -33,6 +33,17 @@ export const UploadWorkflow = ({
   // Get existing subjects
   const existingSubjects: SubjectFolder[] = window.subjectFolders || [];
 
+  // Load saved semester on mount
+  useEffect(() => {
+    const savedSemester = localStorage.getItem('selectedSemester');
+    if (savedSemester) {
+      const semester = parseInt(savedSemester) as SemesterNumber;
+      if (semester >= 1 && semester <= 8) {
+        setSelectedSemester(semester);
+      }
+    }
+  }, []);
+
   const handleInitialSelection = (option: UploadOption) => {
     if (option === 'semester') {
       setStep('semester-selection');
@@ -53,6 +64,8 @@ export const UploadWorkflow = ({
 
   const handleSemesterSelect = (semester: SemesterNumber) => {
     setSelectedSemester(semester);
+    // Save to localStorage
+    localStorage.setItem('selectedSemester', semester.toString());
     setStep('subject-creation');
   };
 
@@ -158,6 +171,7 @@ export const UploadWorkflow = ({
           onCancel={onCancel}
           showAvailableSubjects={showAvailableSubjects}
           existingSubjects={existingSubjects}
+          selectedSemester={selectedSemester}
         />
       )}
 

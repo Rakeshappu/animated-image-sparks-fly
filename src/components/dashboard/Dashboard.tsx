@@ -10,17 +10,6 @@ import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
-interface Activity {
-  _id: string;
-  type: 'view' | 'download' | 'like' | 'comment' | 'upload' | 'share';
-  timestamp: string;
-  message?: string;
-  resource: {
-    _id: string;
-    title: string;
-  };
-}
-
 export const Dashboard = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -28,7 +17,6 @@ export const Dashboard = () => {
     totalResources: 0,
     totalViews: 0
   });
-  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
