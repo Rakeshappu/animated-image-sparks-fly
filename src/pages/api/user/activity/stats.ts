@@ -43,7 +43,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
-    // Aggregate activities by date and type
     const dailyActivityData = await Activity.aggregate([
       {
         $match: {
@@ -77,37 +76,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       date.setHours(0, 0, 0, 0);
       
       const dateStr = date.toLocaleDateString('en-US', { weekday: 'short' });
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1; // JavaScript months are 0-based
-      const day = date.getDate();
       
       // Find matching activities for each type
-      const views = dailyActivityData.find(item => 
-        item._id.year === year && 
-        item._id.month === month && 
-        item._id.day === day &&
-        item._id.type === 'view'
+      const uploads = dailyActivityData.find(item => 
+        item._id.year === date.getFullYear() && 
+        item._id.month === (date.getMonth() + 1) && 
+        item._id.day === date.getDate() &&
+        item._id.type === 'upload'
       );
       
       const downloads = dailyActivityData.find(item => 
-        item._id.year === year && 
-        item._id.month === month && 
-        item._id.day === day &&
+        item._id.year === date.getFullYear() && 
+        item._id.month === (date.getMonth() + 1) && 
+        item._id.day === date.getDate() &&
         item._id.type === 'download'
       );
       
-      const uploads = dailyActivityData.find(item => 
-        item._id.year === year && 
-        item._id.month === month && 
-        item._id.day === day &&
-        item._id.type === 'upload'
+      const views = dailyActivityData.find(item => 
+        item._id.year === date.getFullYear() && 
+        item._id.month === (date.getMonth() + 1) && 
+        item._id.day === date.getDate() &&
+        item._id.type === 'view'
       );
       
       dailyActivity.push({
         name: dateStr,
-        views: views ? views.count : 0,
+        uploads: uploads ? uploads.count : 0,
         downloads: downloads ? downloads.count : 0,
-        uploads: uploads ? uploads.count : 0
+        views: views ? views.count : 0
       });
     }
     

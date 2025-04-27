@@ -45,24 +45,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       console.log(`Found ${activities.length} recent activities for user ${user._id}`);
       
-      // If no activities found, return empty array
-      if (!activities || activities.length === 0) {
+      if (activities.length === 0) {
         return res.status(200).json({ activities: [] });
       }
       
-      // Return activities with resource data
       return res.status(200).json({ activities });
     } else if (req.method === 'POST') {
       const { type, resourceId, message } = req.body;
       
       if (!type || !resourceId) {
         return res.status(400).json({ error: 'Missing required fields' });
-      }
-      
-      // Check if the resource exists
-      const resourceExists = await Resource.findById(resourceId);
-      if (!resourceExists) {
-        return res.status(404).json({ error: 'Resource not found' });
       }
       
       // Create a new activity record

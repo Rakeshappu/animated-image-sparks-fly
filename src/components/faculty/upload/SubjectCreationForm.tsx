@@ -1,15 +1,16 @@
 
 import { useState, useEffect } from 'react';
+import { Plus, X } from 'lucide-react';
 import { SubjectData, SubjectFolder } from '../../../types/faculty';
-import { PlusCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface SubjectCreationFormProps {
   selectedSemester: number | null;
   onBack: () => void;
   onSkipToUpload: () => void;
   onCreateSubjectFolders: (subjects: SubjectData[]) => void;
-  existingSubjectsForSemester?: SubjectFolder[];
-  showAvailableSubjects?: boolean;
+  existingSubjectsForSemester: SubjectFolder[];
+  showAvailableSubjects: boolean;
 }
 
 export const SubjectCreationForm = ({
@@ -17,159 +18,198 @@ export const SubjectCreationForm = ({
   onBack,
   onSkipToUpload,
   onCreateSubjectFolders,
-  existingSubjectsForSemester = [],
-  showAvailableSubjects = false
+  existingSubjectsForSemester,
+  showAvailableSubjects
 }: SubjectCreationFormProps) => {
-  const [subjectInputs, setSubjectInputs] = useState<SubjectData[]>([
-    { name: '', code: '', credits: 4 },
-  ]);
+  const [subjects, setSubjects] = useState<SubjectData[]>([]);
+  const [currentSubject, setCurrentSubject] = useState<SubjectData>({
+    subjectName: '',
+    lecturerName: '',
+    semester: selectedSemester || 1
+  });
+  const [formError, setFormError] = useState<string | null>(null);
 
-  // Save semester selection to localStorage when it changes
+  // Reset form error when inputs change
   useEffect(() => {
-    if (selectedSemester) {
-      localStorage.setItem('selectedSemester', selectedSemester.toString());
+    if (formError) {
+      setFormError(null);
     }
-  }, [selectedSemester]);
+  }, [currentSubject.subjectName, currentSubject.lecturerName]);
 
-  const addSubjectInput = () => {
-    setSubjectInputs([...subjectInputs, { name: '', code: '', credits: 4 }]);
-  };
-
-  const updateSubjectInput = (index: number, field: keyof SubjectData, value: string | number) => {
-    const updatedInputs = [...subjectInputs];
-    updatedInputs[index] = { ...updatedInputs[index], [field]: value };
-    setSubjectInputs(updatedInputs);
-  };
-
-  const removeSubjectInput = (index: number) => {
-    if (subjectInputs.length > 1) {
-      const updatedInputs = [...subjectInputs];
-      updatedInputs.splice(index, 1);
-      setSubjectInputs(updatedInputs);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Filter out any empty subjects
-    const validSubjects = subjectInputs.filter(subject => subject.name.trim() !== '');
-    
-    if (validSubjects.length === 0) {
-      // If no valid subjects, just skip to upload
-      onSkipToUpload();
+  const handleAddSubject = () => {
+    // Validate inputs
+    if (currentSubject.subjectName.trim() === '') {
+      setFormError('Subject name is required');
       return;
     }
     
-    // Add semester to each subject
-    const subjectsWithSemester = validSubjects.map(subject => ({
-      ...subject,
-      semester: selectedSemester || 1
-    }));
+    if (currentSubject.lecturerName.trim() === '') {
+      setFormError('Lecturer name is required');
+      return;
+    }
     
-    onCreateSubjectFolders(subjectsWithSemester);
+    setSubjects([...subjects, { ...currentSubject }]);
+    setCurrentSubject({
+      ...currentSubject,
+      subjectName: '',
+      lecturerName: ''
+    });
+    setFormError(null);
+  };
+
+  const handleSubmit = () => {
+    if (subjects.length === 0) {
+      setFormError('Add at least one subject before proceeding');
+      return;
+    }
+    
+    // Double check all subjects have required fields
+    const invalidSubjects = subjects.filter(
+      subject => !subject.subjectName || !subject.lecturerName || !subject.semester
+    );
+    
+    if (invalidSubjects.length > 0) {
+      setFormError('Some subjects have missing information');
+      return;
+    }
+    
+    onCreateSubjectFolders(subjects);
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <button onClick={onBack} className="text-indigo-600 hover:text-indigo-800 mb-4 inline-flex items-center">
-          ← Back
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-800">Create Subject Folders</h2>
+        <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
+          <X className="h-5 w-5" />
         </button>
-        <h2 className="text-xl font-semibold mb-1">
+      </div>
+
+      <div className="flex items-center">
+        <h3 className="text-lg font-medium text-gray-800">
           {selectedSemester ? `Create Subject Folders for Semester ${selectedSemester}` : 'Create Subject Folders'}
-        </h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Add subjects to create organized folders for your learning materials
-        </p>
+        </h3>
       </div>
       
-      {existingSubjectsForSemester.length > 0 && showAvailableSubjects && (
-        <div className="bg-gray-50 p-4 rounded-md mb-6">
-          <h3 className="font-medium mb-2">Existing Subjects</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {existingSubjectsForSemester.map((subject, idx) => (
-              <div key={idx} className="bg-white p-2 rounded border text-sm">
-                {subject.name}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Subject Name <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              value={currentSubject.subjectName}
+              onChange={(e) => setCurrentSubject({...currentSubject, subjectName: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g. Data Structures"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Lecturer Name <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              value={currentSubject.lecturerName}
+              onChange={(e) => setCurrentSubject({...currentSubject, lecturerName: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g. John Doe"
+              required
+            />
+          </div>
+        </div>
+        
+        {formError && (
+          <div className="mb-4 p-2 bg-red-50 text-red-600 text-sm rounded border border-red-200">
+            {formError}
+          </div>
+        )}
+        
+        <button
+          onClick={handleAddSubject}
+          className="flex items-center px-3 py-2 text-indigo-600 border border-indigo-200 rounded-md hover:bg-indigo-50"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Subject
+        </button>
+      </div>
+      
+      {subjects.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Subjects to be created:</h4>
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lecturer</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {subjects.map((subject, index) => (
+                  <tr key={index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{subject.subjectName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subject.lecturerName}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      
+      {/* Display existing subjects for this semester if requested */}
+      {showAvailableSubjects && selectedSemester && existingSubjectsForSemester.length > 0 && (
+        <div className="mt-6">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Existing subjects for Semester {selectedSemester}:</h4>
+          <div className="border border-gray-200 rounded-lg p-4">
+            {existingSubjectsForSemester.map((subject, index) => (
+              <div key={index} className="mb-2 pb-2 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+                <p className="font-medium">{subject.name || subject.subjectName}</p>
+                <p className="text-sm text-gray-600">Lecturer: {subject.lecturerName}</p>
               </div>
             ))}
           </div>
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-4">
-          {subjectInputs.map((subject, index) => (
-            <div key={index} className="grid grid-cols-12 gap-2">
-              <div className="col-span-5">
-                <input
-                  type="text"
-                  placeholder="Subject Name"
-                  value={subject.name}
-                  onChange={(e) => updateSubjectInput(index, 'name', e.target.value)}
-                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="col-span-3">
-                <input
-                  type="text"
-                  placeholder="Code"
-                  value={subject.code}
-                  onChange={(e) => updateSubjectInput(index, 'code', e.target.value)}
-                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="col-span-2">
-                <select
-                  value={subject.credits}
-                  onChange={(e) => updateSubjectInput(index, 'credits', parseInt(e.target.value))}
-                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value={2}>2</option>
-                  <option value={3}>3</option>
-                  <option value={4}>4</option>
-                  <option value={5}>5</option>
-                </select>
-              </div>
-              <div className="col-span-2">
-                <button
-                  type="button"
-                  onClick={() => removeSubjectInput(index)}
-                  className="p-2 text-red-500 hover:text-red-700"
-                  disabled={subjectInputs.length === 1}
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          ))}
+      {showAvailableSubjects && selectedSemester && existingSubjectsForSemester.length === 0 && (
+        <div className="mt-6">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Existing subjects for Semester {selectedSemester}:</h4>
+          <div className="border border-gray-200 rounded-lg p-4">
+            <p className="text-sm text-gray-500">No existing subjects for this semester.</p>
+          </div>
         </div>
-        
+      )}
+      
+      <div className="flex justify-between pt-4 border-t">
         <button
-          type="button"
-          onClick={addSubjectInput}
-          className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+          onClick={onBack}
+          className="px-4 py-2 text-gray-600 hover:text-gray-800"
         >
-          <PlusCircle className="h-4 w-4 mr-1" />
-          Add Another Subject
+          Back
         </button>
         
-        <div className="flex justify-between pt-4">
+        <div className="flex space-x-3">
           <button
-            type="button"
             onClick={onSkipToUpload}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 text-indigo-600 border border-indigo-200 rounded-md hover:bg-indigo-50"
           >
-            Skip & Upload Directly
+            Skip to Upload
           </button>
+          
           <button
-            type="submit"
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            onClick={handleSubmit}
+            disabled={subjects.length === 0}
+            className={`px-4 py-2 rounded-md text-white ${
+              subjects.length === 0 
+                ? 'bg-gray-300 cursor-not-allowed' 
+                : 'bg-indigo-600 hover:bg-indigo-700'
+            }`}
           >
             Create Subject Folders
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

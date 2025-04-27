@@ -1,113 +1,90 @@
 
-import { useState } from 'react';
-import { Upload, BookOpen, Briefcase, FolderPlus } from 'lucide-react';
+import { X, FolderPlus, Upload, Book, Briefcase, FolderOpen } from 'lucide-react';
 import { SubjectFolder } from '../../../types/faculty';
 
+type UploadOption = 'semester' | 'placement' | 'subject-folder' | 'direct-upload';
+
 interface UploadOptionSelectionProps {
-  onSelectOption: (option: 'semester' | 'placement' | 'subject-folder' | 'direct-upload') => void;
+  onSelectOption: (option: UploadOption) => void;
   onCancel: () => void;
-  showAvailableSubjects?: boolean;
-  existingSubjects?: SubjectFolder[];
-  selectedSemester?: number | null;
+  showAvailableSubjects: boolean;
+  existingSubjects: SubjectFolder[];
 }
 
 export const UploadOptionSelection = ({
   onSelectOption,
   onCancel,
-  showAvailableSubjects = false,
-  existingSubjects = [],
-  selectedSemester = null
+  showAvailableSubjects,
+  existingSubjects,
 }: UploadOptionSelectionProps) => {
-  const [hovered, setHovered] = useState<string | null>(null);
-  
-  const options = [
-    {
-      id: 'subject-folder',
-      title: 'Create Subject Folders',
-      description: 'Organize resources by creating subject folders first',
-      icon: <FolderPlus className="h-8 w-8 text-indigo-600" />,
-      color: 'bg-indigo-50'
-    },
-    {
-      id: 'semester',
-      title: 'Select Semester',
-      description: selectedSemester 
-        ? `Currently selected: Semester ${selectedSemester}` 
-        : 'Choose a semester for your resources',
-      icon: <BookOpen className="h-8 w-8 text-green-600" />,
-      color: 'bg-green-50'
-    },
-    {
-      id: 'placement',
-      title: 'Placement Resources',
-      description: 'Upload resources for placement preparation',
-      icon: <Briefcase className="h-8 w-8 text-purple-600" />,
-      color: 'bg-purple-50'
-    },
-    {
-      id: 'direct-upload',
-      title: 'Upload Directly',
-      description: 'Skip organization and upload resources now',
-      icon: <Upload className="h-8 w-8 text-blue-600" />,
-      color: 'bg-blue-50'
-    }
-  ];
-
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold mb-1">How would you like to organize your content?</h2>
-        <p className="text-sm text-gray-500 mb-6">
-          Choose an option to start the upload process
-        </p>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-800">Upload Workflow</h2>
+        <button onClick={onCancel} className="text-gray-500 hover:text-gray-700">
+          <X className="h-5 w-5" />
+        </button>
       </div>
+
+      <p className="text-gray-600">What type of content would you like to upload?</p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {options.map((option) => (
-          <div
-            key={option.id}
-            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
-              ${hovered === option.id ? 'border-indigo-600 shadow-md' : 'border-gray-200'}
-              ${option.color} hover:shadow-md`}
-            onClick={() => onSelectOption(option.id as any)}
-            onMouseEnter={() => setHovered(option.id)}
-            onMouseLeave={() => setHovered(null)}
-          >
-            <div className="flex items-start space-x-4">
-              <div className="p-2 rounded-full bg-white shadow-sm">
-                {option.icon}
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium">{option.title}</h3>
-                <p className="text-sm text-gray-500">{option.description}</p>
-              </div>
-            </div>
-          </div>
-        ))}
+        <button
+          onClick={() => onSelectOption('semester')}
+          className="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
+        >
+          <Book className="h-12 w-12 text-indigo-500 mb-3" />
+          <span className="text-gray-800 font-medium">Semester Resources</span>
+          <span className="text-xs text-gray-500 mt-1">Upload to specific semester</span>
+        </button>
+        
+        <button
+          onClick={() => onSelectOption('placement')}
+          className="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-colors"
+        >
+          <Briefcase className="h-12 w-12 text-blue-500 mb-3" />
+          <span className="text-gray-800 font-medium">Placement Resources</span>
+          <span className="text-xs text-gray-500 mt-1">Career and placement documents</span>
+        </button>
       </div>
       
+      <div className="mt-8 border-t pt-6">
+        <p className="text-gray-600 mb-4">Or choose one of these options:</p>
+        
+        <div className="flex space-x-4">
+          <button
+            onClick={() => onSelectOption('subject-folder')}
+            className="flex items-center px-4 py-2 text-indigo-600 border border-indigo-200 rounded-md hover:bg-indigo-50"
+          >
+            <FolderPlus className="h-5 w-5 mr-2" />
+            Create Subject Folders
+          </button>
+          
+          <button
+            onClick={() => onSelectOption('direct-upload')}
+            className="flex items-center px-4 py-2 text-green-600 border border-green-200 rounded-md hover:bg-green-50"
+          >
+            <Upload className="h-5 w-5 mr-2" />
+            Direct Upload
+          </button>
+        </div>
+      </div>
+      
+      {/* Display existing subject folders if requested */}
       {showAvailableSubjects && existingSubjects.length > 0 && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <h3 className="font-medium mb-3">Available Subject Folders</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {existingSubjects.map((subject, idx) => (
-              <div key={idx} className="text-sm bg-white p-2 rounded border">
-                <span className="font-medium">{subject.name}</span>
-                <span className="text-xs text-gray-500 ml-2">Semester {subject.semester}</span>
+        <div className="mt-8 border-t pt-6">
+          <h3 className="text-lg font-medium text-gray-800 mb-4">Available Subject Folders</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {existingSubjects.map((subject, index) => (
+              <div key={index} className="border rounded-lg p-4 hover:bg-gray-50">
+                <h4 className="font-medium text-gray-800">{subject.name || subject.subjectName}</h4>
+                <p className="text-sm text-gray-600">Lecturer: {subject.lecturerName}</p>
+                <p className="text-sm text-gray-600">Semester: {subject.semester}</p>
               </div>
             ))}
           </div>
         </div>
       )}
-      
-      <div className="flex justify-end pt-4">
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-        >
-          Cancel
-        </button>
-      </div>
     </div>
   );
 };

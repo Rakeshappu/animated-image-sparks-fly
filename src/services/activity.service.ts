@@ -23,10 +23,7 @@ export const activityService = {
       if (semester) params.append('semester', semester.toString());
       
       const response = await api.get(`/api/user/activity?${params.toString()}`);
-      if (response.data && response.data.activities) {
-        return response.data.activities;
-      }
-      return [];
+      return response.data.activities;
     } catch (error) {
       console.error('Failed to fetch activities:', error);
       return [];

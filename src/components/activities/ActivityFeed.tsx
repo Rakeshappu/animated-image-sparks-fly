@@ -41,22 +41,20 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
 
   const fetchRecentActivities = async () => {
     try {
-      setIsLoading(true);
-      const response = await activityService.getRecentActivities(3);
-      console.log('Fetched activities:', response);
-      if (Array.isArray(response) && response.length > 0) {
-        setActivities(response);
+      const response = await api.get('/api/user/activity?limit=3');
+      if (response.data && response.data.activities) {
+        console.log('Fetched activities:', response.data.activities);
+        setActivities(response.data.activities);
       } else {
-        console.log('No recent activities found');
+        console.error('Invalid activity response format:', response.data);
+        // Fallback to prop activities if available
         if (propActivities && propActivities.length > 0) {
           setActivities(propActivities.slice(0, 3));
-        } else {
-          setActivities([]);
         }
       }
     } catch (error) {
       console.error('Error fetching activities:', error);
-      // If API fails, try to use prop activities
+      // If API fails, try to use prop activities or create fallback
       if (propActivities && propActivities.length > 0) {
         setActivities(propActivities.slice(0, 3));
       }
