@@ -15,7 +15,7 @@ interface Activity {
   type: 'view' | 'download' | 'like' | 'comment' | 'upload' | 'share';
   timestamp: string;
   message?: string;
-  resource?: {
+  resource: {
     _id: string;
     title: string;
   };
@@ -62,69 +62,12 @@ export const Dashboard = () => {
                 response.data.dailyStats.reduce((sum, day) => sum + day.views, 0) : 0
             )
           });
-
-          // Fetch recent activities
-          try {
-            const activitiesResponse = await api.get('/api/user/activity?limit=5');
-            if (activitiesResponse.data && activitiesResponse.data.activities && activitiesResponse.data.activities.length > 0) {
-              setRecentActivities(activitiesResponse.data.activities);
-            } else {
-              console.error('No activities found or invalid response format:', activitiesResponse.data);
-              createFallbackActivities();
-            }
-          } catch (activityErr) {
-            console.error('Failed to fetch user activities:', activityErr);
-            createFallbackActivities();
-          }
         }
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
         toast.error('Failed to load dashboard data');
-        createFallbackActivities();
       } finally {
         setLoading(false);
-      }
-    };
-    
-    const createFallbackActivities = () => {
-      // Create fallback activities from shared resources if API call fails
-      if (window.sharedResources && Array.isArray(window.sharedResources) && user?.semester) {
-        const semesterResources = window.sharedResources
-          .filter(resource => resource.semester === user.semester)
-          .sort((a, b) => {
-            const dateA = a.stats?.lastViewed ? new Date(a.stats.lastViewed).getTime() : 0;
-            const dateB = b.stats?.lastViewed ? new Date(b.stats.lastViewed).getTime() : 0;
-            return dateB - dateA;
-          })
-          .slice(0, 5);
-          
-        if (semesterResources.length > 0) {
-          const fallbackActivities = semesterResources.map(resource => ({
-            _id: resource.id,
-            type: 'view' as const,
-            timestamp: resource.stats?.lastViewed || new Date().toISOString(),
-            message: `Viewed ${resource.title}`,
-            resource: {
-              _id: resource.id,
-              title: resource.title
-            }
-          }));
-          
-          setRecentActivities(fallbackActivities);
-        } else {
-          // Create demo activities if no resources found
-          const demoActivities = Array(3).fill(null).map((_, i) => ({
-            _id: `demo-${i}`,
-            type: 'view' as const,
-            timestamp: new Date().toISOString(),
-            message: `Viewed Sample Resource ${i+1}`,
-            resource: {
-              _id: `sample-${i}`,
-              title: `Sample Resource ${i+1}`
-            }
-          }));
-          setRecentActivities(demoActivities);
-        }
       }
     };
     
@@ -160,7 +103,7 @@ export const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <ActivityFeed activities={recentActivities} />
+          <ActivityFeed />
         </div>
       </div>
     </div>

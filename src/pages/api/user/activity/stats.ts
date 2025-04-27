@@ -64,6 +64,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { $sort: { date: 1 } }
     ]);
     
+    console.log('Activity data from past week:', dailyActivityData);
+    
     // Format for chart display
     const dailyActivity = [];
     const today = new Date();
@@ -75,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       const dateStr = date.toLocaleDateString('en-US', { weekday: 'short' });
       
-      // Find matching activities
+      // Find matching activities for each type
       const uploads = dailyActivityData.find(item => 
         item._id.year === date.getFullYear() && 
         item._id.month === (date.getMonth() + 1) && 

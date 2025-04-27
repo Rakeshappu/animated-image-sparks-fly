@@ -4,12 +4,13 @@ import { Clock, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { activityService } from '../../services/activity.service';
 
 interface Activity {
   _id: string;
   type: 'view';
   timestamp: string;
-  resourceId?: {
+  resource: {
     _id: string;
     title: string;
     fileUrl?: string;
@@ -42,7 +43,14 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
     try {
       const response = await api.get('/api/user/activity?limit=3');
       if (response.data && response.data.activities) {
+        console.log('Fetched activities:', response.data.activities);
         setActivities(response.data.activities);
+      } else {
+        console.error('Invalid activity response format:', response.data);
+        // Fallback to prop activities if available
+        if (propActivities && propActivities.length > 0) {
+          setActivities(propActivities.slice(0, 3));
+        }
       }
     } catch (error) {
       console.error('Error fetching activities:', error);
@@ -59,6 +67,13 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
     try {
       // Increment view count
       await api.post(`/api/resources/${resourceId}/view`);
+      
+      // Log the activity
+      await activityService.logActivity({
+        type: 'view',
+        resourceId,
+        message: 'Viewed resource'
+      });
       
       // Navigate to the resource
       navigate(`/resources/${resourceId}`);
@@ -108,12 +123,12 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
             <div 
               key={activity._id} 
               className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
-              onClick={() => activity.resourceId && handleResourceClick(activity.resourceId._id)}
+              onClick={() => activity.resource && handleResourceClick(activity.resource._id)}
             >
               {getActivityIcon(activity.type)}
               <div className="flex-1">
                 <p className="text-sm text-gray-700">
-                  {activity.resourceId?.title || 'Untitled Resource'}
+                  {activity.resource?.title || 'Untitled Resource'}
                 </p>
                 <p className="text-xs text-gray-500">
                   {formatTime(activity.timestamp)}

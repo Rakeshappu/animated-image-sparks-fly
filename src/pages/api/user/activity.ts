@@ -43,13 +43,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .populate('resource', 'title fileUrl')
         .lean();
       
-      // Format the data to match the expected format in the ActivityFeed component
-      const formattedActivities = activities.map(activity => ({
-        ...activity,
-        resourceId: activity.resource
-      }));
+      console.log(`Found ${activities.length} recent activities for user ${user._id}`);
       
-      return res.status(200).json({ activities: formattedActivities });
+      if (activities.length === 0) {
+        return res.status(200).json({ activities: [] });
+      }
+      
+      return res.status(200).json({ activities });
+    } else if (req.method === 'POST') {
+      const { type, resourceId, message } = req.body;
+      
+      if (!type || !resourceId) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      // Create a new activity record
+      const newActivity = await Activity.create({
+        user: user._id,
+        type,
+        resource: resourceId,
+        timestamp: new Date(),
+        message: message || `${type} resource`
+      });
+      
+      await newActivity.populate('resource', 'title fileUrl');
+      
+      return res.status(201).json({ success: true, activity: newActivity });
     }
     
     return res.status(405).json({ error: 'Method not allowed' });

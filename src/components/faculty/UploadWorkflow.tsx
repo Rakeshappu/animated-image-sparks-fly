@@ -119,6 +119,7 @@ export const UploadWorkflow = ({
           subject: `Placement - ${selectedCategory.name}`,
           semester: 0,
           uploadDate: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
           fileName: data.file?.name,
           fileUrl: response.fileUrl,
           stats: {
@@ -213,9 +214,13 @@ export const UploadWorkflow = ({
             ← Back to Options
           </button>
           <ResourceUpload 
-            onUpload={(data) => {
+            onUpload={async (data) => {
               setIsUploading(true);
-              onUpload(data).finally(() => setIsUploading(false));
+              try {
+                await onSelectOption('direct-upload', { ...data });
+              } finally {
+                setIsUploading(false);
+              }
             }}
             initialSemester={selectedSemester || 1}
           />
@@ -224,4 +229,3 @@ export const UploadWorkflow = ({
     </div>
   );
 };
-
