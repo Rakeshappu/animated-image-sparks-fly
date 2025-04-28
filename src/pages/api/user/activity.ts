@@ -59,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const activities = await Activity.find(query)
         .sort({ timestamp: -1 })
         .limit(limit)
-        .populate('resource', 'title fileUrl subject stats')
+        .populate('resource', 'title fileUrl subject stats category placementCategory')
         .lean();
       
       console.log(`Found ${activities.length} recent activities for user ${user._id}`);
@@ -74,6 +74,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Missing required fields' });
       }
       
+      console.log(`Creating new activity: ${type} for resource ${resourceId}`);
+      
       // Create a new activity record
       const newActivity = await Activity.create({
         user: user._id,
@@ -84,9 +86,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
       
       if (resourceId) {
-        await newActivity.populate('resource', 'title fileUrl subject stats');
+        await newActivity.populate('resource', 'title fileUrl subject stats category placementCategory');
       }
       
+      console.log(`Created activity with ID: ${newActivity._id}`);
       return res.status(201).json({ success: true, activity: newActivity });
     }
     

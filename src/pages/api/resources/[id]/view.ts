@@ -83,8 +83,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     
     console.log('Updating view count for resource:', id);
-    console.log('Today\'s date for tracking:', today);
-    console.log('Current dailyViews:', JSON.stringify(resource.stats.dailyViews));
+    console.log('Resource category:', resource.category);
+    console.log('Resource stats before save:', JSON.stringify(resource.stats));
     
     await resource.save();
     console.log('Resource saved with updated view count:', resource.stats.views);
@@ -92,13 +92,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create activity record if user is logged in
     if (userId) {
       try {
+        // Check resource type for appropriate message
+        let message = 'Viewed resource';
+        if (resource.category === 'placement') {
+          message = `Viewed placement resource: ${resource.title}`;
+        }
+
         const activity = await Activity.create({
           user: new mongoose.Types.ObjectId(userId),
           type: 'view',
           resource: resource._id,
           timestamp: new Date(),
-          message: `Viewed resource: ${resource.title}`
+          message: message
         });
+        
         console.log(`Created view activity for user ${userId} and resource ${id}:`, activity._id);
       } catch (activityError) {
         console.error('Failed to create activity record:', activityError);
@@ -112,6 +119,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       views: resource.stats.views,
       resourceTitle: resource.title,
       resourceId: resource._id,
+      category: resource.category,
+      placementCategory: resource.placementCategory,
       timestamp: new Date()
     });
   } catch (error) {

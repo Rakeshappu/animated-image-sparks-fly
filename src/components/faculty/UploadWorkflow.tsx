@@ -17,6 +17,7 @@ interface UploadWorkflowProps {
   onSelectOption: (option: string, data?: any) => void;
   onCancel: () => void;
   showAvailableSubjects?: boolean;
+  isFromSidebar?: boolean; // Flag to identify if this is initiated from sidebar
 }
 
 // Storage key for semester to ensure consistent behavior across both sidebar and dashboard
@@ -25,7 +26,8 @@ const SEMESTER_STORAGE_KEY = 'eduShareSelectedSemester';
 export const UploadWorkflow = ({ 
   onSelectOption, 
   onCancel,
-  showAvailableSubjects = false
+  showAvailableSubjects = false,
+  isFromSidebar = false
 }: UploadWorkflowProps) => {
   const navigate = useNavigate();
   const [step, setStep] = useState<'initial' | 'semester-selection' | 'subject-creation' | 'placement-category' | 'placement-upload' | 'direct-upload'>('initial');
@@ -58,7 +60,11 @@ export const UploadWorkflow = ({
       setStep('placement-category');
     } else if (option === 'direct-upload') {
       // For direct upload, pass directly to parent with current semester if selected
-      onSelectOption('direct-upload', { semester: selectedSemester });
+      if (isFromSidebar) {
+        setStep('direct-upload');
+      } else {
+        onSelectOption('direct-upload', { semester: selectedSemester });
+      }
     }
   };
 
@@ -82,9 +88,13 @@ export const UploadWorkflow = ({
 
   const handleSkipToUpload = () => {
     // When skipping to direct upload, pass the selected semester
-    onSelectOption('direct-upload', { 
-      semester: selectedSemester 
-    });
+    if (isFromSidebar) {
+      setStep('direct-upload');
+    } else {
+      onSelectOption('direct-upload', { 
+        semester: selectedSemester 
+      });
+    }
   };
 
   const handlePlacementUpload = async (data: any) => {
@@ -151,6 +161,41 @@ export const UploadWorkflow = ({
     } catch (error: any) {
       console.error('Upload error:', error);
       toast.error(error.message || 'Failed to upload placement resource');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSidebarDirectUpload = async (data: any) => {
+    setIsUploading(true);
+    try {
+      // Create a new FormData object for the upload
+      const formData = new FormData();
+      
+      // Add all the necessary fields
+      formData.append('title', data.title);
+      formData.append('description', data.description);
+      formData.append('type', data.type);
+      formData.append('subject', data.subject);
+      formData.append('semester', String(selectedSemester));
+      
+      // Add file or link based on the resource type
+      if (data.type === 'link') {
+        formData.append('link', data.link);
+      } else if (data.file) {
+        formData.append('file', data.file);
+      }
+      
+      // Upload the resource directly using the service
+      const response = await createResource(formData);
+      console.log('Resource created from sidebar:', response);
+      
+      // After successful upload, navigate to dashboard
+      toast.success('Resource uploaded successfully!');
+      navigate('/faculty/dashboard');
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error(error.message || 'Failed to upload resource');
     } finally {
       setIsUploading(false);
     }
@@ -225,7 +270,7 @@ export const UploadWorkflow = ({
             ← Back to Options
           </button>
           <ResourceUpload 
-            onUpload={async (data) => {
+            onUpload={isFromSidebar ? handleSidebarDirectUpload : async (data) => {
               setIsUploading(true);
               try {
                 await onSelectOption('direct-upload', { ...data, semester: selectedSemester });

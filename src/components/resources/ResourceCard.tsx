@@ -10,6 +10,7 @@ import { activityService } from '../../services/activity.service';
 interface ResourceCardProps {
   resource: any;
   onViewCountUpdated?: (resourceId: string, newCount: number) => void;
+  compact?: boolean;
 }
 
 // Object mapping resource types to their respective icons
@@ -21,7 +22,7 @@ const resourceTypeIcons = {
   pdf: FileText
 };
 
-export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps) => {
+export const ResourceCard = ({ resource, onViewCountUpdated, compact = false }: ResourceCardProps) => {
   const ResourceIcon = resourceTypeIcons[resource.type as keyof typeof resourceTypeIcons] || File;
   const [isDownloading, setIsDownloading] = useState(false);
   const [showDocViewer, setShowDocViewer] = useState(false);
@@ -34,7 +35,7 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
     try {
       const result = await activityService.incrementResourceView(resourceId);
       
-      if (result.success && result.views) {
+      if (result.success && result.views !== undefined) {
         // Update local state
         setViewCount(result.views);
         
@@ -51,9 +52,6 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
         }
         
         console.log(`View count updated for ${resource.title}: ${result.views}`);
-        
-        // Force refresh activities list
-        await activityService.refreshActivities();
         return result.views;
       }
     } catch (error) {
@@ -64,7 +62,7 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
   
   useEffect(() => {
     // Initialize view count from resource
-    if (resource?.stats?.views) {
+    if (resource?.stats?.views !== undefined) {
       setViewCount(resource.stats.views);
     }
   }, [resource]);
@@ -103,9 +101,6 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
     }
   };
   
-  // Format the date from createdAt, uploadDate, or timestamp
-  const date = resource.createdAt || resource.uploadDate || resource.timestamp || new Date().toISOString();
-  
   // Update download stats
   const updateStats = async (resourceId: string, action: 'download' | 'bookmark') => {
     try {
@@ -134,26 +129,48 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
     e.preventDefault(); // Prevent default behavior
     e.stopPropagation(); // Prevent card click
     
+    // Get resource ID, trying both _id and id fields
+    const resourceId = resource._id || resource.id;
+    if (!resourceId) {
+      toast.error('Invalid resource ID');
+      return;
+    }
+    
     if (resource.fileUrl) {
-      // Count view - get from either _id or id
-      const resourceId = resource._id || resource.id;
-      if (resourceId) {
-        const updatedCount = await updateLocalViewCount(resourceId);
-        if (updatedCount) setViewCount(updatedCount);
+      // Count view and update immediately
+      const updatedCount = await updateLocalViewCount(resourceId);
+      if (updatedCount !== null) {
+        setViewCount(updatedCount);
+        
+        // Log view activity to ensure it appears in recent activities
+        if (user) {
+          await activityService.logActivity({
+            type: 'view',
+            resourceId,
+            message: `Viewed resource: ${resource.title}`
+          });
+        }
       }
       
       // Show document viewer
       setShowDocViewer(true);
     } else if (resource.type === 'link' && resource.link) {
-      // For links, open in new tab
-      window.open(resource.link, '_blank');
-      
-      // Count view - get from either _id or id
-      const resourceId = resource._id || resource.id;
-      if (resourceId) {
-        const updatedCount = await updateLocalViewCount(resourceId);
-        if (updatedCount) setViewCount(updatedCount);
+      // For links, count view and open in new tab
+      const updatedCount = await updateLocalViewCount(resourceId);
+      if (updatedCount !== null) {
+        setViewCount(updatedCount);
+        
+        // Log view activity
+        if (user) {
+          await activityService.logActivity({
+            type: 'view',
+            resourceId,
+            message: `Viewed link: ${resource.title}`
+          });
+        }
       }
+      
+      window.open(resource.link, '_blank');
     } else {
       toast.error('No content available to view');
     }
@@ -172,7 +189,7 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
       // Update view count and stats
       if (resourceId) {
         const updatedCount = await updateLocalViewCount(resourceId);
-        if (updatedCount) setViewCount(updatedCount);
+        if (updatedCount !== null) setViewCount(updatedCount);
         await updateStats(resourceId, 'download');
         
         // Log download activity
@@ -252,26 +269,47 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
     e.preventDefault(); // Prevent default behavior
     
     // Same as handleViewDocument but without stopPropagation
+    const resourceId = resource._id || resource.id;
+    if (!resourceId) {
+      toast.error('Invalid resource ID');
+      return;
+    }
+    
     if (resource.fileUrl) {
-      // Count view and update immediately in UI
-      const resourceId = resource._id || resource.id;
-      if (resourceId) {
-        const updatedCount = await updateLocalViewCount(resourceId);
-        if (updatedCount) setViewCount(updatedCount);
+      // Count view and update immediately
+      const updatedCount = await updateLocalViewCount(resourceId);
+      if (updatedCount !== null) {
+        setViewCount(updatedCount);
+        
+        // Log view activity to ensure it appears in recent activities
+        if (user) {
+          await activityService.logActivity({
+            type: 'view',
+            resourceId,
+            message: `Viewed resource: ${resource.title}`
+          });
+        }
       }
       
       // Show document viewer
       setShowDocViewer(true);
     } else if (resource.type === 'link' && resource.link) {
-      // For links, open in new tab
-      window.open(resource.link, '_blank');
-      
-      // Count view and update immediately in UI
-      const resourceId = resource._id || resource.id;
-      if (resourceId) {
-        const updatedCount = await updateLocalViewCount(resourceId);
-        if (updatedCount) setViewCount(updatedCount);
+      // For links, count view and open in new tab
+      const updatedCount = await updateLocalViewCount(resourceId);
+      if (updatedCount !== null) {
+        setViewCount(updatedCount);
+        
+        // Log view activity
+        if (user) {
+          await activityService.logActivity({
+            type: 'view',
+            resourceId,
+            message: `Viewed link: ${resource.title}`
+          });
+        }
       }
+      
+      window.open(resource.link, '_blank');
     } else {
       toast.error('No content available to view');
     }
@@ -306,7 +344,7 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
               <span className="mr-3">•</span>
               <div className="flex items-center">
                 <Calendar className="h-3 w-3 mr-1" />
-                <span>{formatDate(date)}</span>
+                <span>{formatDate(resource.createdAt || resource.uploadDate || resource.timestamp || new Date().toISOString())}</span>
               </div>
             </div>
           </div>

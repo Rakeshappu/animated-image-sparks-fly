@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Clock, Eye, Download, Upload, Heart, MessageSquare } from 'lucide-react';
+import { Clock, Eye, Download, Upload, Heart, MessageSquare, Share } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -16,8 +16,12 @@ interface Activity {
     title: string;
     fileUrl?: string;
     subject: string;
+    category?: string;
     stats?: {
       views: number;
+      downloads: number;
+      likes: number;
+      comments: number;
     };
   };
 }
@@ -34,6 +38,8 @@ const getActivityIcon = (type: Activity['type']) => {
       return <Heart className="h-5 w-5 text-red-500" />;
     case 'comment':
       return <MessageSquare className="h-5 w-5 text-yellow-500" />;
+    case 'share':
+      return <Share className="h-5 w-5 text-indigo-500" />;
     default:
       return <Clock className="h-5 w-5 text-gray-500" />;
   }
@@ -42,9 +48,14 @@ const getActivityIcon = (type: Activity['type']) => {
 interface ActivityFeedProps {
   activities?: Activity[];
   refreshInterval?: number; // Time in ms to refresh activities
+  maxItems?: number; // Maximum number of items to show
 }
 
-export const ActivityFeed = ({ activities: propActivities, refreshInterval = 5000 }: ActivityFeedProps) => {
+export const ActivityFeed = ({ 
+  activities: propActivities, 
+  refreshInterval = 5000, 
+  maxItems = 3 
+}: ActivityFeedProps) => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -57,15 +68,15 @@ export const ActivityFeed = ({ activities: propActivities, refreshInterval = 500
     const intervalId = setInterval(fetchRecentActivities, refreshInterval);
     
     return () => clearInterval(intervalId);
-  }, [refreshInterval]);
+  }, [refreshInterval, maxItems]);
 
   // Use prop activities if provided
   useEffect(() => {
     if (propActivities && propActivities.length > 0) {
-      setActivities(propActivities.slice(0, 10));
+      setActivities(propActivities.slice(0, maxItems));
       setIsLoading(false);
     }
-  }, [propActivities]);
+  }, [propActivities, maxItems]);
 
   const fetchRecentActivities = async () => {
     try {
@@ -75,20 +86,20 @@ export const ActivityFeed = ({ activities: propActivities, refreshInterval = 500
       
       if (Array.isArray(data) && data.length > 0) {
         console.log('Fetched activities from service:', data);
-        setActivities(data);
+        setActivities(data.slice(0, maxItems));
       } else {
         console.log('No activities found or empty array returned');
         // Try direct API call as fallback
-        const response = await api.get('/api/user/activity?limit=10&_nocache=' + new Date().getTime());
+        const response = await api.get(`/api/user/activity?limit=${maxItems}&_nocache=${new Date().getTime()}`);
         
         if (response.data && Array.isArray(response.data.activities)) {
           console.log('Fetched activities from direct API:', response.data.activities);
-          setActivities(response.data.activities);
+          setActivities(response.data.activities.slice(0, maxItems));
         } else {
           console.warn('No activities found in API response');
           // Fallback to prop activities if available
           if (propActivities && propActivities.length > 0) {
-            setActivities(propActivities.slice(0, 10));
+            setActivities(propActivities.slice(0, maxItems));
           }
         }
       }
@@ -96,7 +107,7 @@ export const ActivityFeed = ({ activities: propActivities, refreshInterval = 500
       console.error('Error fetching activities:', error);
       // If API fails, try to use prop activities
       if (propActivities && propActivities.length > 0) {
-        setActivities(propActivities.slice(0, 10));
+        setActivities(propActivities.slice(0, maxItems));
       }
     } finally {
       setIsLoading(false);
@@ -185,21 +196,58 @@ export const ActivityFeed = ({ activities: propActivities, refreshInterval = 500
           {activities.map((activity) => (
             <div 
               key={activity._id} 
-              className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
+              className="bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
               onClick={() => activity.resource && handleResourceClick(activity.resource._id)}
             >
-              {getActivityIcon(activity.type)}
-              <div className="flex-1">
-                <p className="text-sm text-gray-700 line-clamp-1">
-                  {activity.resource?.title || 'Untitled Resource'}
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">
-                    {formatTime(activity.timestamp)}
-                  </span>
-                  <span className="text-xs text-gray-500 capitalize">
-                    {activity.type}
-                  </span>
+              <div className="flex items-start space-x-3">
+                {getActivityIcon(activity.type)}
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-700 line-clamp-2">
+                    {activity.resource?.title || 'Untitled Resource'}
+                  </p>
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-xs text-gray-500">
+                      {formatTime(activity.timestamp)}
+                    </span>
+                    <span className="text-xs font-medium px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full capitalize">
+                      {activity.type}
+                    </span>
+                  </div>
+                  
+                  {/* Stats section */}
+                  {activity.resource?.stats && (
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-500">
+                      <div className="flex items-center">
+                        <Eye className="h-3 w-3 mr-1" />
+                        <span>{activity.resource.stats.views || 0}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Download className="h-3 w-3 mr-1" />
+                        <span>{activity.resource.stats.downloads || 0}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Heart className="h-3 w-3 mr-1" />
+                        <span>{activity.resource.stats.likes || 0}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <MessageSquare className="h-3 w-3 mr-1" />
+                        <span>{activity.resource.stats.comments || 0}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Category badge if present */}
+                  {activity.resource?.category && (
+                    <div className="mt-2">
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        activity.resource.category === 'placement' 
+                          ? 'bg-purple-100 text-purple-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {activity.resource.category}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -85,6 +85,9 @@ const activityService = {
       
       console.log('View count updated response:', response.data);
       
+      // Force refresh activities immediately after view
+      setTimeout(() => this.refreshActivities(), 300);
+      
       return { 
         success: true, 
         views: response.data.views,
@@ -107,6 +110,17 @@ const activityService = {
     } catch (error) {
       console.error('Failed to refresh activities:', error);
       return [];
+    }
+  },
+  
+  // Get activity details with full analytics
+  async getActivityWithAnalytics(activityId: string) {
+    try {
+      const response = await api.get(`/api/user/activity/${activityId}/analytics`);
+      return response.data || null;
+    } catch (error) {
+      console.error('Failed to fetch activity analytics:', error);
+      return null;
     }
   }
 };
