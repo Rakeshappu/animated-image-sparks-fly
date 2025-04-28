@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { ResourceAnalyticsView } from '../../components/faculty/ResourceAnalytics';
 import { useSearchParams } from 'react-router-dom';
+import { activityService } from '../../services/activity.service';
 
 export interface ResourceAnalytics {
   views: number;
@@ -37,6 +38,13 @@ interface Resource {
   };
 }
 
+interface ActivityData {
+  name: string;
+  uploads: number;
+  downloads: number;
+  views: number;
+}
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export default function AnalyticsPage() {
@@ -47,6 +55,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedResourceTitle, setSelectedResourceTitle] = useState<string>('');
+  const [weeklyActivity, setWeeklyActivity] = useState<ActivityData[]>([]);
   
   // Add this to get resourceId from URL params
   const resourceIdFromUrl = searchParams.get('resourceId');
@@ -55,16 +64,22 @@ export default function AnalyticsPage() {
     const fetchResources = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/api/resources/faculty');
         
-        if (response.data && response.data.resources) {
-          setResources(response.data.resources);
+        // Fetch faculty resources
+        const resourceResponse = await api.get('/api/resources/faculty');
+        
+        // Fetch weekly activity data
+        const weeklyActivityData = await activityService.getWeeklyActivities(false);
+        setWeeklyActivity(weeklyActivityData);
+        
+        if (resourceResponse.data && resourceResponse.data.resources) {
+          setResources(resourceResponse.data.resources);
           
           // Set selected resource from URL if available
           if (resourceIdFromUrl) {
             setSelectedResourceId(resourceIdFromUrl);
             // Find the title for the selected resource
-            const selectedResource = response.data.resources.find(
+            const selectedResource = resourceResponse.data.resources.find(
               (r: Resource) => r.id === resourceIdFromUrl || r._id === resourceIdFromUrl
             );
             if (selectedResource) {
@@ -73,8 +88,8 @@ export default function AnalyticsPage() {
           }
         }
       } catch (error) {
-        console.error('Error fetching resources:', error);
-        toast.error('Failed to load resources');
+        console.error('Error fetching resources and analytics:', error);
+        toast.error('Failed to load analytics data');
       } finally {
         setLoading(false);
       }
@@ -158,7 +173,7 @@ export default function AnalyticsPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6 dark:text-gray-200">Content Analytics</h1>
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-lg font-semibold mb-4">Resource Analytics</h2>
         <div className="mb-6">
           <label htmlFor="resourceSelect" className="block text-sm font-medium text-gray-700 mb-2">
@@ -196,7 +211,6 @@ export default function AnalyticsPage() {
         )}
       </div>
       
-      
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatCard title="Content Uploaded" value={resources.length} icon="📚" color="bg-blue-50" />
         <StatCard title="Total Views" value={totalViews} icon="👁️" color="bg-green-50" />
@@ -231,25 +245,51 @@ export default function AnalyticsPage() {
         </div>
         
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold mb-4">Overall Engagement</h2>
+          <h2 className="text-lg font-semibold mb-4">Activity Over Past Week</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={engagementData}
+                data={weeklyActivity}
                 margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`${value}`, 'Count']} />
-                <Bar dataKey="value" fill="#8884d8">
-                  {engagementData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
+                <Tooltip 
+                  formatter={(value, name) => {
+                    // Capitalize first letter of series name for tooltip
+                    const seriesName = name.charAt(0).toUpperCase() + name.slice(1);
+                    return [`${value}`, seriesName];
+                  }} 
+                />
+                <Bar dataKey="views" name="Views" fill="#8884d8" />
+                <Bar dataKey="downloads" name="Downloads" fill="#82ca9d" />
+                <Bar dataKey="uploads" name="Uploads" fill="#ffc658" />
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-lg font-semibold mb-4">Overall Engagement</h2>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={engagementData}
+              margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip formatter={(value) => [`${value}`, 'Count']} />
+              <Bar dataKey="value" fill="#8884d8">
+                {engagementData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>

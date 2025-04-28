@@ -51,9 +51,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     // Get total activity count
     const totalActivities = await Activity.countDocuments();
+    const userId = decoded.userId;
+    
+    // Get today's activities count
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todayActivities = req.query.period === 'today'
+      ? await Activity.countDocuments({
+          user: userId,
+          timestamp: { $gte: today }
+        })
+      : 0;
     
     // Calculate user streak
-    const userId = decoded.userId;
     let userStreak = 0;
     
     if (userId) {
@@ -62,9 +73,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (user) {
         // Check if user has activity today
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
         const hasActivityToday = await Activity.exists({
           user: userId,
           timestamp: { $gte: today }
@@ -105,6 +113,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           console.log(`User ${user.email} has no activity today, streak remains ${userStreak}`);
         }
       }
+    }
+    
+    // If this is just a request for today's count, return it now
+    if (req.query.period === 'today') {
+      return res.status(200).json({
+        success: true,
+        count: todayActivities,
+        streak: userStreak
+      });
     }
     
     // Get daily activity for past week
@@ -152,7 +169,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     // Format for chart display
     const dailyActivity = [];
-    const today = new Date();
     
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
@@ -215,7 +231,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       totalActivities,
       dailyActivity,
       activities: recentActivities,
-      streak: userStreak  // Include streak in response
+      streak: userStreak,  // Include streak in response
+      todayCount: todayActivities  // Include today's activity count
     });
   } catch (error) {
     console.error('Error fetching activity stats:', error);

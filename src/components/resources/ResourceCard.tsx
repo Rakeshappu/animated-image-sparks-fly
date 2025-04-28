@@ -5,9 +5,11 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { DocumentViewer } from '../document/DocumentViewer';
 import { useAuth } from '../../contexts/AuthContext';
+import { activityService } from '../../services/activity.service';
 
 interface ResourceCardProps {
   resource: any;
+  onViewCountUpdated?: (resourceId: string, newCount: number) => void;
 }
 
 // Object mapping resource types to their respective icons
@@ -19,12 +21,20 @@ const resourceTypeIcons = {
   pdf: FileText
 };
 
-export const ResourceCard = ({ resource }: ResourceCardProps) => {
+export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps) => {
   const ResourceIcon = resourceTypeIcons[resource.type as keyof typeof resourceTypeIcons] || File;
   const [isDownloading, setIsDownloading] = useState(false);
   const [showDocViewer, setShowDocViewer] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [viewCount, setViewCount] = useState<number>(resource.stats?.views || 0);
   const { user } = useAuth();
+  
+  useEffect(() => {
+    // Initialize view count from resource
+    if (resource?.stats?.views) {
+      setViewCount(resource.stats.views);
+    }
+  }, [resource]);
   
   useEffect(() => {
     // Check if this resource is bookmarked
@@ -63,8 +73,34 @@ export const ResourceCard = ({ resource }: ResourceCardProps) => {
   // Format the date from createdAt, uploadDate, or timestamp
   const date = resource.createdAt || resource.uploadDate || resource.timestamp || new Date().toISOString();
   
-  // Update view and download stats
-  const updateStats = async (resourceId: string, action: 'view' | 'download' | 'bookmark') => {
+  // Update view count using our service
+  const updateViewCount = async (resourceId: string) => {
+    if (!resourceId) return;
+    
+    try {
+      const result = await activityService.incrementResourceView(resourceId);
+      
+      if (result.success && result.views) {
+        // Update local state
+        setViewCount(result.views);
+        
+        // Update resource object
+        if (resource.stats) {
+          resource.stats.views = result.views;
+        }
+        
+        // Call the callback if provided
+        if (onViewCountUpdated) {
+          onViewCountUpdated(resourceId, result.views);
+        }
+      }
+    } catch (error) {
+      console.error(`Error updating view count: ${error}`);
+    }
+  };
+  
+  // Update download stats
+  const updateStats = async (resourceId: string, action: 'download' | 'bookmark') => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -87,14 +123,15 @@ export const ResourceCard = ({ resource }: ResourceCardProps) => {
   };
   
   // Handle view document button click
-  const handleViewDocument = (e: React.MouseEvent) => {
+  const handleViewDocument = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent default behavior
     e.stopPropagation(); // Prevent card click
     
     if (resource.fileUrl) {
       // Count view
-      if (resource._id || resource.id) {
-        updateStats(resource._id || resource.id, 'view');
+      const resourceId = resource._id || resource.id;
+      if (resourceId) {
+        await updateViewCount(resourceId);
       }
       
       // Show document viewer
@@ -104,8 +141,9 @@ export const ResourceCard = ({ resource }: ResourceCardProps) => {
       window.open(resource.link, '_blank');
       
       // Count view
-      if (resource._id || resource.id) {
-        updateStats(resource._id || resource.id, 'view');
+      const resourceId = resource._id || resource.id;
+      if (resourceId) {
+        await updateViewCount(resourceId);
       }
     } else {
       toast.error('No content available to view');
@@ -120,10 +158,12 @@ export const ResourceCard = ({ resource }: ResourceCardProps) => {
     setIsDownloading(true);
     
     try {
-      // Update download stats
-      if (resource._id || resource.id) {
-        await updateStats(resource._id || resource.id, 'view');
-        await updateStats(resource._id || resource.id, 'download');
+      const resourceId = resource._id || resource.id;
+      
+      // Update stats
+      if (resourceId) {
+        await updateViewCount(resourceId);
+        await updateStats(resourceId, 'download');
       }
       
       if (resource.fileUrl) {
@@ -160,7 +200,8 @@ export const ResourceCard = ({ resource }: ResourceCardProps) => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/resources/${resource.id || resource._id}/bookmark`, {
+      const resourceId = resource.id || resource._id;
+      const response = await fetch(`/api/resources/${resourceId}/bookmark`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -178,8 +219,8 @@ export const ResourceCard = ({ resource }: ResourceCardProps) => {
       setIsBookmarked(data.bookmarked);
       
       // Update stats
-      if (resource._id || resource.id) {
-        await updateStats(resource._id || resource.id, 'bookmark');
+      if (resourceId) {
+        await updateStats(resourceId, 'bookmark');
       }
       
       toast.success(isBookmarked ? 'Removed from bookmarks' : 'Added to bookmarks');
@@ -190,14 +231,15 @@ export const ResourceCard = ({ resource }: ResourceCardProps) => {
   };
 
   // Handle card click to view document
-  const handleCardClick = (e: React.MouseEvent) => {
+  const handleCardClick = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent default behavior
     
     // Same as handleViewDocument but without stopPropagation
     if (resource.fileUrl) {
       // Count view
-      if (resource._id || resource.id) {
-        updateStats(resource._id || resource.id, 'view');
+      const resourceId = resource._id || resource.id;
+      if (resourceId) {
+        await updateViewCount(resourceId);
       }
       
       // Show document viewer
@@ -207,8 +249,9 @@ export const ResourceCard = ({ resource }: ResourceCardProps) => {
       window.open(resource.link, '_blank');
       
       // Count view
-      if (resource._id || resource.id) {
-        updateStats(resource._id || resource.id, 'view');
+      const resourceId = resource._id || resource.id;
+      if (resourceId) {
+        await updateViewCount(resourceId);
       }
     } else {
       toast.error('No content available to view');
@@ -252,9 +295,10 @@ export const ResourceCard = ({ resource }: ResourceCardProps) => {
       </div>
       
       <div className="bg-gray-50 px-4 py-3 flex justify-between items-center border-t border-gray-100">
-        <span className="text-xs text-gray-600">
-          {resource.subject || 'Subject not specified'}
-        </span>
+        <div className="flex items-center text-xs text-gray-500">
+          <Eye className="h-3 w-3 mr-1" />
+          <span>{viewCount} views</span>
+        </div>
         
         <div className="flex space-x-3">
           <button 

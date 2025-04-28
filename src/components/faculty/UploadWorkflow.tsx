@@ -26,12 +26,13 @@ export const UploadWorkflow = ({
 }: UploadWorkflowProps) => {
   const navigate = useNavigate();
   const [step, setStep] = useState<'initial' | 'semester-selection' | 'subject-creation' | 'placement-category' | 'placement-upload' | 'direct-upload'>('initial');
-  // Get the semester from localStorage if available, otherwise default to null
-  const [selectedSemester, setSelectedSemester] = useState<SemesterNumber | null>(
-    localStorage.getItem('selectedSemester') ? 
-    Number(localStorage.getItem('selectedSemester')) as SemesterNumber : 
-    null
-  );
+  
+  // Get the semester from localStorage if available, otherwise default to 1
+  const [selectedSemester, setSelectedSemester] = useState<SemesterNumber>(() => {
+    const storedSemester = localStorage.getItem('selectedSemester');
+    return storedSemester ? Number(storedSemester) as SemesterNumber : 1;
+  });
+  
   const [selectedCategory, setSelectedCategory] = useState<{id: string, name: string} | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   
@@ -40,9 +41,8 @@ export const UploadWorkflow = ({
 
   // Save selected semester to localStorage whenever it changes
   useEffect(() => {
-    if (selectedSemester) {
-      localStorage.setItem('selectedSemester', selectedSemester.toString());
-    }
+    localStorage.setItem('selectedSemester', selectedSemester.toString());
+    console.log('Saved semester to localStorage:', selectedSemester);
   }, [selectedSemester]);
 
   const handleInitialSelection = (option: UploadOption) => {
@@ -55,11 +55,7 @@ export const UploadWorkflow = ({
       setStep('placement-category');
     } else if (option === 'direct-upload') {
       // For direct upload, pass directly to parent with current semester if selected
-      if (selectedSemester) {
-        onSelectOption('direct-upload', { semester: selectedSemester });
-      } else {
-        setStep('direct-upload');
-      }
+      onSelectOption('direct-upload', { semester: selectedSemester });
     }
   };
 

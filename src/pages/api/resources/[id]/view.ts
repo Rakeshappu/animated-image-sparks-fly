@@ -35,6 +35,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'Resource not found' });
     }
 
+    // Get current date with time set to midnight for accurate daily tracking
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     // Increment view count
     if (!resource.stats) {
       resource.stats = {
@@ -44,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         comments: 0,
         lastViewed: new Date(),
         dailyViews: [{
-          date: new Date(),
+          date: today,
           count: 1
         }],
       };
@@ -52,10 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       resource.stats.views = (resource.stats.views || 0) + 1;
       resource.stats.lastViewed = new Date();
       
-      // Update daily views
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
+      // Update daily views with today's date (not yesterday)
       const existingDailyView = resource.stats.dailyViews?.find(dv => {
         if (!dv.date) return false;
         const dvDate = new Date(dv.date);
@@ -76,19 +77,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
     
+    console.log('Updating view count for resource:', id);
+    console.log('Today\'s date for tracking:', today);
+    console.log('Current dailyViews:', JSON.stringify(resource.stats.dailyViews));
+    
     await resource.save();
+    console.log('Resource saved with updated view count:', resource.stats.views);
 
     // Create activity record
     if (userId) {
       try {
-        await Activity.create({
+        const activity = await Activity.create({
           user: new mongoose.Types.ObjectId(userId),
           type: 'view',
           resource: resource._id,
           timestamp: new Date(),
           message: `Viewed resource: ${resource.title}`
         });
-        console.log(`Created view activity for user ${userId} and resource ${id}`);
+        console.log(`Created view activity for user ${userId} and resource ${id}:`, activity._id);
       } catch (activityError) {
         console.error('Failed to create activity record:', activityError);
         // Continue with view tracking even if activity creation fails

@@ -72,6 +72,28 @@ const activityService = {
       console.error('Failed to fetch resource view count:', error);
       return 0;
     }
+  },
+  
+  // Add this new method to update view count for resources
+  async incrementResourceView(resourceId: string) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return { success: false };
+      
+      const response = await api.post(`/api/resources/${resourceId}/view`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      return { 
+        success: true, 
+        views: response.data.views 
+      };
+    } catch (error) {
+      console.error('Failed to increment view count:', error);
+      return { success: false };
+    }
   }
 };
 
