@@ -96,17 +96,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let message = 'Viewed resource';
         if (resource.category === 'placement') {
           message = `Viewed placement resource: ${resource.title}`;
+        } else if (resource.category === 'study') {
+          message = `Viewed study resource: ${resource.title}`;
         }
 
-        const activity = await Activity.create({
+        // Check for recent duplicate activity (within last minute)
+        const recentActivity = await Activity.findOne({
           user: new mongoose.Types.ObjectId(userId),
           type: 'view',
           resource: resource._id,
-          timestamp: new Date(),
-          message: message
+          timestamp: { $gte: new Date(Date.now() - 60000) } // Last minute
         });
         
-        console.log(`Created view activity for user ${userId} and resource ${id}:`, activity._id);
+        let activity;
+        
+        if (recentActivity) {
+          // Update existing activity timestamp
+          recentActivity.timestamp = new Date();
+          await recentActivity.save();
+          activity = recentActivity;
+          console.log(`Updated existing view activity for user ${userId} and resource ${id}:`, activity._id);
+        } else {
+          // Create new activity
+          activity = await Activity.create({
+            user: new mongoose.Types.ObjectId(userId),
+            type: 'view',
+            resource: resource._id,
+            timestamp: new Date(),
+            message: message
+          });
+          console.log(`Created view activity for user ${userId} and resource ${id}:`, activity._id);
+        }
       } catch (activityError) {
         console.error('Failed to create activity record:', activityError);
         // Continue with view tracking even if activity creation fails

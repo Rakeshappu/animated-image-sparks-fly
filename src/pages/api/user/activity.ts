@@ -65,7 +65,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log(`Found ${activities.length} recent activities for user ${user._id}`);
       
       // Return empty array if no activities found
-      return res.status(200).json({ activities: activities || [] });
+      return res.status(200).json({ 
+        activities: activities || [],
+        success: true
+      });
       
     } else if (req.method === 'POST') {
       const { type, resourceId, message } = req.body;
@@ -75,6 +78,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       console.log(`Creating new activity: ${type} for resource ${resourceId}`);
+      
+      // Ensure we don't create duplicate recent activities
+      if (resourceId) {
+        // Check for recent duplicate activity (within last minute)
+        const recentDuplicate = await Activity.findOne({
+          user: user._id,
+          type,
+          resource: resourceId,
+          timestamp: { $gte: new Date(Date.now() - 60000) } // Last minute
+        });
+        
+        if (recentDuplicate) {
+          console.log(`Skipping duplicate ${type} activity for resource ${resourceId}`);
+          // Just update the timestamp instead of creating a new record
+          recentDuplicate.timestamp = new Date();
+          await recentDuplicate.save();
+          await recentDuplicate.populate('resource', 'title fileUrl subject stats category placementCategory');
+          return res.status(200).json({ 
+            success: true, 
+            activity: recentDuplicate,
+            updated: true
+          });
+        }
+      }
       
       // Create a new activity record
       const newActivity = await Activity.create({
@@ -90,7 +117,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       console.log(`Created activity with ID: ${newActivity._id}`);
-      return res.status(201).json({ success: true, activity: newActivity });
+      return res.status(201).json({ 
+        success: true, 
+        activity: newActivity,
+        created: true
+      });
     }
     
     return res.status(405).json({ error: 'Method not allowed' });

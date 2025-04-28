@@ -1,5 +1,6 @@
 
 import api from './api';
+import { toast } from 'react-hot-toast';
 
 const activityService = {
   async logActivity(data: {
@@ -16,7 +17,7 @@ const activityService = {
     }
   },
 
-  async getRecentActivities(limit = 10, semester?: number) {
+  async getRecentActivities(limit = 3, semester?: number) {
     try {
       const params = new URLSearchParams();
       params.append('limit', limit.toString());
@@ -85,16 +86,29 @@ const activityService = {
       
       console.log('View count updated response:', response.data);
       
-      // Force refresh activities immediately after view
-      setTimeout(() => this.refreshActivities(), 300);
-      
-      return { 
-        success: true, 
-        views: response.data.views,
-        resourceTitle: response.data.resourceTitle,
-        resourceId: response.data.resourceId,
-        timestamp: response.data.timestamp
-      };
+      if (response.data.success) {
+        // Notify of successful view
+        const resourceCategory = response.data.category || '';
+        const resourceType = resourceCategory === 'placement' ? 'placement' : 'study';
+        
+        // Don't show toast for every view to avoid spamming
+        // toast.success(`Viewing ${resourceType} resource`);
+        
+        // Force refresh activities immediately after view
+        this.refreshActivities();
+        
+        // Return the updated view data
+        return { 
+          success: true, 
+          views: response.data.views,
+          resourceTitle: response.data.resourceTitle,
+          resourceId: response.data.resourceId,
+          timestamp: response.data.timestamp
+        };
+      } else {
+        console.error('View update returned an error:', response.data);
+        return { success: false };
+      }
     } catch (error) {
       console.error('Failed to increment view count:', error);
       return { success: false };
@@ -105,7 +119,12 @@ const activityService = {
   async refreshActivities() {
     try {
       // Clear any cache and force a fresh fetch
-      const response = await api.get(`/api/user/activity?limit=10&_t=${Date.now()}`);
+      const response = await api.get(`/api/user/activity?limit=3&_t=${Date.now()}`);
+      // Dispatch a global event that components can listen for
+      const refreshEvent = new CustomEvent('activitiesRefreshed', {
+        detail: { activities: response.data.activities || [] }
+      });
+      document.dispatchEvent(refreshEvent);
       return response.data.activities || [];
     } catch (error) {
       console.error('Failed to refresh activities:', error);

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { generateText } from '../../services/openai.service';
+import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 // Define the SearchFilters type
 interface SearchFilters {
@@ -38,6 +39,12 @@ export const SearchBar = () => {
   const [apiError, setApiError] = useState<string | null>(null);
   const navigate = useNavigate();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+  
+  // Use custom hook to detect clicks outside the filter area
+  useOutsideClick(filterRef, () => {
+    if (showFilters) setShowFilters(false);
+  });
 
   // Function to handle search submission
   const handleSearch = async (e: React.FormEvent) => {
@@ -51,63 +58,41 @@ export const SearchBar = () => {
     setApiError(null);
     
     try {
+      // Build search parameters
+      const params = new URLSearchParams();
+      params.append('q', filters.query);
+      
+      // Add type filters if any are selected
+      if (filters.type.length > 0) {
+        filters.type.forEach(type => {
+          params.append('type', type);
+        });
+      }
+      
+      // Add category filters if any are selected
+      if (filters.category.length > 0) {
+        filters.category.forEach(category => {
+          params.append('category', category);
+        });
+      }
+      
       // First try to search local resources in database
-      const response = await api.get(`/api/search?q=${encodeURIComponent(filters.query)}`);
+      const response = await api.get(`/api/search?${params.toString()}`);
       const results = response.data.results || [];
       setSearchResults(results);
       
-      // Then get AI-enhanced information using Serper AI
-      try {
-        const aiResponse = await generateText(
-          `Find the best educational resources, research papers, and learning materials about: ${filters.query}. Include details about each resource including title, source, and a brief description of what can be learned.`
-        );
-        
-        if (aiResponse.success) {
-          setAiSummary(aiResponse.text);
-          if (aiResponse.relatedQuestions && aiResponse.relatedQuestions.length > 0) {
-            setRelatedQuestions(aiResponse.relatedQuestions);
-          }
-        }
-      } catch (aiError) {
-        console.error('AI summary generation failed:', aiError);
-        // We don't show this error to the user as the main search still worked
-      }
-      
-      // Dispatch event for global search
-      const customEvent = new CustomEvent('globalSearch', { 
-        detail: { 
-          query: filters.query,
-          results: results,
-          aiSummary: aiSummary,
-          relatedQuestions: relatedQuestions
-        }
-      });
-      document.dispatchEvent(customEvent);
-      
-      // If no results, show a message
       if (results.length === 0) {
-        toast.info('No local resources found. Showing AI-powered results from the web.');
+        toast("No local resources found matching your query", { 
+          icon: '📚',
+        });
+      } else {
+        // Close filters after search
+        setShowFilters(false);
       }
-      
-    } catch (error: any) {
+    } catch (error) {
       console.error('Search failed:', error);
-      setApiError(error.message || 'Search failed. Please try again.');
+      setApiError(error instanceof Error ? error.message : 'Search failed. Please try again.');
       toast.error('Search failed. Please try again.');
-      // Still try to get AI results even if local search fails
-      try {
-        const aiResponse = await generateText(
-          `Find the best educational resources, research papers, and learning materials about: ${filters.query}. Include details about each resource including title, source, and a brief description of what can be learned.`
-        );
-        
-        if (aiResponse.success) {
-          setAiSummary(aiResponse.text);
-          if (aiResponse.relatedQuestions && aiResponse.relatedQuestions.length > 0) {
-            setRelatedQuestions(aiResponse.relatedQuestions);
-          }
-        }
-      } catch (aiError) {
-        console.error('AI summary generation failed:', aiError);
-      }
     } finally {
       setIsSearching(false);
     }
@@ -135,50 +120,13 @@ export const SearchBar = () => {
     }
   }, []);
 
-  // Function to format and highlight the AI summary
-  const formatAiSummary = (text: string) => {
-    if (!text) return [];
-    
-    // Split by lines
-    return text.split('\n').map((line, index) => {
-      // Check if line is a heading (starts with a number followed by a dot)
-      if (/^\d+\.\s+\*\*.*\*\*/.test(line)) {
-        return (
-          <h4 key={index} className="font-semibold text-indigo-700 dark:text-indigo-400 mt-3 mb-1">
-            {line.replace(/\*\*/g, '')}
-          </h4>
-        );
-      }
-      
-      // Check if line starts with "Summary:" or "How you can use this:"
-      if (line.startsWith('Summary:') || line.startsWith('How you can use this:')) {
-        const [prefix, ...rest] = line.split(':');
-        const content = rest.join(':');
-        return (
-          <div key={index} className="mt-3 mb-2">
-            <span className="font-semibold text-indigo-600 dark:text-indigo-500">{prefix}:</span>
-            <span className="text-gray-700 dark:text-gray-300">{content}</span>
-          </div>
-        );
-      }
-      
-      // Regular line with a little margin if not empty
-      if (line.trim()) {
-        return <p key={index} className="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">{line}</p>;
-      }
-      
-      // Empty line
-      return <br key={index} />;
-    });
-  };
-
   return (
     <div className="w-full max-w-4xl mx-auto">
       <form onSubmit={handleSearch} className="relative">
         <input
           type="text"
           ref={searchInputRef}
-          placeholder="Search local files, resources, topics, or categories..."
+          placeholder="Search course materials in your semester..."
           className="w-full px-4 py-3 pl-12 pr-10 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
           value={filters.query}
           onChange={(e) => setFilters({ ...filters, query: e.target.value })}
@@ -206,7 +154,10 @@ export const SearchBar = () => {
       </form>
       
       {showFilters && (
-        <div className="mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 z-20 relative">
+        <div 
+          ref={filterRef}
+          className="mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 z-20 relative"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Resource Type</h3>
@@ -298,79 +249,32 @@ export const SearchBar = () => {
         </div>
       )}
       
-      {!isSearching && (aiSummary || (searchResults && searchResults.length > 0)) && (
+      {!isSearching && searchResults && searchResults.length > 0 && (
         <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded shadow z-10 relative">
-          {aiSummary && showAiSummary && (
-            <div className="mb-4 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg relative overflow-hidden">
-              <button 
-                onClick={closeAiSummary}
-                className="absolute right-2 top-2 h-6 w-6 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors shadow-sm"
-                aria-label="Close AI summary"
+          <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Search Results</h3>
+          <div className="space-y-3">
+            {searchResults.map((resource) => (
+              <div 
+                key={resource._id}
+                className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors shadow-sm"
+                onClick={() => handleResourceClick(resource._id)}
               >
-                <X className="h-4 w-4 text-gray-500 dark:text-gray-300" />
-              </button>
-              
-              <div className="flex items-center mb-2">
-                <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center mr-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                <h4 className="text-indigo-600 dark:text-indigo-400 font-medium">{resource.title}</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{resource.description}</p>
+                <div className="flex mt-2 text-xs text-gray-500">
+                  <span className="mr-3 capitalize">{resource.type}</span>
+                  <span className="mr-3">{resource.subject}</span>
+                  <span>{resource.semester !== undefined ? `${resource.semester}th Semester` : ''}</span>
                 </div>
-                <h3 className="font-medium text-gray-800 dark:text-gray-200">AI-Generated Summary</h3>
               </div>
-              
-              <div className="text-gray-600 dark:text-gray-300 text-sm mt-3 pl-10 pr-6">
-                {formatAiSummary(aiSummary)}
-              </div>
-            </div>
-          )}
-          
-          {searchResults && searchResults.length > 0 && (
-            <>
-              <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Search Results</h3>
-              <div className="space-y-3">
-                {searchResults.map((resource) => (
-                  <div 
-                    key={resource._id}
-                    className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors shadow-sm"
-                    onClick={() => handleResourceClick(resource._id)}
-                  >
-                    <h4 className="text-indigo-600 dark:text-indigo-400 font-medium">{resource.title}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{resource.description}</p>
-                    <div className="flex mt-2 text-xs text-gray-500">
-                      <span className="mr-3 capitalize">{resource.type}</span>
-                      <span className="mr-3">{resource.subject}</span>
-                      <span>{resource.semester}th Semester</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-          
-          {searchResults && searchResults.length === 0 && !apiError && (
-            <div className="p-4 text-center">
-              <p className="text-gray-500">No local resources found matching your search criteria.</p>
-            </div>
-          )}
-          
-          {relatedQuestions.length > 0 && (
-            <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
-              <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">You might also be interested in:</h3>
-              <ul className="space-y-1">
-                {relatedQuestions.map((question, index) => (
-                  <li 
-                    key={index}
-                    className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer flex items-center"
-                    onClick={() => handleRelatedQuestionClick(question)}
-                  >
-                    <Search className="h-3 w-3 mr-2" />
-                    {question}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {!isSearching && searchResults && searchResults.length === 0 && filters.query && !apiError && (
+        <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded shadow text-center">
+          <p className="text-gray-500">No local resources found matching your search criteria.</p>
         </div>
       )}
     </div>

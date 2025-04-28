@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Video, Link as LinkIcon, File, Download, Calendar, Eye, Bookmark } from 'lucide-react';
+import { FileText, Video, Link as LinkIcon, File, Download, Calendar, Eye, Bookmark, ThumbsUp, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { DocumentViewer } from '../document/DocumentViewer';
@@ -22,20 +22,24 @@ const resourceTypeIcons = {
   pdf: FileText
 };
 
-export const ResourceCard = ({ resource, onViewCountUpdated, compact = false }: ResourceCardProps) => {
+export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps) => {
   const ResourceIcon = resourceTypeIcons[resource.type as keyof typeof resourceTypeIcons] || File;
   const [isDownloading, setIsDownloading] = useState(false);
   const [showDocViewer, setShowDocViewer] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [viewCount, setViewCount] = useState<number>(resource.stats?.views || 0);
+  const [commentText, setCommentText] = useState('');
+  const [showComments, setShowComments] = useState(false);
   const { user } = useAuth();
   
   // Function to update the view count in UI instantly 
   const updateLocalViewCount = useCallback(async (resourceId: string) => {
     try {
+      console.log(`Updating view count for ${resourceId}`);
       const result = await activityService.incrementResourceView(resourceId);
       
       if (result.success && result.views !== undefined) {
+        console.log(`View count updated successfully to ${result.views}`);
         // Update local state
         setViewCount(result.views);
         
@@ -101,8 +105,8 @@ export const ResourceCard = ({ resource, onViewCountUpdated, compact = false }: 
     }
   };
   
-  // Update download stats
-  const updateStats = async (resourceId: string, action: 'download' | 'bookmark') => {
+  // Update stats
+  const updateStats = async (resourceId: string, action: 'download' | 'bookmark' | 'like' | 'comment') => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -264,6 +268,71 @@ export const ResourceCard = ({ resource, onViewCountUpdated, compact = false }: 
     }
   };
 
+  // Handle adding a comment
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast.error('Please log in to add comments');
+      return;
+    }
+    
+    if (!commentText.trim()) {
+      toast.error('Comment cannot be empty');
+      return;
+    }
+    
+    try {
+      const resourceId = resource._id || resource.id;
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`/api/resources/${resourceId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: commentText })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add comment');
+      }
+      
+      const data = await response.json();
+      
+      // Update resource with new comment
+      if (!resource.comments) {
+        resource.comments = [];
+      }
+      
+      resource.comments.push(data.comment);
+      
+      // Update stats
+      if (resource.stats) {
+        resource.stats.comments = (resource.stats.comments || 0) + 1;
+      }
+      
+      // Clear comment text
+      setCommentText('');
+      
+      // Update stats in the backend
+      await updateStats(resourceId, 'comment');
+      
+      toast.success('Comment added successfully');
+    } catch (error) {
+      console.error('Comment error:', error);
+      toast.error('Failed to add comment');
+    }
+  };
+
+  // Toggle comment section
+  const toggleComments = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowComments(!showComments);
+  };
+
   // Handle card click to view document
   const handleCardClick = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent default behavior
@@ -355,6 +424,22 @@ export const ResourceCard = ({ resource, onViewCountUpdated, compact = false }: 
         <div className="flex items-center text-xs text-gray-500">
           <Eye className="h-3 w-3 mr-1" />
           <span>{viewCount} views</span>
+          
+          {resource.stats?.likes > 0 && (
+            <>
+              <span className="mx-1">•</span>
+              <ThumbsUp className="h-3 w-3 mr-1" />
+              <span>{resource.stats.likes} likes</span>
+            </>
+          )}
+          
+          {resource.stats?.comments > 0 && (
+            <>
+              <span className="mx-1">•</span>
+              <MessageSquare className="h-3 w-3 mr-1" />
+              <span>{resource.stats.comments} comments</span>
+            </>
+          )}
         </div>
         
         <div className="flex space-x-3">
@@ -386,8 +471,53 @@ export const ResourceCard = ({ resource, onViewCountUpdated, compact = false }: 
           >
             <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-yellow-500' : ''}`} />
           </button>
+          
+          <button 
+            onClick={toggleComments}
+            className={`${showComments ? 'text-indigo-600' : 'text-gray-600'} hover:text-indigo-600`}
+            title="Comments"
+          >
+            <MessageSquare className="h-4 w-4" />
+          </button>
         </div>
       </div>
+      
+      {showComments && (
+        <div className="px-4 py-3 border-t border-gray-100" onClick={e => e.stopPropagation()}>
+          <h4 className="font-medium text-sm mb-2">Comments</h4>
+          
+          {resource.comments && resource.comments.length > 0 ? (
+            <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
+              {resource.comments.map((comment: any, index: number) => (
+                <div key={comment._id || index} className="text-sm p-2 bg-gray-50 rounded">
+                  <div className="font-medium text-xs text-gray-700">
+                    {comment.author?.name || "User"} • {formatDate(comment.createdAt)}
+                  </div>
+                  <div className="text-gray-700 mt-1">{comment.content}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 mb-2">No comments yet</p>
+          )}
+          
+          <form onSubmit={handleAddComment} className="flex">
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Add a comment..."
+              className="flex-1 px-3 py-1 text-sm border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            />
+            <button
+              type="submit"
+              className="bg-indigo-600 text-white px-3 py-1 text-sm rounded-r hover:bg-indigo-700"
+            >
+              Post
+            </button>
+          </form>
+        </div>
+      )}
       
       {showDocViewer && (
         <DocumentViewer 
