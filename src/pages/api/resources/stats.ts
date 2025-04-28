@@ -26,17 +26,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           details: dbStatus.message 
         });
       }
+
+      console.log('Connected to MongoDB successfully');
       
       // Get total resource count
       const totalResources = await Resource.countDocuments({ deletedAt: null });
+      console.log(`Total resources: ${totalResources}`);
       
       // Get resource type distribution
-      const resources = await Resource.find({ deletedAt: null }).lean();
+      let resources = [];
+      try {
+        resources = await Resource.find({ deletedAt: null }).lean();
+        console.log(`Found ${resources.length} resources`);
+      } catch (findError) {
+        console.error('Error finding resources:', findError);
+      }
       
       // Get total counts for views, likes, and downloads
-      const totalViews = resources.reduce((sum, resource) => sum + (resource.stats?.views || 0), 0);
-      const totalLikes = resources.reduce((sum, resource) => sum + (resource.stats?.likes || 0), 0);
-      const totalDownloads = resources.reduce((sum, resource) => sum + (resource.stats?.downloads || 0), 0);
+      let totalViews = 0;
+      let totalLikes = 0;
+      let totalDownloads = 0;
+      
+      try {
+        resources.forEach(resource => {
+          totalViews += (resource.stats?.views || 0);
+          totalLikes += (resource.stats?.likes || 0);
+          totalDownloads += (resource.stats?.downloads || 0);
+        });
+        
+        console.log(`Total stats: views=${totalViews}, likes=${totalLikes}, downloads=${totalDownloads}`);
+      } catch (statsError) {
+        console.error('Error calculating totals:', statsError);
+      }
       
       const typeDistribution = [
         { name: 'Document', value: resources.filter(r => r.type === 'document').length },
@@ -50,12 +71,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
       
       // Get activities from the past week
-      const activities = await Activity.find({
-        timestamp: { $gte: oneWeekAgo },
-        type: { $in: ['view', 'download', 'upload'] }
-      }).lean();
-      
-      console.log(`Found ${activities.length} activities in the past week`);
+      let activities = [];
+      try {
+        activities = await Activity.find({
+          timestamp: { $gte: oneWeekAgo },
+          type: { $in: ['view', 'download', 'upload'] }
+        }).lean();
+        
+        console.log(`Found ${activities.length} activities in the past week`);
+      } catch (activityError) {
+        console.error('Error finding activities:', activityError);
+      }
       
       // Group activities by day
       const dailyActivity = [];
@@ -78,17 +104,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       // Count activities by day
-      activities.forEach(activity => {
-        const date = new Date(activity.timestamp);
-        const dayStr = date.toISOString().split('T')[0];
-        
-        if (dayMap.has(dayStr)) {
-          const dayData = dayMap.get(dayStr);
-          if (activity.type === 'view') dayData.views += 1;
-          if (activity.type === 'download') dayData.downloads += 1;
-          if (activity.type === 'upload') dayData.uploads += 1;
-        }
-      });
+      try {
+        activities.forEach(activity => {
+          if (!activity.timestamp) {
+            console.log('Activity missing timestamp:', activity);
+            return;
+          }
+          
+          const date = new Date(activity.timestamp);
+          const dayStr = date.toISOString().split('T')[0];
+          
+          if (dayMap.has(dayStr)) {
+            const dayData = dayMap.get(dayStr);
+            if (activity.type === 'view') dayData.views += 1;
+            if (activity.type === 'download') dayData.downloads += 1;
+            if (activity.type === 'upload') dayData.uploads += 1;
+          }
+        });
+      } catch (mapError) {
+        console.error('Error mapping activities by day:', mapError);
+      }
       
       // Convert map to array for response
       dayMap.forEach(value => {
@@ -98,9 +133,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Calculate today's stats
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const todayStr = today.toISOString().split('T')[0];
       
       const todayActivities = activities.filter(activity => {
+        if (!activity.timestamp) return false;
         const activityDate = new Date(activity.timestamp);
         activityDate.setHours(0, 0, 0, 0);
         return activityDate.getTime() === today.getTime();
@@ -111,6 +146,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const todayViews = todayActivities.filter(a => a.type === 'view').length;
       
       console.log('Daily activity data:', dailyActivity);
+      console.log('Today stats:', { uploads: todayUploads, downloads: todayDownloads, views: todayViews });
       
       return res.status(200).json({
         totalResources,
@@ -128,7 +164,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     } catch (error) {
       console.error('Error fetching resource stats:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ 
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   } else if (req.method === 'POST') {
     try {

@@ -29,6 +29,12 @@ interface Resource {
   subject: string;
   uploadDate?: string;
   analytics?: ResourceAnalytics;
+  stats?: {
+    views: number;
+    likes: number;
+    downloads: number;
+    comments: number;
+  };
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -123,11 +129,15 @@ export default function AnalyticsPage() {
     setSelectedResourceId(resourceId);
   };
   
-  // Calculate totals from all resources
-  const totalViews = resources.reduce((sum, resource) => sum + (resource.analytics?.views || 0), 0);
-  const totalLikes = resources.reduce((sum, resource) => sum + (resource.analytics?.likes || 0), 0);
-  const totalComments = resources.reduce((sum, resource) => sum + (resource.analytics?.comments || 0), 0);
-  const totalDownloads = resources.reduce((sum, resource) => sum + (resource.analytics?.downloads || 0), 0);
+  // Calculate totals from all resources with proper stats handling
+  const totalViews = resources.reduce((sum, resource) => 
+    sum + ((resource.stats?.views || resource.analytics?.views) || 0), 0);
+  const totalLikes = resources.reduce((sum, resource) => 
+    sum + ((resource.stats?.likes || resource.analytics?.likes) || 0), 0);
+  const totalComments = resources.reduce((sum, resource) => 
+    sum + ((resource.stats?.comments || resource.analytics?.comments) || 0), 0);
+  const totalDownloads = resources.reduce((sum, resource) => 
+    sum + ((resource.stats?.downloads || resource.analytics?.downloads) || 0), 0);
   
   // Prepare data for the content distribution chart
   const contentTypeData = [
@@ -242,8 +252,6 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </div>
-      
-
     </div>
   );
 }

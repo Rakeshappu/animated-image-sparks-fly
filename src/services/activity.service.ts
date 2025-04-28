@@ -23,6 +23,7 @@ const activityService = {
       if (semester) params.append('semester', semester.toString());
       
       const response = await api.get(`/api/user/activity?${params.toString()}`);
+      console.log('Recent activities response:', response.data);
       return response.data.activities || [];
     } catch (error) {
       console.error('Failed to fetch activities:', error);
@@ -53,7 +54,9 @@ const activityService = {
   async getWeeklyActivities(isAdmin = false) {
     try {
       const url = isAdmin ? '/api/user/activity/stats?admin=true' : '/api/user/activity/stats';
+      console.log('Fetching weekly activities from:', url);
       const response = await api.get(url);
+      console.log('Weekly activities response:', response.data);
       return response.data.dailyActivity || [];
     } catch (error) {
       console.error('Failed to fetch weekly activities:', error);

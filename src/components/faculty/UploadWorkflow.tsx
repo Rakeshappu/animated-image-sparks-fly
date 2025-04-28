@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SubjectData, SubjectFolder } from '../../types/faculty';
 import { UploadOptionSelection } from './upload/UploadOptionSelection';
 import { SemesterSelection } from './upload/SemesterSelection';
@@ -26,12 +26,24 @@ export const UploadWorkflow = ({
 }: UploadWorkflowProps) => {
   const navigate = useNavigate();
   const [step, setStep] = useState<'initial' | 'semester-selection' | 'subject-creation' | 'placement-category' | 'placement-upload' | 'direct-upload'>('initial');
-  const [selectedSemester, setSelectedSemester] = useState<SemesterNumber | null>(null);
+  // Get the semester from localStorage if available, otherwise default to null
+  const [selectedSemester, setSelectedSemester] = useState<SemesterNumber | null>(
+    localStorage.getItem('selectedSemester') ? 
+    Number(localStorage.getItem('selectedSemester')) as SemesterNumber : 
+    null
+  );
   const [selectedCategory, setSelectedCategory] = useState<{id: string, name: string} | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   
   // Get existing subjects
   const existingSubjects: SubjectFolder[] = window.subjectFolders || [];
+
+  // Save selected semester to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedSemester) {
+      localStorage.setItem('selectedSemester', selectedSemester.toString());
+    }
+  }, [selectedSemester]);
 
   const handleInitialSelection = (option: UploadOption) => {
     if (option === 'semester') {

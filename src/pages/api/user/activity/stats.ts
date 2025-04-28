@@ -126,6 +126,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Fetching user dashboard stats for user:', decoded.userId);
     }
     
+    console.log('Match stage for aggregation:', matchStage);
+    
+    // Get activity data grouped by day and type
     const dailyActivityData = await Activity.aggregate([
       {
         $match: matchStage
@@ -183,6 +186,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         item._id.day === day &&
         item._id.type === 'view'
       );
+      
+      console.log(`Daily activity for ${dateStr}: uploads=${uploads?.count || 0}, downloads=${downloads?.count || 0}, views=${views?.count || 0}`);
       
       dailyActivity.push({
         name: dateStr,
