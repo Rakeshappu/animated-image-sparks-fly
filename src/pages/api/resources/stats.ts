@@ -1,3 +1,4 @@
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB, { verifyDbConnection } from '../../../lib/db/connect';
 import { Resource } from '../../../lib/db/models/Resource';
@@ -30,7 +31,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const totalResources = await Resource.countDocuments({ deletedAt: null });
       
       // Get resource type distribution
-      const resources = await Resource.find({ deletedAt: null });
+      const resources = await Resource.find({ deletedAt: null }).lean();
+      
+      // Get total counts for views, likes, and downloads
+      const totalViews = resources.reduce((sum, resource) => sum + (resource.stats?.views || 0), 0);
+      const totalLikes = resources.reduce((sum, resource) => sum + (resource.stats?.likes || 0), 0);
+      const totalDownloads = resources.reduce((sum, resource) => sum + (resource.stats?.downloads || 0), 0);
+      
       const typeDistribution = [
         { name: 'Document', value: resources.filter(r => r.type === 'document').length },
         { name: 'Video', value: resources.filter(r => r.type === 'video').length },
@@ -38,14 +45,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         { name: 'Link', value: resources.filter(r => r.type === 'link').length }
       ];
       
-      // Get daily stats for the past week
+      // Get daily activity for the past week
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
       
+      // Get activities from the past week
       const activities = await Activity.find({
         timestamp: { $gte: oneWeekAgo },
         type: { $in: ['view', 'download', 'upload'] }
-      });
+      }).lean();
+      
+      console.log(`Found ${activities.length} activities in the past week`);
       
       // Group activities by day
       const dailyActivity = [];
@@ -86,18 +96,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
       
       // Calculate today's stats
-      const today = new Date().toISOString().split('T')[0];
-      const todayData = dayMap.get(today) || { uploads: 0, downloads: 0, views: 0 };
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayStr = today.toISOString().split('T')[0];
+      
+      const todayActivities = activities.filter(activity => {
+        const activityDate = new Date(activity.timestamp);
+        activityDate.setHours(0, 0, 0, 0);
+        return activityDate.getTime() === today.getTime();
+      });
+      
+      const todayUploads = todayActivities.filter(a => a.type === 'upload').length;
+      const todayDownloads = todayActivities.filter(a => a.type === 'download').length;
+      const todayViews = todayActivities.filter(a => a.type === 'view').length;
+      
+      console.log('Daily activity data:', dailyActivity);
       
       return res.status(200).json({
         totalResources,
+        totalViews,
+        totalLikes,
+        totalDownloads,
         typeDistribution,
         dailyActivity,
         dailyStats: dailyActivity,
         todayStats: {
-          uploads: todayData.uploads,
-          downloads: todayData.downloads,
-          views: todayData.views
+          uploads: todayUploads,
+          downloads: todayDownloads,
+          views: todayViews
         }
       });
     } catch (error) {

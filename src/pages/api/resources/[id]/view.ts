@@ -1,8 +1,10 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Resource } from '../../../../lib/db/models/Resource';
+import { Activity } from '../../../../lib/db/models/Activity';
 import { verifyToken } from '../../../../lib/auth/jwt';
 import { runCorsMiddleware } from '../../_middleware';
+import mongoose from 'mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -25,6 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const token = authHeader.split(' ')[1];
     const decoded = verifyToken(token);
+    const userId = decoded.userId;
 
     // Find the resource
     const resource = await Resource.findById(id);
@@ -74,6 +77,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     
     await resource.save();
+
+    // Create activity record
+    if (userId) {
+      try {
+        await Activity.create({
+          user: new mongoose.Types.ObjectId(userId),
+          type: 'view',
+          resource: resource._id,
+          timestamp: new Date(),
+          message: `Viewed resource: ${resource.title}`
+        });
+        console.log(`Created view activity for user ${userId} and resource ${id}`);
+      } catch (activityError) {
+        console.error('Failed to create activity record:', activityError);
+        // Continue with view tracking even if activity creation fails
+      }
+    }
 
     return res.status(200).json({ success: true, views: resource.stats.views });
   } catch (error) {

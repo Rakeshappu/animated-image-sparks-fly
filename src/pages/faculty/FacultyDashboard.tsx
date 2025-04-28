@@ -6,7 +6,7 @@ import { UploadFormData, FacultyResource } from '../../types/faculty';
 import { UploadWorkflow } from '../../components/faculty/UploadWorkflow';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { checkDatabaseConnection } from '../../services/resource.service';
 import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
 import { API_ROUTES } from '../../lib/api/routes';
@@ -56,6 +56,7 @@ export const FacultyDashboard = () => {
   const [showResourceUpload, setShowResourceUpload] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [dbStatus, setDbStatus] = useState<any>(null);
+  const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -163,7 +164,10 @@ export const FacultyDashboard = () => {
       formData.append('description', data.description);
       formData.append('type', data.type);
       formData.append('subject', data.subject);
-      formData.append('semester', data.semester.toString());
+      
+      // Use selected semester if available, otherwise use the one from data
+      const semesterToUse = selectedSemester !== null ? selectedSemester : data.semester;
+      formData.append('semester', semesterToUse.toString());
       
       if (data.file) {
         formData.append('file', data.file);
@@ -221,6 +225,7 @@ export const FacultyDashboard = () => {
       
       toast.success('Resource uploaded successfully!');
       setShowResourceUpload(false);
+      setSelectedSemester(null); // Reset selected semester after successful upload
     } catch (error) {
       console.error('Error uploading resource:', error);
       toast.error('Failed to upload resource. Please try again.');
@@ -240,6 +245,10 @@ export const FacultyDashboard = () => {
 
   const handleSelectUploadOption = async (option: string, data?: any) => {
     if (option === 'direct-upload') {
+      // Save selected semester from workflow to pass to resource upload
+      if (data && data.semester) {
+        setSelectedSemester(data.semester);
+      }
       setShowResourceUpload(true);
       setShowUploadWorkflow(false);
     } else if (option === 'create-subject-folders') {
@@ -264,6 +273,11 @@ export const FacultyDashboard = () => {
               ...response.data.folders
             ];
           }
+        }
+        
+        // Save selected semester for resource upload
+        if (data && data.semester) {
+          setSelectedSemester(data.semester);
         }
         
         setShowUploadWorkflow(false);
@@ -347,7 +361,10 @@ export const FacultyDashboard = () => {
           >
             <motion.button
               variants={itemVariants}
-              onClick={() => setShowResourceUpload(false)}
+              onClick={() => {
+                setShowResourceUpload(false);
+                setSelectedSemester(null); // Reset selected semester when canceling
+              }}
               className="mb-4 text-indigo-600 hover:text-indigo-700 flex items-center space-x-2 transition-colors duration-200"
             >
               <span>← Back to Resources</span>
@@ -355,7 +372,7 @@ export const FacultyDashboard = () => {
             <ResourceUpload 
               onUpload={handleUpload} 
               initialSubject={selectedResource?.subject}
-              initialSemester={selectedResource?.semester}
+              initialSemester={selectedSemester !== null ? selectedSemester : selectedResource?.semester}
             />
           </motion.div>
         )}

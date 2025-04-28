@@ -1,7 +1,7 @@
 
 import api from './api';
 
-export const activityService = {
+const activityService = {
   async logActivity(data: {
     type: 'upload' | 'download' | 'view' | 'like' | 'comment' | 'share';
     resourceId?: string;
@@ -23,7 +23,7 @@ export const activityService = {
       if (semester) params.append('semester', semester.toString());
       
       const response = await api.get(`/api/user/activity?${params.toString()}`);
-      return response.data.activities;
+      return response.data.activities || [];
     } catch (error) {
       console.error('Failed to fetch activities:', error);
       return [];
@@ -48,5 +48,30 @@ export const activityService = {
       console.error('Failed to fetch today activities:', error);
       return 0;
     }
+  },
+  
+  async getWeeklyActivities(isAdmin = false) {
+    try {
+      const url = isAdmin ? '/api/user/activity/stats?admin=true' : '/api/user/activity/stats';
+      const response = await api.get(url);
+      return response.data.dailyActivity || [];
+    } catch (error) {
+      console.error('Failed to fetch weekly activities:', error);
+      return [];
+    }
+  },
+
+  async getResourceViewCount(resourceId: string) {
+    try {
+      const response = await api.get(`/api/resources/${resourceId}/stats`);
+      return response.data.views || 0;
+    } catch (error) {
+      console.error('Failed to fetch resource view count:', error);
+      return 0;
+    }
   }
 };
+
+// Make sure to export both the named and default export
+export { activityService };
+export default activityService;

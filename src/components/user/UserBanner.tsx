@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { activityService } from '../../services/activity.service';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProfileSkeleton } from '../ui/LoadingSkeletons';
+import api from '../../services/api';
 
 interface UserBannerProps {
   user?: User;
@@ -13,6 +14,7 @@ interface UserBannerProps {
 export const UserBanner = ({ user }: UserBannerProps) => {
   const { user: authUser } = useAuth();
   const [activitiesToday, setActivitiesToday] = useState<number>(0);
+  const [userStreak, setUserStreak] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showAnimation, setShowAnimation] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
@@ -61,40 +63,69 @@ export const UserBanner = ({ user }: UserBannerProps) => {
     };
   }, []);
 
-  // Fetch activities count for today
+  // Fetch activities count for today and user streak
   useEffect(() => {
-    const fetchTodayActivities = async () => {
+    const fetchUserActivityStats = async () => {
       try {
         setIsLoading(true);
         if (displayUser?._id) {
-          // Safely fetch activities
+          // Fetch activity stats from the API
           try {
-            const activities = await activityService.getRecentActivities(100);
+            const response = await api.get('/api/user/activity/stats');
             
-            // Check if activities is an array before proceeding
-            if (Array.isArray(activities)) {
-              // Filter for today's activities
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              
-              const todayActivities = activities.filter((activity: any) => {
-                const activityDate = new Date(activity.timestamp);
-                return activityDate >= today;
-              });
-              
-              setActivitiesToday(todayActivities.length);
-              
-              // Trigger animation if we have activities
-              if (todayActivities.length > 0) {
-                setTimeout(() => setShowAnimation(true), 500);
+            if (response.data && response.data.success) {
+              // Get streak from API response
+              if (response.data.streak !== undefined) {
+                setUserStreak(response.data.streak);
               }
-            } else {
-              console.error('Activities is not an array:', activities);
-              setActivitiesToday(0);
+              
+              // Count today's activities
+              if (Array.isArray(response.data.activities)) {
+                // Filter for today's activities
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const todayActivities = response.data.activities.filter((activity: any) => {
+                  const activityDate = new Date(activity.timestamp);
+                  return activityDate >= today;
+                });
+                
+                setActivitiesToday(todayActivities.length);
+                
+                // Trigger animation if we have activities
+                if (todayActivities.length > 0) {
+                  setTimeout(() => setShowAnimation(true), 500);
+                }
+              }
             }
           } catch (error) {
-            console.error('Failed to fetch today activities:', error);
-            setActivitiesToday(0);
+            console.error('Failed to fetch user activity stats:', error);
+            // Fallback to getting just activities
+            try {
+              const activities = await activityService.getRecentActivities(100);
+              
+              // Check if activities is an array before proceeding
+              if (Array.isArray(activities)) {
+                // Filter for today's activities
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const todayActivities = activities.filter((activity: any) => {
+                  const activityDate = new Date(activity.timestamp);
+                  return activityDate >= today;
+                });
+                
+                setActivitiesToday(todayActivities.length);
+                
+                // Trigger animation if we have activities
+                if (todayActivities.length > 0) {
+                  setTimeout(() => setShowAnimation(true), 500);
+                }
+              }
+            } catch (error) {
+              console.error('Failed to fetch today activities:', error);
+              setActivitiesToday(0);
+            }
           }
         }
       } finally {
@@ -102,7 +133,14 @@ export const UserBanner = ({ user }: UserBannerProps) => {
       }
     };
     
-    fetchTodayActivities();
+    fetchUserActivityStats();
+    
+    // Refresh user streak every 5 minutes
+    const intervalId = setInterval(fetchUserActivityStats, 5 * 60 * 1000);
+    
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [displayUser]);
   
   if (isLoading) {
@@ -142,6 +180,9 @@ export const UserBanner = ({ user }: UserBannerProps) => {
   }
 
   const displayName = displayUser?.fullName || displayUser?.email?.split('@')[0] || "User";
+  // Use displayUser.streak if available, otherwise fall back to our state variable
+  const streakCount = displayUser?.streak !== undefined ? displayUser.streak : userStreak;
+  
   return (
     <motion.div 
       initial={{ opacity: 0, y: -20 }}
@@ -207,16 +248,16 @@ export const UserBanner = ({ user }: UserBannerProps) => {
               <Award className="h-5 w-5 text-yellow-300" />
               <AnimatePresence mode="wait">
                 <motion.span 
-                  key={displayUser?.streak || 0}
+                  key={streakCount}
                   className="text-2xl font-bold"
                   initial={{ opacity: 0, y: 10 }}
-                  animate={showAnimation && (displayUser?.streak || 0) > 1 ? 
+                  animate={showAnimation && streakCount > 1 ? 
                     { scale: [1, 1.5, 1], color: ["#fff", "#fde047", "#fff"], opacity: 1, y: 0 } : 
                     { opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.5 }}
                 >
-                  {displayUser?.streak || 0}
+                  {streakCount || 0}
                 </motion.span>
               </AnimatePresence>
             </div>

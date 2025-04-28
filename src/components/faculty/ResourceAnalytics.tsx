@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { User, ThumbsUp, MessageSquare } from 'lucide-react';
@@ -46,7 +45,7 @@ export const ResourceAnalyticsView = ({ analytics, resourceTitle, resourceId }: 
   const [isLoadingLikes, setIsLoadingLikes] = useState(false);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [detailedAnalytics, setDetailedAnalytics] = useState<any>(null);
-  const [realDailyViews, setRealDailyViews] = useState<Array<{ date: string; count: number }>>(analytics.dailyViews || []);
+  const [realDailyViews, setRealDailyViews] = useState<Array<{ date: string; count: number }>>([]);
 
   useEffect(() => {
     if (resourceId) {
@@ -54,13 +53,37 @@ export const ResourceAnalyticsView = ({ analytics, resourceTitle, resourceId }: 
     }
   }, [resourceId]);
 
-  // Format daily views data for chart display
   useEffect(() => {
-    if (detailedAnalytics && detailedAnalytics.dailyViews) {
-      setRealDailyViews(detailedAnalytics.dailyViews);
-    } else if (analytics.dailyViews) {
-      setRealDailyViews(analytics.dailyViews);
+    let viewsData = [];
+    
+    if (detailedAnalytics && detailedAnalytics.dailyViews && detailedAnalytics.dailyViews.length > 0) {
+      viewsData = [...detailedAnalytics.dailyViews];
+    } else if (analytics.dailyViews && analytics.dailyViews.length > 0) {
+      viewsData = [...analytics.dailyViews];
     }
+    
+    const today = new Date().toISOString().split('T')[0];
+    const hasToday = viewsData.some(item => {
+      const itemDate = new Date(item.date).toISOString().split('T')[0];
+      return itemDate === today;
+    });
+    
+    if (!hasToday) {
+      viewsData.push({
+        date: today,
+        count: 0
+      });
+    }
+    
+    viewsData.sort((a, b) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+    
+    if (viewsData.length > 7) {
+      viewsData = viewsData.slice(-7);
+    }
+    
+    setRealDailyViews(viewsData);
   }, [detailedAnalytics, analytics.dailyViews]);
 
   const fetchDetailedAnalytics = async () => {
@@ -70,13 +93,11 @@ export const ResourceAnalyticsView = ({ analytics, resourceTitle, resourceId }: 
     setIsLoadingComments(true);
     
     try {
-      // Fetch analytics data including likes and comments
       const response = await api.get(`/api/resources/${resourceId}/analytics`);
       
       if (response.data) {
         setDetailedAnalytics(response.data);
         
-        // Set likes data
         if (response.data.likedBy && Array.isArray(response.data.likedBy)) {
           setLikeData(response.data.likedBy.map((user: any) => ({
             userId: user._id,
@@ -88,7 +109,6 @@ export const ResourceAnalyticsView = ({ analytics, resourceTitle, resourceId }: 
           })));
         }
         
-        // Set comments data
         if (response.data.commentDetails && Array.isArray(response.data.commentDetails)) {
           setCommentData(response.data.commentDetails);
         }
@@ -102,10 +122,8 @@ export const ResourceAnalyticsView = ({ analytics, resourceTitle, resourceId }: 
     }
   };
 
-  // Fallback: Fetch likes and comments if detailed analytics fail
   useEffect(() => {
     if (!detailedAnalytics && resourceId) {
-      // Fetch like data
       const fetchLikeData = async () => {
         setIsLoadingLikes(true);
         try {
@@ -120,7 +138,6 @@ export const ResourceAnalyticsView = ({ analytics, resourceTitle, resourceId }: 
         }
       };
 
-      // Fetch comment data
       const fetchCommentData = async () => {
         setIsLoadingComments(true);
         try {
@@ -176,7 +193,6 @@ export const ResourceAnalyticsView = ({ analytics, resourceTitle, resourceId }: 
         </ResponsiveContainer>
       </div>
       
-      {/* Who Liked This Resource Section */}
       <div className="mb-8">
         <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
           <ThumbsUp className="h-5 w-5 text-green-600 mr-2" />
@@ -210,7 +226,6 @@ export const ResourceAnalyticsView = ({ analytics, resourceTitle, resourceId }: 
         )}
       </div>
       
-      {/* Comments Section */}
       <div>
         <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
           <MessageSquare className="h-5 w-5 text-blue-600 mr-2" />

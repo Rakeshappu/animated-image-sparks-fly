@@ -5,6 +5,7 @@ import { UserRole, SignupFormData } from '../../types/auth';
 import { FormField } from './FormField';
 import { Share2, ArrowLeft, ArrowRight, GraduationCap, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
+import cropped from '../../../public/uploads/cropped.png'
 
 interface SignupFormProps {
   role: UserRole;
@@ -87,7 +88,9 @@ export const SignupForm = ({ role, onSubmit }: SignupFormProps) => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <Share2 className="h-10 w-10 text-indigo-600" />
+            {/* <Share2 className="h-10 w-10 text-indigo-600" /> */}
+            <span><img src={cropped} alt="logo" className="h-20 w-30"/></span>
+
             <span className="ml-2 text-3xl font-bold text-indigo-600">VersatileShare</span>
           </motion.div>
           

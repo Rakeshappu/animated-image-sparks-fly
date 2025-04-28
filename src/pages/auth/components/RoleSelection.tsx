@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserRole } from '../../../types/auth';
 import { GraduationCap, Users, Share2, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
+import cropped from '../../../../public/uploads/cropped.png'
 
 export const RoleSelection = () => {
   const navigate = useNavigate();
@@ -21,7 +22,9 @@ export const RoleSelection = () => {
         className="text-center mb-10"
       >
         <div className="flex items-center justify-center mb-6">
-          <Share2 className="h-12 w-12 text-indigo-600" />
+          {/* <Share2 className="h-12 w-12 text-indigo-600" /> */}
+          <span><img src={cropped} alt="logo" className="h-20 w-30"/></span>
+
           <span className="ml-2 text-4xl font-bold text-indigo-600">VersatileShare</span>
         </div>
         <h2 className="text-3xl font-extrabold text-gray-900">

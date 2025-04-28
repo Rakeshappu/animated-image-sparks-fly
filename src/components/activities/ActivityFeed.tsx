@@ -8,12 +8,17 @@ import { activityService } from '../../services/activity.service';
 
 interface Activity {
   _id: string;
-  type: 'view';
+  type: 'view' | 'download' | 'like' | 'comment' | 'upload' | 'share';
   timestamp: string;
+  message?: string;
   resource: {
     _id: string;
     title: string;
     fileUrl?: string;
+    subject: string;
+    stats?: {
+      views: number;
+    };
   };
 }
 
@@ -37,19 +42,36 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
 
   useEffect(() => {
     fetchRecentActivities();
+    
+    // Set up polling to refresh activities every 10 seconds
+    const intervalId = setInterval(fetchRecentActivities, 10000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchRecentActivities = async () => {
     try {
-      const response = await api.get('/api/user/activity?limit=3');
-      if (response.data && response.data.activities) {
-        console.log('Fetched activities:', response.data.activities);
-        setActivities(response.data.activities);
+      setIsLoading(true);
+      // Use the activity service instead of direct API call
+      const data = await activityService.getRecentActivities(3);
+      
+      if (Array.isArray(data) && data.length > 0) {
+        console.log('Fetched activities from service:', data);
+        setActivities(data);
       } else {
-        console.error('Invalid activity response format:', response.data);
-        // Fallback to prop activities if available
-        if (propActivities && propActivities.length > 0) {
-          setActivities(propActivities.slice(0, 3));
+        console.log('No activities found in service response');
+        // Try direct API call as fallback
+        const response = await api.get('/api/user/activity?limit=3');
+        
+        if (response.data && Array.isArray(response.data.activities)) {
+          console.log('Fetched activities from direct API:', response.data.activities);
+          setActivities(response.data.activities);
+        } else {
+          console.warn('No activities found in API response');
+          // Fallback to prop activities if available
+          if (propActivities && propActivities.length > 0) {
+            setActivities(propActivities.slice(0, 3));
+          }
         }
       }
     } catch (error) {

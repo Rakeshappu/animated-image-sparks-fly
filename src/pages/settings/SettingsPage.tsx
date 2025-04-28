@@ -191,7 +191,7 @@ export const SettingsPage = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Account Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6 dark:text-gray-100">Account Settings</h1>
       
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="flex border-b border-gray-200">

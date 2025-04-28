@@ -32,28 +32,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     if (req.method === 'GET') {
       const limit = parseInt(req.query.limit as string) || 3;
+      const type = req.query.type as string || '';
       
-      // Get only view activities for the current user, sorted by most recent
-      const activities = await Activity.find({ 
-        user: user._id,
-        type: 'view'
-      })
+      // Build query for activities
+      let query: any = { user: user._id };
+      
+      // If type is specified, filter by that type
+      if (type) {
+        query.type = type;
+      }
+      
+      console.log('Fetching activities with query:', query);
+      
+      // Get activities for the current user, sorted by most recent
+      const activities = await Activity.find(query)
         .sort({ timestamp: -1 })
         .limit(limit)
-        .populate('resource', 'title fileUrl')
+        .populate('resource', 'title fileUrl subject stats')
         .lean();
       
       console.log(`Found ${activities.length} recent activities for user ${user._id}`);
       
-      if (activities.length === 0) {
-        return res.status(200).json({ activities: [] });
-      }
+      // Return empty array if no activities found
+      return res.status(200).json({ activities: activities || [] });
       
-      return res.status(200).json({ activities });
     } else if (req.method === 'POST') {
       const { type, resourceId, message } = req.body;
       
-      if (!type || !resourceId) {
+      if (!type) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
       
@@ -66,7 +72,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         message: message || `${type} resource`
       });
       
-      await newActivity.populate('resource', 'title fileUrl');
+      if (resourceId) {
+        await newActivity.populate('resource', 'title fileUrl subject stats');
+      }
       
       return res.status(201).json({ success: true, activity: newActivity });
     }

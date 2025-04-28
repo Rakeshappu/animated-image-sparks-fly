@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { FormField } from '../../../components/auth/FormField';
-import { Share2, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
+import cropped from '../../../../public/uploads/cropped.png'
+import toast from 'react-hot-toast';
 
 export const LoginForm = () => {
   const { login, error, clearError } = useAuth(); 
@@ -21,8 +23,17 @@ export const LoginForm = () => {
     
     try {
       await login(formData.email, formData.password);
-    } catch (err) {
+      toast.success('Login successful! Welcome back.');
+    } catch (err: any) {
       console.error('Login error:', err);
+      // Show friendly error messages
+      if (err.response && err.response.status === 401) {
+        toast.error('Incorrect email or password. Please try again.');
+      } else if (err.message) {
+        toast.error(err.message);
+      } else {
+        toast.error('Login failed. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
@@ -43,7 +54,7 @@ export const LoginForm = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex items-center justify-center mb-6"
           >
-            <Share2 className="h-10 w-10 text-indigo-600" />
+            <span><img src={cropped} alt="logo" className="h-20 w-30"/></span>
             <span className="ml-2 text-3xl font-bold text-indigo-600">VersatileShare</span>
           </motion.div>
           
