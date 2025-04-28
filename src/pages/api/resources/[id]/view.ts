@@ -7,27 +7,32 @@ import { runCorsMiddleware } from '../../_middleware';
 import mongoose from 'mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Set CORS headers for all responses including errors
+  await runCorsMiddleware(req, res);
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    await runCorsMiddleware(req, res);
-    
     const { id } = req.query;
     if (!id || Array.isArray(id)) {
       return res.status(400).json({ error: 'Invalid resource ID' });
     }
 
-    // Verify authentication
+    // Get authentication info, but make it optional - allow anonymous views
+    let userId = null;
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authentication required' });
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = verifyToken(token);
+        userId = decoded.userId;
+      } catch (authError) {
+        console.error('Auth token error:', authError);
+        // Continue with anonymous view
+      }
     }
-
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-    const userId = decoded.userId;
 
     // Find the resource
     const resource = await Resource.findById(id);
@@ -56,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       resource.stats.views = (resource.stats.views || 0) + 1;
       resource.stats.lastViewed = new Date();
       
-      // Update daily views with today's date (not yesterday)
+      // Update daily views with today's date
       const existingDailyView = resource.stats.dailyViews?.find(dv => {
         if (!dv.date) return false;
         const dvDate = new Date(dv.date);
@@ -84,7 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await resource.save();
     console.log('Resource saved with updated view count:', resource.stats.views);
 
-    // Create activity record
+    // Create activity record if user is logged in
     if (userId) {
       try {
         const activity = await Activity.create({
@@ -101,7 +106,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    return res.status(200).json({ success: true, views: resource.stats.views });
+    // Return the updated count immediately (important for UI updates)
+    return res.status(200).json({ 
+      success: true, 
+      views: resource.stats.views,
+      resourceTitle: resource.title,
+      resourceId: resource._id,
+      timestamp: new Date()
+    });
   } catch (error) {
     console.error('Error updating view count:', error);
     return res.status(500).json({ error: 'Internal server error' });

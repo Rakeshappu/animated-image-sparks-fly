@@ -1,7 +1,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../lib/db/connect';
-import { Activity, Resource } from '../../../lib/db/models';
+import { Activity } from '../../../lib/db/models/Activity';
 import jwt from 'jsonwebtoken';
 
 const authenticateUser = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -24,6 +24,17 @@ const authenticateUser = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Set headers for CORS
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,PUT,DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
+  
+  // Handle OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   try {
     await connectDB();
     
@@ -31,8 +42,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!user) return;
     
     if (req.method === 'GET') {
-      const limit = parseInt(req.query.limit as string) || 3;
-      const type = req.query.type as string || '';
+      const limit = parseInt(req.query.limit as string) || 10;
+      const type = req.query.type as string;
       
       // Build query for activities
       let query: any = { user: user._id };

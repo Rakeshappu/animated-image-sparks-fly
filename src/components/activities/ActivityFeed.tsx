@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Clock, Eye } from 'lucide-react';
+import { Clock, Eye, Download, Upload, Heart, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -25,7 +25,15 @@ interface Activity {
 const getActivityIcon = (type: Activity['type']) => {
   switch (type) {
     case 'view':
-      return <Eye className="h-5 w-5 text-purple-500" />;
+      return <Eye className="h-5 w-5 text-blue-500" />;
+    case 'download':
+      return <Download className="h-5 w-5 text-green-500" />;
+    case 'upload':
+      return <Upload className="h-5 w-5 text-purple-500" />;
+    case 'like':
+      return <Heart className="h-5 w-5 text-red-500" />;
+    case 'comment':
+      return <MessageSquare className="h-5 w-5 text-yellow-500" />;
     default:
       return <Clock className="h-5 w-5 text-gray-500" />;
   }
@@ -33,35 +41,45 @@ const getActivityIcon = (type: Activity['type']) => {
 
 interface ActivityFeedProps {
   activities?: Activity[];
+  refreshInterval?: number; // Time in ms to refresh activities
 }
 
-export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) => {
+export const ActivityFeed = ({ activities: propActivities, refreshInterval = 5000 }: ActivityFeedProps) => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Initial fetch
     fetchRecentActivities();
     
-    // Set up polling to refresh activities every 10 seconds
-    const intervalId = setInterval(fetchRecentActivities, 10000);
+    // Set up polling to refresh activities regularly
+    const intervalId = setInterval(fetchRecentActivities, refreshInterval);
     
     return () => clearInterval(intervalId);
-  }, []);
+  }, [refreshInterval]);
+
+  // Use prop activities if provided
+  useEffect(() => {
+    if (propActivities && propActivities.length > 0) {
+      setActivities(propActivities.slice(0, 10));
+      setIsLoading(false);
+    }
+  }, [propActivities]);
 
   const fetchRecentActivities = async () => {
     try {
       setIsLoading(true);
-      // Use the activity service instead of direct API call
-      const data = await activityService.getRecentActivities(3);
+      // Force refresh by adding timestamp to avoid cache
+      const data = await activityService.refreshActivities();
       
       if (Array.isArray(data) && data.length > 0) {
         console.log('Fetched activities from service:', data);
         setActivities(data);
       } else {
-        console.log('No activities found in service response');
+        console.log('No activities found or empty array returned');
         // Try direct API call as fallback
-        const response = await api.get('/api/user/activity?limit=3');
+        const response = await api.get('/api/user/activity?limit=10&_nocache=' + new Date().getTime());
         
         if (response.data && Array.isArray(response.data.activities)) {
           console.log('Fetched activities from direct API:', response.data.activities);
@@ -70,15 +88,15 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
           console.warn('No activities found in API response');
           // Fallback to prop activities if available
           if (propActivities && propActivities.length > 0) {
-            setActivities(propActivities.slice(0, 3));
+            setActivities(propActivities.slice(0, 10));
           }
         }
       }
     } catch (error) {
       console.error('Error fetching activities:', error);
-      // If API fails, try to use prop activities or create fallback
+      // If API fails, try to use prop activities
       if (propActivities && propActivities.length > 0) {
-        setActivities(propActivities.slice(0, 3));
+        setActivities(propActivities.slice(0, 10));
       }
     } finally {
       setIsLoading(false);
@@ -88,7 +106,7 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
   const handleResourceClick = async (resourceId: string) => {
     try {
       // Increment view count
-      await api.post(`/api/resources/${resourceId}/view`);
+      await activityService.incrementResourceView(resourceId);
       
       // Log the activity
       await activityService.logActivity({
@@ -96,6 +114,9 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
         resourceId,
         message: 'Viewed resource'
       });
+      
+      // Force refresh activities to show the new view
+      setTimeout(fetchRecentActivities, 500);
       
       // Navigate to the resource
       navigate(`/resources/${resourceId}`);
@@ -107,10 +128,22 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
 
   const formatTime = (timestamp: string) => {
     try {
-      return new Date(timestamp).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.round(diffMs / 60000);
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      
+      if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
     } catch (e) {
       return 'Recent';
     }
@@ -137,7 +170,15 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activities</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-800">Recent Activities</h3>
+        <button 
+          onClick={fetchRecentActivities} 
+          className="text-xs text-indigo-600 hover:text-indigo-800"
+        >
+          Refresh
+        </button>
+      </div>
       
       {activities && activities.length > 0 ? (
         <div className="space-y-4">
@@ -149,12 +190,17 @@ export const ActivityFeed = ({ activities: propActivities }: ActivityFeedProps) 
             >
               {getActivityIcon(activity.type)}
               <div className="flex-1">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 line-clamp-1">
                   {activity.resource?.title || 'Untitled Resource'}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {formatTime(activity.timestamp)}
-                </p>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500">
+                    {formatTime(activity.timestamp)}
+                  </span>
+                  <span className="text-xs text-gray-500 capitalize">
+                    {activity.type}
+                  </span>
+                </div>
               </div>
             </div>
           ))}

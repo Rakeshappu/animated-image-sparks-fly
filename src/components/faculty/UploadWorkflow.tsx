@@ -19,6 +19,9 @@ interface UploadWorkflowProps {
   showAvailableSubjects?: boolean;
 }
 
+// Storage key for semester to ensure consistent behavior across both sidebar and dashboard
+const SEMESTER_STORAGE_KEY = 'eduShareSelectedSemester';
+
 export const UploadWorkflow = ({ 
   onSelectOption, 
   onCancel,
@@ -29,7 +32,7 @@ export const UploadWorkflow = ({
   
   // Get the semester from localStorage if available, otherwise default to 1
   const [selectedSemester, setSelectedSemester] = useState<SemesterNumber>(() => {
-    const storedSemester = localStorage.getItem('selectedSemester');
+    const storedSemester = localStorage.getItem(SEMESTER_STORAGE_KEY);
     return storedSemester ? Number(storedSemester) as SemesterNumber : 1;
   });
   
@@ -41,7 +44,7 @@ export const UploadWorkflow = ({
 
   // Save selected semester to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('selectedSemester', selectedSemester.toString());
+    localStorage.setItem(SEMESTER_STORAGE_KEY, selectedSemester.toString());
     console.log('Saved semester to localStorage:', selectedSemester);
   }, [selectedSemester]);
 
@@ -225,7 +228,7 @@ export const UploadWorkflow = ({
             onUpload={async (data) => {
               setIsUploading(true);
               try {
-                await onSelectOption('direct-upload', { ...data });
+                await onSelectOption('direct-upload', { ...data, semester: selectedSemester });
               } finally {
                 setIsUploading(false);
               }

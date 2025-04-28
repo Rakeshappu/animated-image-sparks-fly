@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FileText, Video, Link as LinkIcon, File, Download, Calendar, Eye, Bookmark } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -28,6 +28,39 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [viewCount, setViewCount] = useState<number>(resource.stats?.views || 0);
   const { user } = useAuth();
+  
+  // Function to update the view count in UI instantly 
+  const updateLocalViewCount = useCallback(async (resourceId: string) => {
+    try {
+      const result = await activityService.incrementResourceView(resourceId);
+      
+      if (result.success && result.views) {
+        // Update local state
+        setViewCount(result.views);
+        
+        // Update resource object
+        if (resource.stats) {
+          resource.stats.views = result.views;
+        } else {
+          resource.stats = { views: result.views };
+        }
+        
+        // Call the callback if provided
+        if (onViewCountUpdated) {
+          onViewCountUpdated(resourceId, result.views);
+        }
+        
+        console.log(`View count updated for ${resource.title}: ${result.views}`);
+        
+        // Force refresh activities list
+        await activityService.refreshActivities();
+        return result.views;
+      }
+    } catch (error) {
+      console.error(`Error updating view count: ${error}`);
+    }
+    return null;
+  }, [resource, onViewCountUpdated]);
   
   useEffect(() => {
     // Initialize view count from resource
@@ -73,32 +106,6 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
   // Format the date from createdAt, uploadDate, or timestamp
   const date = resource.createdAt || resource.uploadDate || resource.timestamp || new Date().toISOString();
   
-  // Update view count using our service
-  const updateViewCount = async (resourceId: string) => {
-    if (!resourceId) return;
-    
-    try {
-      const result = await activityService.incrementResourceView(resourceId);
-      
-      if (result.success && result.views) {
-        // Update local state
-        setViewCount(result.views);
-        
-        // Update resource object
-        if (resource.stats) {
-          resource.stats.views = result.views;
-        }
-        
-        // Call the callback if provided
-        if (onViewCountUpdated) {
-          onViewCountUpdated(resourceId, result.views);
-        }
-      }
-    } catch (error) {
-      console.error(`Error updating view count: ${error}`);
-    }
-  };
-  
   // Update download stats
   const updateStats = async (resourceId: string, action: 'download' | 'bookmark') => {
     try {
@@ -128,10 +135,11 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
     e.stopPropagation(); // Prevent card click
     
     if (resource.fileUrl) {
-      // Count view
+      // Count view - get from either _id or id
       const resourceId = resource._id || resource.id;
       if (resourceId) {
-        await updateViewCount(resourceId);
+        const updatedCount = await updateLocalViewCount(resourceId);
+        if (updatedCount) setViewCount(updatedCount);
       }
       
       // Show document viewer
@@ -140,10 +148,11 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
       // For links, open in new tab
       window.open(resource.link, '_blank');
       
-      // Count view
+      // Count view - get from either _id or id
       const resourceId = resource._id || resource.id;
       if (resourceId) {
-        await updateViewCount(resourceId);
+        const updatedCount = await updateLocalViewCount(resourceId);
+        if (updatedCount) setViewCount(updatedCount);
       }
     } else {
       toast.error('No content available to view');
@@ -160,10 +169,18 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
     try {
       const resourceId = resource._id || resource.id;
       
-      // Update stats
+      // Update view count and stats
       if (resourceId) {
-        await updateViewCount(resourceId);
+        const updatedCount = await updateLocalViewCount(resourceId);
+        if (updatedCount) setViewCount(updatedCount);
         await updateStats(resourceId, 'download');
+        
+        // Log download activity
+        await activityService.logActivity({
+          type: 'download',
+          resourceId,
+          message: `Downloaded: ${resource.title}`
+        });
       }
       
       if (resource.fileUrl) {
@@ -236,10 +253,11 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
     
     // Same as handleViewDocument but without stopPropagation
     if (resource.fileUrl) {
-      // Count view
+      // Count view and update immediately in UI
       const resourceId = resource._id || resource.id;
       if (resourceId) {
-        await updateViewCount(resourceId);
+        const updatedCount = await updateLocalViewCount(resourceId);
+        if (updatedCount) setViewCount(updatedCount);
       }
       
       // Show document viewer
@@ -248,10 +266,11 @@ export const ResourceCard = ({ resource, onViewCountUpdated }: ResourceCardProps
       // For links, open in new tab
       window.open(resource.link, '_blank');
       
-      // Count view
+      // Count view and update immediately in UI
       const resourceId = resource._id || resource.id;
       if (resourceId) {
-        await updateViewCount(resourceId);
+        const updatedCount = await updateLocalViewCount(resourceId);
+        if (updatedCount) setViewCount(updatedCount);
       }
     } else {
       toast.error('No content available to view');
