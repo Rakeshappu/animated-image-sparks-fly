@@ -5,6 +5,7 @@ import { Clock, Eye, ThumbsUp, Download, MessageSquare, BookOpen } from 'lucide-
 import { useInterval } from '../../hooks/useInterval';
 import { useNavigate } from 'react-router-dom';
 import { DocumentViewer } from '../document/DocumentViewer';
+import { formatDateToRelative } from '../../utils/dateUtils';
 
 interface ActivityFeedProps {
   limit?: number;
@@ -15,7 +16,7 @@ interface ActivityFeedProps {
 }
 
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({
-  limit = 3, // Default to 3 as requested
+  limit = 3, // Default to 3
   showTitle = true,
   autoRefresh = false,
   refreshInterval = 60000, // Default to 60 seconds
@@ -92,28 +93,6 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
     }
   };
 
-  // Function to format time
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.round(diffMs / 60000);
-    
-    if (diffMins < 1) return 'just now';
-    if (diffMins === 1) return '1 minute ago';
-    if (diffMins < 60) return `${diffMins} minutes ago`;
-    
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours === 1) return '1 hour ago';
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays === 1) return 'yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    
-    return date.toLocaleDateString();
-  };
-
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 w-full ${className}`}>
       {showTitle && (
@@ -165,7 +144,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                     {activity.message}
                   </p>
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    <span>{formatTime(activity.timestamp)}</span>
+                    <span>{formatDateToRelative(activity.timestamp)}</span>
                     {activity.source && (
                       <span className="ml-2 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">
                         {activity.source === 'study-materials' ? 'Study' : 

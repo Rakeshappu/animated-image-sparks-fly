@@ -130,7 +130,7 @@ export const PlacementResourcesPage = () => {
   
   return (
     <motion.div 
-      className="p-6 min-h-screen"
+      className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -215,7 +215,7 @@ export const PlacementResourcesPage = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {sortedResources.map((resource) => (
-            <motion.div key={resource._id || resource.id} variants={itemVariants}>
+            <motion.div key={resource._id} variants={itemVariants}>
               <ResourceItem 
                 resource={resource} 
                 source="placement"

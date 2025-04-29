@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -172,18 +173,31 @@ const StudentDashboard = () => {
             transition={{ delay: 0.6 }}
             className="bg-white dark:bg-gray-800 rounded-lg shadow-sm"
           >
-            <ActivityFeed 
-              limit={3}
-              showTitle={true}
-              autoRefresh={true}
-              className="h-full"
+            <ActivityCalendar 
+              data={weeklyActivity}
+              isLoading={isLoading}
             />
           </motion.div>
         </div>
         
+        {/* Make ActivityFeed take full width */}
+        <motion.div 
+          className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-8"
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.7 }}
+        >
+          <ActivityFeed 
+            limit={3}
+            showTitle={true}
+            autoRefresh={true}
+          />
+        </motion.div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div 
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 lg:col-span-2"
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 lg:col-span-3"
             variants={fadeIn}
             initial="hidden"
             animate="visible"
@@ -250,24 +264,6 @@ const StudentDashboard = () => {
                 </>
               )}
             </div>
-          </motion.div>
-          
-          <motion.div 
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.8 }}
-          >
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
-              <BookOpen className="mr-2 h-5 w-5 text-indigo-600" />
-              Activity Calendar
-            </h2>
-            
-            <ActivityCalendar 
-              data={weeklyActivity}
-              isLoading={isLoading}
-            />
           </motion.div>
         </div>
       </div>

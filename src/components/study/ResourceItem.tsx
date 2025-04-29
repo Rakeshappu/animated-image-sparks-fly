@@ -21,6 +21,8 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   const [commentText, setCommentText] = useState('');
   const [viewCount, setViewCount] = useState(resource.stats?.views || 0);
   const { user } = useAuth();
+  
+  // Ensure we have a valid resource ID
   const resourceId = resource._id || resource.id;
 
   // Check if the user has liked the resource on component mount
@@ -123,6 +125,11 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
       const response = await api.post(`/api/resources/${resourceId}/like`);
       setIsLiked(response.data.isLiked);
       toast.success(response.data.isLiked ? 'Resource liked' : 'Like removed');
+      
+      // Update the likes count directly in the resource
+      if (response.data.isLiked) {
+        setViewCount(prev => prev + 1);
+      }
     } catch (error) {
       console.error('Like error:', error);
       toast.error('Failed to like resource');
@@ -164,6 +171,8 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
       await api.post(`/api/resources/${resourceId}/comments`, { content: commentText });
       setCommentText('');
       toast.success('Comment added');
+      // Close comment section after submission
+      setShowComments(false);
     } catch (error) {
       console.error('Comment error:', error);
       toast.error('Failed to add comment');

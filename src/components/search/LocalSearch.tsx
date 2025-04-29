@@ -1,8 +1,9 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, Filter, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
+import { FacultyResource } from '../../types/faculty';
 
 interface LocalSearchProps {
   resources: any[];
@@ -36,13 +37,14 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
         filtered = filtered.filter(resource => resource.semester === user.semester);
       }
       
-      // Apply search term filter
+      // Apply search term filter - search in title, description, subject, and also fileContent if available
       if (term) {
         filtered = filtered.filter(resource => {
           return (
             resource.title?.toLowerCase().includes(term) ||
             resource.description?.toLowerCase().includes(term) ||
-            resource.subject?.toLowerCase().includes(term)
+            resource.subject?.toLowerCase().includes(term) ||
+            resource.fileContent?.toLowerCase().includes(term)
           );
         });
       }
@@ -61,7 +63,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     };
 
     performSearch();
-  }, [searchTerm, resources, user, filters]);
+  }, [searchTerm, resources, user, filters, onSearchResults]);
 
   const clearSearch = () => {
     setSearchTerm('');
