@@ -19,15 +19,14 @@ const categories = [
 ];
 
 export const PlacementResourcesPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [resources, setResources] = useState<FacultyResource[]>([]);
   const [filteredResources, setFilteredResources] = useState<FacultyResource[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('category') || 'general');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('category'));
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'alphabetical'>('recent');
   const [isLoading, setIsLoading] = useState(true);
-  const [showCategoryList, setShowCategoryList] = useState<boolean>(!searchParams.get('category'));
   
   // Load resources from shared resources
   useEffect(() => {
@@ -41,7 +40,16 @@ export const PlacementResourcesPage = () => {
         );
         
         setResources(placementResources);
-        setFilteredResources(placementResources);
+        
+        // If category is selected, filter by that category
+        if (selectedCategory) {
+          const categoryResources = placementResources.filter(
+            (resource) => resource.placementCategory === selectedCategory
+          );
+          setFilteredResources(categoryResources);
+        } else {
+          setFilteredResources(placementResources);
+        }
       }
       
       setIsLoading(false);
@@ -60,41 +68,18 @@ export const PlacementResourcesPage = () => {
     }, 5000);
     
     return () => clearInterval(intervalId);
-  }, []);
-  
-  // Filter resources by category
-  useEffect(() => {
-    if (!selectedCategory) {
-      setFilteredResources(resources);
-      return;
-    }
-    
-    const filtered = resources.filter(resource => 
-      resource.placementCategory === selectedCategory
-    );
-    
-    setFilteredResources(filtered);
-    
-    // Update URL search params when category changes
-    setSearchParams({ category: selectedCategory });
-    
-    // If a category is selected, hide the category list
-    if (selectedCategory) {
-      setShowCategoryList(false);
-    }
-  }, [selectedCategory, resources, setSearchParams]);
+  }, [selectedCategory]);
   
   // Handle category selection
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
-    setShowCategoryList(false);
+    navigate(`/placement-resources?category=${categoryId}`);
   };
   
   // Go back to category list
   const handleBackToCategories = () => {
-    setShowCategoryList(true);
     setSelectedCategory(null);
-    setSearchParams({});
+    navigate('/placement-resources');
   };
   
   // Handle search results
@@ -142,8 +127,8 @@ export const PlacementResourcesPage = () => {
     }
   };
   
-  // Show category selection view
-  if (showCategoryList) {
+  // Show category selection view if no category is selected
+  if (!selectedCategory) {
     return (
       <motion.div 
         className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900"
@@ -203,10 +188,10 @@ export const PlacementResourcesPage = () => {
         </button>
         
         <h1 className="text-2xl font-bold mb-2">
-          {selectedCategory && categories.find(c => c.id === selectedCategory)?.name}
+          {categories.find(c => c.id === selectedCategory)?.name}
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Explore resources for {selectedCategory && categories.find(c => c.id === selectedCategory)?.name.toLowerCase()}.
+          Explore resources for {categories.find(c => c.id === selectedCategory)?.name.toLowerCase()}.
         </p>
       </motion.div>
       
@@ -247,7 +232,7 @@ export const PlacementResourcesPage = () => {
           <Book className="h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-700">No resources found</h3>
           <p className="text-gray-500 text-center mt-1">
-            No resources available for {selectedCategory && categories.find(c => c.id === selectedCategory)?.name.toLowerCase()}
+            No resources available for {categories.find(c => c.id === selectedCategory)?.name.toLowerCase()}
           </p>
         </motion.div>
       ) : (

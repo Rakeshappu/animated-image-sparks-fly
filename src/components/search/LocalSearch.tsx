@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Filter, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
@@ -19,40 +19,27 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
   });
   const { user } = useAuth();
   const filterRef = useRef<HTMLDivElement>(null);
-  const prevResourcesRef = useRef<any[]>([]);
-  const prevSearchTermRef = useRef<string>('');
-  const prevFiltersRef = useRef<{type: string[], category: string[]}>({type: [], category: []});
   
   // Use custom hook to detect clicks outside the filter area
   useOutsideClick(filterRef, () => {
     if (showFilters) setShowFilters(false);
   });
 
-  useEffect(() => {
-    const filtersChanged = 
-      JSON.stringify(filters) !== JSON.stringify(prevFiltersRef.current);
-    const searchTermChanged = searchTerm !== prevSearchTermRef.current;
-    const resourcesChanged = resources.length !== prevResourcesRef.current.length;
-    
-    // Only perform search if something has actually changed
-    if (filtersChanged || searchTermChanged || resourcesChanged) {
-      performSearch();
-      
-      // Update refs with current values
-      prevFiltersRef.current = {...filters};
-      prevSearchTermRef.current = searchTerm;
-      prevResourcesRef.current = [...resources];
-    }
-  }, [searchTerm, filters, resources]);
-
-  const performSearch = () => {
+  // Memoize the search function to prevent unnecessary re-renders
+  const performSearch = useCallback(() => {
     const term = searchTerm.toLowerCase().trim();
     
     let filtered = [...resources];
     
-    // For students, only show resources from their semester
+    // For students, only show resources from their semester if user.role is student
     if (user?.role === 'student' && user.semester) {
-      filtered = filtered.filter(resource => resource.semester === user.semester);
+      filtered = filtered.filter(resource => {
+        // For placement resources, show regardless of semester
+        if (resource.category === 'placement') {
+          return true;
+        }
+        return resource.semester === user.semester;
+      });
     }
     
     // Apply search term filter - search in title, description, subject, and also fileContent if available
@@ -62,6 +49,8 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
           (resource.title?.toLowerCase().includes(term) || false) ||
           (resource.description?.toLowerCase().includes(term) || false) ||
           (resource.subject?.toLowerCase().includes(term) || false) ||
+          (resource.category?.toLowerCase().includes(term) || false) ||
+          (resource.placementCategory?.toLowerCase().includes(term) || false) ||
           (resource.fileContent?.toLowerCase().includes(term) || false)
         );
       });
@@ -78,7 +67,12 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     }
 
     onSearchResults(filtered);
-  };
+  }, [searchTerm, filters, resources, user, onSearchResults]);
+
+  // Run search when search term, filters or resources change
+  useEffect(() => {
+    performSearch();
+  }, [searchTerm, filters, resources, performSearch]);
 
   const clearSearch = () => {
     setSearchTerm('');
@@ -86,7 +80,6 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
       type: [],
       category: []
     });
-    onSearchResults(resources);
   };
 
   return (
@@ -160,7 +153,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
             <div>
               <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Categories</h3>
               <div className="space-y-2">
-                {['Lecture Notes', 'Assignments', 'Lab Manuals', 'Previous Year Papers', 'Reference Materials'].map((category) => (
+                {['Lecture Notes', 'Assignments', 'Lab Manuals', 'Previous Year Papers', 'Reference Materials', 'placement'].map((category) => (
                   <label key={category} className="flex items-center">
                     <input
                       type="checkbox"

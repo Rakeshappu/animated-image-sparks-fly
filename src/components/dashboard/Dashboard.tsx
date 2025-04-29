@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BarChart2, Book } from 'lucide-react';
 import { UserBanner } from '../user/UserBanner';
 import { AnalyticsCard } from '../analytics/AnalyticsCard';
@@ -19,59 +19,57 @@ export const Dashboard = () => {
     totalViews: 0
   });
   const [resources, setResources] = useState<FacultyResource[]>([]);
-  const [filteredResources, setFilteredResources] = useState<FacultyResource[]>([]);
   const [searchResults, setSearchResults] = useState<FacultyResource[]>([]);
   const [searchPerformed, setSearchPerformed] = useState(false);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        if (user?.semester) {
-          // Fetch resources and stats for the user's semester
-          const response = await api.get(`/api/resources/stats?semester=${user.semester}`);
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (user?.semester) {
+        // Fetch resources and stats for the user's semester
+        const response = await api.get(`/api/resources/stats?semester=${user.semester}`);
+        
+        // Calculate total views from all resources of the current semester
+        let semesterTotalViews = 0;
+        
+        // If we have resources array with stats data for the semester
+        if (typeof window !== 'undefined' && window.sharedResources && Array.isArray(window.sharedResources)) {
+          // Filter resources for user's semester
+          const semesterResources = window.sharedResources.filter(
+            resource => resource.semester === user.semester
+          );
           
-          // Calculate total views from all resources of the current semester
-          let semesterTotalViews = 0;
+          // Set the resources for local search
+          setResources(window.sharedResources);
           
-          // If we have resources array with stats data for the semester
-          if (typeof window !== 'undefined' && window.sharedResources && Array.isArray(window.sharedResources)) {
-            // Filter resources for user's semester
-            const semesterResources = window.sharedResources.filter(
-              resource => resource.semester === user.semester
-            );
-            
-            // Set the resources for local search
-            setResources(window.sharedResources);
-            setFilteredResources(window.sharedResources);
-            
-            // Sum up views from all semester resources
-            semesterTotalViews = semesterResources.reduce(
-              (sum, resource) => sum + (resource.stats?.views || 0), 
-              0
-            );
-          }
-          
-          setStats({
-            totalResources: response.data.totalResources || 0,
-            totalViews: semesterTotalViews || (
-              response.data.dailyStats ? 
-                response.data.dailyStats.reduce((sum: number, day: any) => sum + day.views, 0) : 0
-            )
-          });
+          // Sum up views from all semester resources
+          semesterTotalViews = semesterResources.reduce(
+            (sum, resource) => sum + (resource.stats?.views || 0), 
+            0
+          );
         }
-      } catch (err) {
-        console.error('Failed to fetch dashboard data:', err);
-        toast.error('Failed to load dashboard data');
-      } finally {
-        setLoading(false);
+        
+        setStats({
+          totalResources: response.data.totalResources || 0,
+          totalViews: semesterTotalViews || (
+            response.data.dailyStats ? 
+              response.data.dailyStats.reduce((sum: number, day: any) => sum + day.views, 0) : 0
+          )
+        });
       }
-    };
-    
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+  
+  useEffect(() => {
     if (user) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [user, fetchDashboardData]);
 
   // Handle search results
   const handleSearchResults = (results: FacultyResource[]) => {
@@ -85,7 +83,7 @@ export const Dashboard = () => {
         <LocalSearch 
           resources={resources} 
           onSearchResults={handleSearchResults} 
-          placeholder="Search through your semester resources..."
+          placeholder="Search through all your resources..."
         />
       </div>
       
@@ -138,7 +136,6 @@ export const Dashboard = () => {
         />
       </div>
 
-      {/* Activity Feed takes full width */}
       <div className="w-full">
         <ActivityFeed limit={3} showTitle={true} autoRefresh={true} />
       </div>

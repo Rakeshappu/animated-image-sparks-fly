@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FacultyResource } from '../../types/faculty';
 import { FileText, Link as LinkIcon, MessageSquare, ThumbsUp, Video, Eye, Download, Bookmark } from 'lucide-react';
 import { DocumentViewer } from '../document/DocumentViewer';
@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { trackResourceView, updateResourceViewCount } from '../../utils/studyUtils';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatTimeAgo } from '../../utils/dateUtils';
+import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 interface ResourceItemProps {
   resource: FacultyResource;
@@ -23,9 +24,15 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   const [viewCount, setViewCount] = useState(resource.stats?.views || 0);
   const [likesCount, setLikesCount] = useState(resource.stats?.likes || 0);
   const { user } = useAuth();
+  const commentRef = useRef<HTMLDivElement>(null);
   
   // Ensure we have a valid resource ID
   const resourceId = resource.id || resource._id;
+
+  // Use custom hook to detect clicks outside the comment section
+  useOutsideClick(commentRef, () => {
+    if (showComments) setShowComments(false);
+  });
 
   // Check if the user has liked the resource on component mount
   useEffect(() => {
@@ -60,7 +67,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   }, [resourceId, user]);
 
   // Handle resource viewing
-  const handleView = async (e: React.MouseEvent) => {
+  const handleView = async () => {
     try {
       // Update local state immediately for responsive UI
       setViewCount(prev => prev + 1);
@@ -100,12 +107,12 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   };
 
   // Handle download
-  const handleDownload = async (e: React.MouseEvent) => {
+  const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening the viewer
     
     // Implement download logic
     try {
-      await api.post(`/api/resources/${resourceId}/download`);
+      api.post(`/api/resources/${resourceId}/download`);
       window.open(resource.fileUrl, '_blank');
       toast.success('Download started');
     } catch (error) {
@@ -115,7 +122,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   };
 
   // Handle like
-  const handleLike = async (e: React.MouseEvent) => {
+  const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening the viewer
     e.preventDefault();
     
@@ -125,10 +132,16 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
     }
     
     try {
-      const response = await api.post(`/api/resources/${resourceId}/like`);
-      setIsLiked(response.data.isLiked);
-      setLikesCount(prev => response.data.isLiked ? prev + 1 : prev - 1);
-      toast.success(response.data.isLiked ? 'Resource liked' : 'Like removed');
+      api.post(`/api/resources/${resourceId}/like`)
+        .then(response => {
+          setIsLiked(response.data.isLiked);
+          setLikesCount(prev => response.data.isLiked ? prev + 1 : prev - 1);
+          toast.success(response.data.isLiked ? 'Resource liked' : 'Like removed');
+        })
+        .catch(error => {
+          console.error('Like error:', error);
+          toast.error('Failed to like resource');
+        });
     } catch (error) {
       console.error('Like error:', error);
       toast.error('Failed to like resource');
@@ -136,14 +149,20 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   };
 
   // Handle bookmark
-  const handleBookmark = async (e: React.MouseEvent) => {
+  const handleBookmark = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening the viewer
     e.preventDefault();
     
     try {
-      const response = await api.post(`/api/resources/${resourceId}/bookmark`);
-      setIsBookmarked(response.data.bookmarked);
-      toast.success(response.data.bookmarked ? 'Resource bookmarked' : 'Bookmark removed');
+      api.post(`/api/resources/${resourceId}/bookmark`)
+        .then(response => {
+          setIsBookmarked(response.data.bookmarked);
+          toast.success(response.data.bookmarked ? 'Resource bookmarked' : 'Bookmark removed');
+        })
+        .catch(error => {
+          console.error('Bookmark error:', error);
+          toast.error('Failed to bookmark resource');
+        });
     } catch (error) {
       console.error('Bookmark error:', error);
       toast.error('Failed to bookmark resource');
@@ -162,18 +181,24 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   };
 
   // Handle comment submission
-  const handleCommentSubmit = async (e: React.FormEvent) => {
+  const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent opening the viewer
     
     if (!commentText.trim()) return;
     
     try {
-      await api.post(`/api/resources/${resourceId}/comments`, { content: commentText });
-      setCommentText('');
-      toast.success('Comment added');
-      // Close comment section after submission
-      setShowComments(false);
+      api.post(`/api/resources/${resourceId}/comments`, { content: commentText })
+        .then(() => {
+          setCommentText('');
+          toast.success('Comment added');
+          // Close comment section after submission
+          setShowComments(false);
+        })
+        .catch(error => {
+          console.error('Comment error:', error);
+          toast.error('Failed to add comment');
+        });
     } catch (error) {
       console.error('Comment error:', error);
       toast.error('Failed to add comment');
@@ -245,6 +270,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
       {/* Comment section - only show when toggled for this specific resource */}
       {showComments && (
         <div 
+          ref={commentRef}
           className="mt-3 pt-3 border-t border-gray-100"
           onClick={(e) => e.stopPropagation()} // Prevent opening viewer when clicking in comment area
         >
