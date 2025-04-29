@@ -16,10 +16,10 @@ export function useOutsideClick(ref: RefObject<HTMLElement>, callback: () => voi
     }
 
     // Bind the event listener
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside, true);
     return () => {
       // Unbind the event listener on cleanup
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside, true);
     };
   }, [ref, callback]);
 }

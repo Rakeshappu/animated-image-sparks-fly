@@ -4,7 +4,8 @@ import { searchResources } from '../../lib/search/elasticsearch';
 import { getCache, setCache } from '../../lib/cache/redis';
 import connectDB from '../../lib/db/connect';
 import { elasticsearchConfig } from '../../lib/config/services';
-import { Resource as ResourceModel } from '../../lib/db/models/Resource';
+import { Resource } from '../../lib/db/models/Resource';
+import mongoose from 'mongoose';
 
 export default async function handler(req: Request, res: Response) {
   if (req.method !== 'GET') {
@@ -112,16 +113,17 @@ async function fallbackSearch(req: Request, res: Response) {
     const sortOption: any = {};
     sortOption[sort as string] = order === 'desc' ? -1 : 1;
     
-    const resources = await ResourceModel.find(query)
+    // Use the correct model import to avoid "implicitly has type 'any'" errors
+    const resources = await Resource.find(query)
       .sort(sortOption)
       .skip(skip)
       .limit(limitNum)
       .lean(); // Use lean to get plain JS objects
     
-    const total = await ResourceModel.countDocuments(query);
+    const total = await Resource.countDocuments(query);
     
     // Format results to match Elasticsearch response format
-    const results = resources.map(resource => ({
+    const results = resources.map((resource: any) => ({
       _id: resource._id ? resource._id.toString() : '',
       title: resource.title,
       description: resource.description,

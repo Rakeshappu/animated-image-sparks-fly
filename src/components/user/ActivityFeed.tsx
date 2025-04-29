@@ -1,147 +1,133 @@
 
 import React, { useState, useEffect } from 'react';
 import { activityService } from '../../services/activity.service';
-import { Clock, Eye, Download, ThumbsUp, MessageSquare, Calendar, ExternalLink } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, Eye, ThumbsUp, Download, MessageSquare, BookOpen } from 'lucide-react';
+import { useInterval } from '../../hooks/useInterval';
+import { useNavigate } from 'react-router-dom';
 import { DocumentViewer } from '../document/DocumentViewer';
-import { useAuth } from '../../contexts/AuthContext';
-import { toast } from 'react-hot-toast';
 
 interface ActivityFeedProps {
   limit?: number;
   showTitle?: boolean;
   autoRefresh?: boolean;
+  refreshInterval?: number;
   className?: string;
 }
 
-export const ActivityFeed: React.FC<ActivityFeedProps> = ({ 
-  limit = 3, 
-  showTitle = true, 
-  autoRefresh = true,
-  className = "" 
+export const ActivityFeed: React.FC<ActivityFeedProps> = ({
+  limit = 10,
+  showTitle = true,
+  autoRefresh = false,
+  refreshInterval = 60000, // Default to 60 seconds
+  className = '',
 }) => {
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDocViewer, setShowDocViewer] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<any>(null);
-  const { user } = useAuth();
-
-  // Function to format relative time
-  const formatRelativeTime = (timestamp: string) => {
-    const now = new Date();
-    const activityTime = new Date(timestamp);
-    const diffInSeconds = Math.floor((now.getTime() - activityTime.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) {
-      return 'just now';
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-    } else if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-    } else if (diffInSeconds < 604800) { 
-      const days = Math.floor(diffInSeconds / 86400);
-      return `${days} day${days !== 1 ? 's' : ''} ago`;
-    } else {
-      return activityTime.toLocaleDateString('en-US', { 
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    }
-  };
-
-  // Function to format actual time
-  const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  const [showDocumentViewer, setShowDocumentViewer] = useState(false);
+  const [selectedResource, setSelectedResource] = useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0); // Use to force refresh
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const navigate = useNavigate();
 
   // Function to fetch activities
   const fetchActivities = async () => {
     try {
-      setLoading(true);
       const data = await activityService.getRecentActivities(limit);
-      setActivities(data);
+      
+      // Only update state if the data has changed (to prevent unnecessary re-renders)
+      if (JSON.stringify(data) !== JSON.stringify(activities)) {
+        setActivities(data);
+        setLastRefresh(new Date());
+      }
     } catch (error) {
-      console.error('Error fetching activities:', error);
+      console.error('Failed to fetch activities:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch activities on component mount
+  // Set up auto-refresh
+  useInterval(() => {
+    if (autoRefresh) {
+      // Use a silent refresh approach - no loader shown for auto-refresh
+      fetchActivities();
+    }
+  }, refreshInterval);
+
+  // Initial load
   useEffect(() => {
     fetchActivities();
-    
-    // Set up event listener for activity refreshes
-    if (autoRefresh) {
-      const handleActivitiesRefreshed = (e: Event) => {
-        const customEvent = e as CustomEvent;
-        if (customEvent.detail?.activities) {
-          setActivities(customEvent.detail.activities);
-        } else {
-          fetchActivities();
-        }
-      };
-      
-      document.addEventListener('activitiesRefreshed', handleActivitiesRefreshed);
-      
-      return () => {
-        document.removeEventListener('activitiesRefreshed', handleActivitiesRefreshed);
-      };
-    }
-  }, [limit, autoRefresh]);
+  }, [limit, refreshKey]);
 
-  // Function to handle viewing a document
-  const handleViewDocument = (activity: any) => {
-    if (!activity.resource) {
-      toast.error('Resource not available');
-      return;
-    }
-
-    if (activity.resource.fileUrl) {
-      setSelectedDocument({
-        fileUrl: activity.resource.fileUrl,
-        fileName: activity.resource.fileName || activity.resource.title
-      });
-      setShowDocViewer(true);
-    } else if (activity.resource.link) {
-      window.open(activity.resource.link, '_blank');
-    } else {
-      toast.error('No content available to view');
-    }
-  };
-
-  // Function to get icon based on activity type
-  const getActivityIcon = (type: string) => {
-    switch (type) {
+  // Function to get activity icon based on type
+  const getActivityIcon = (activity: any) => {
+    switch (activity.type) {
       case 'view':
         return <Eye className="h-4 w-4 text-blue-500" />;
-      case 'download':
-        return <Download className="h-4 w-4 text-green-500" />;
-      case 'upload':
-        return <ExternalLink className="h-4 w-4 text-indigo-500" />;
       case 'like':
         return <ThumbsUp className="h-4 w-4 text-red-500" />;
+      case 'download':
+        return <Download className="h-4 w-4 text-green-500" />;
       case 'comment':
-        return <MessageSquare className="h-4 w-4 text-yellow-500" />;
+        return <MessageSquare className="h-4 w-4 text-purple-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
 
+  // Function to handle resource click
+  const handleResourceClick = (activity: any) => {
+    if (!activity.resource) return;
+    
+    if (activity.resource.fileUrl) {
+      setSelectedResource(activity.resource);
+      setShowDocumentViewer(true);
+    } else {
+      // Handle navigation to resource based on category
+      if (activity.resource.category === 'placement') {
+        navigate(`/placement-resources?category=${activity.resource.placementCategory || ''}`);
+      } else {
+        navigate(`/study-materials?subject=${activity.resource.subject || ''}`);
+      }
+    }
+  };
+
+  // Function to format time
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.round(diffMs / 60000);
+    
+    if (diffMins < 1) return 'just now';
+    if (diffMins === 1) return '1 minute ago';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours === 1) return '1 hour ago';
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return date.toLocaleDateString();
+  };
+
   return (
-    <div className={`bg-white rounded-lg shadow-sm p-4 ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 ${className}`}>
       {showTitle && (
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-gray-800">Recent Activities</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold flex items-center">
+            <BookOpen className="h-5 w-5 mr-2 text-indigo-600" />
+            Recent Activities
+          </h3>
           <button 
-            onClick={fetchActivities}
-            className="text-xs text-indigo-600 hover:text-indigo-800"
+            onClick={() => {
+              setLoading(true);
+              setRefreshKey(prev => prev + 1); 
+            }}
+            className="text-xs text-gray-500 hover:text-indigo-600"
           >
             Refresh
           </button>
@@ -149,85 +135,68 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
       )}
       
       {loading ? (
-        <div className="flex justify-center py-6">
-          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500"></div>
+        <div className="animate-pulse">
+          {Array(3).fill(0).map((_, i) => (
+            <div key={i} className="flex items-start space-x-3 py-3 border-b border-gray-100 dark:border-gray-700">
+              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2"></div>
+              </div>
+            </div>
+          ))}
         </div>
-      ) : activities.length === 0 ? (
-        <div className="text-center py-6 text-gray-500">No recent activities</div>
-      ) : (
-        <AnimatePresence>
-          <div className="space-y-3">
-            {activities.map((activity, index) => (
-              <motion.div
-                key={activity._id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                onClick={() => handleViewDocument(activity)}
+      ) : activities.length > 0 ? (
+        <div>
+          <div className="space-y-1">
+            {activities.map((activity) => (
+              <div 
+                key={activity._id} 
+                className={`flex items-start space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors ${
+                  activity.resource ? 'cursor-pointer' : ''
+                }`}
+                onClick={activity.resource ? () => handleResourceClick(activity) : undefined}
               >
-                <div className="flex items-start space-x-3">
-                  <div className="bg-gray-100 p-2 rounded-full">
-                    {getActivityIcon(activity.type)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-800 line-clamp-1">
-                      {activity.message || `${activity.type} a resource`}
-                    </div>
-                    
-                    {activity.resource && (
-                      <div className="mt-1 text-xs">
-                        <span className="text-gray-600 font-medium">{activity.resource.title}</span>
-                        {activity.resource.subject && (
-                          <span className="text-gray-500"> in {activity.resource.subject}</span>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center mt-2 text-xs text-gray-500">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      <span>{formatRelativeTime(activity.timestamp)}</span>
-                      <span className="mx-1">at</span>
-                      <span>{formatTime(activity.timestamp)}</span>
-                    </div>
-                    
-                    {activity.resource && activity.resource.stats && (
-                      <div className="flex items-center mt-1.5 space-x-3 text-xs text-gray-500">
-                        <div className="flex items-center">
-                          <Eye className="h-3 w-3 mr-1" />
-                          <span>{activity.resource.stats.views || 0}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <Download className="h-3 w-3 mr-1" />
-                          <span>{activity.resource.stats.downloads || 0}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <ThumbsUp className="h-3 w-3 mr-1" />
-                          <span>{activity.resource.stats.likes || 0}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <MessageSquare className="h-3 w-3 mr-1" />
-                          <span>{activity.resource.stats.comments || 0}</span>
-                        </div>
-                      </div>
+                <div className="bg-gray-100 dark:bg-gray-700 rounded-full h-8 w-8 flex items-center justify-center">
+                  {getActivityIcon(activity)}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-800 dark:text-gray-200">
+                    {activity.message}
+                  </p>
+                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <span>{formatTime(activity.timestamp)}</span>
+                    {activity.source && (
+                      <span className="ml-2 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">
+                        {activity.source === 'study-materials' ? 'Study' : 
+                         activity.source === 'placement' ? 'Placement' :
+                         activity.source === 'bookmarks' ? 'Bookmarks' : 'Other'}
+                      </span>
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </AnimatePresence>
+          {/* Optional: Only show last refresh time if auto-refresh is enabled */}
+          {autoRefresh && (
+            <div className="text-xs text-right text-gray-400 mt-3 opacity-70">
+              Last updated: {lastRefresh.toLocaleTimeString()}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <p>No recent activities found</p>
+        </div>
       )}
       
-      {showDocViewer && selectedDocument && (
-        <DocumentViewer 
-          fileUrl={selectedDocument.fileUrl} 
-          fileName={selectedDocument.fileName} 
-          onClose={() => setShowDocViewer(false)}
+      {/* Document viewer for viewing resources */}
+      {showDocumentViewer && selectedResource && (
+        <DocumentViewer
+          fileUrl={selectedResource.fileUrl}
+          fileName={selectedResource.fileName || selectedResource.title}
+          onClose={() => setShowDocumentViewer(false)}
         />
       )}
     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AIResourceSearch } from '../../components/search/AIResourceSearch';
 import { useAuth } from '../../contexts/AuthContext';
 import { ResourceUpload } from '../../components/faculty/ResourceUpload';
@@ -10,17 +10,18 @@ import { getResources, deleteResource } from '../../services/resource.service';
 import { 
   Briefcase, ChevronRight, Download, Link as LinkIcon, 
   FileText, Loader, Trash2, ThumbsUp, MessageSquare, Eye, 
-  ExternalLink
+  ExternalLink, Bookmark
 } from 'lucide-react';
 import { 
   placementCategories, 
   getStandardizedCategory, 
   getCategoryNameById 
 } from '../../utils/placementCategoryUtils';
-import { SemesterResources } from '../../components/resources/SemesterResources';
 import { DocumentViewer } from '../../components/document/DocumentViewer';
+import { activityService } from '../../services/activity.service';
+import { motion } from 'framer-motion';
 
-export const PlacementResources = () => {
+export const PlacementResourcesPage = () => {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [resources, setResources] = useState<any[]>([]);
@@ -30,6 +31,8 @@ export const PlacementResources = () => {
   const [submittingLike, setSubmittingLike] = useState(false);
   const [showDocViewer, setShowDocViewer] = useState(false);
   const [selectedResource, setSelectedResource] = useState<any>(null);
+  const [openCommentResourceId, setOpenCommentResourceId] = useState<string | null>(null);
+  const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
   const { user } = useAuth();
 
   useEffect(() => {
@@ -40,18 +43,18 @@ export const PlacementResources = () => {
     setIsLoading(true);
     try {
       console.log('Fetching placement resources...');
-      
       const response = await api.get(API_ROUTES.RESOURCES.LIST, {
         params: { category: 'placement' }
       });
       
-      console.log('Placement resources response:', response.data);
-      
       if (response.data && response.data.resources && Array.isArray(response.data.resources)) {
         setResources(response.data.resources);
+        // Check bookmark status for each resource
+        if (user) {
+          checkBookmarkStatuses(response.data.resources);
+        }
       } else {
         setResources([]);
-        console.error('Unexpected resource format:', response.data);
       }
     } catch (error) {
       console.error('Error fetching placement resources:', error);
@@ -60,6 +63,19 @@ export const PlacementResources = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const checkBookmarkStatuses = async (resources: any[]) => {
+    const bookmarkStatuses: Record<string, boolean> = {};
+    for (const resource of resources) {
+      try {
+        const response = await api.get(`/api/resources/${resource._id}/bookmark-status`);
+        bookmarkStatuses[resource._id] = response.data.isBookmarked;
+      } catch (error) {
+        console.error('Failed to check bookmark status:', error);
+      }
+    }
+    setBookmarks(bookmarkStatuses);
   };
 
   const handleUpload = async (data: UploadFormData) => {
@@ -192,15 +208,70 @@ export const PlacementResources = () => {
     }
   };
 
-  const handleCommentSubmit = async (resourceId: string, comment: string, e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleBookmarkResource = async (resourceId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
+    if (!user) {
+      toast.error('Please log in to bookmark resources');
+      return;
+    }
+    
+    try {
+      const isCurrentlyBookmarked = bookmarks[resourceId] || false;
+      
+      // Update UI optimistically
+      setBookmarks({
+        ...bookmarks,
+        [resourceId]: !isCurrentlyBookmarked
+      });
+      
+      // We need to include the token in the headers
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/resources/${resourceId}/bookmark`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Bookmark response:', data);
+      
+      toast.success(isCurrentlyBookmarked ? 'Bookmark removed' : 'Resource bookmarked!');
+    } catch (error) {
+      console.error('Error bookmarking resource:', error);
+      toast.error('Failed to bookmark resource');
+      
+      // Revert UI on error
+      if (resourceId) {
+        setBookmarks({
+          ...bookmarks,
+          [resourceId]: !bookmarks[resourceId]
+        });
+      }
+    }
+  };
+
+  const handleCommentSubmit = async (resourceId: string, e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
     if (!user) {
       toast.error('Please log in to comment');
       return;
     }
     
-    if (!comment.trim()) {
+    if (!commentText.trim()) {
       toast.error('Comment cannot be empty');
       return;
     }
@@ -216,7 +287,7 @@ export const PlacementResources = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ content: comment })
+        body: JSON.stringify({ content: commentText })
       });
       
       if (!response.ok) {
@@ -279,63 +350,56 @@ export const PlacementResources = () => {
     }
   };
 
-  const handleResourceDownload = (resource: any, e?: React.MouseEvent) => {
+  const handleResourceClick = async (resource: any, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
+    // Get the resource ID
+    const resourceId = resource._id;
+    
+    // Track resource view
+    try {
+      // Update view count
+      await activityService.incrementResourceView(resourceId);
+      
+      // Update local state
+      setResources(resources.map(r => {
+        if (r._id === resourceId) {
+          return {
+            ...r,
+            stats: {
+              ...r.stats,
+              views: (r.stats?.views || 0) + 1
+            }
+          };
+        }
+        return r;
+      }));
+    } catch (error) {
+      console.error("Failed to update view count:", error);
+    }
+    
+    // Handle resource based on type
+    if (resource.type === 'link' && resource.link) {
+      window.open(resource.link, '_blank');
+    } else if (resource.fileUrl) {
+      setSelectedResource(resource);
+      setShowDocViewer(true);
+    } else {
+      toast.error('No content available for this resource');
+    }
+  };
+
+  const toggleCommentSection = (resourceId: string, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
     
-    if (resource.type === 'link' && resource.link) {
-      // Open link in new tab
-      window.open(resource.link, '_blank');
-    } else if (resource.fileUrl) {
-      // For documents, show the document viewer
-      setSelectedResource(resource);
-      setShowDocViewer(true);
-      
-      // Update download count
-      updateResourceStats(resource._id, 'download');
-    } else {
-      toast.error('No file content or URL available for this resource');
-    }
+    setOpenCommentResourceId(openCommentResourceId === resourceId ? null : resourceId);
+    setCommentText(''); // Clear comment text when toggling
   };
-
-  const updateResourceStats = async (resourceId: string, action: 'view' | 'download' | 'like' | 'comment') => {
-    try {
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch('/api/resources/stats', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ resourceId, action })
-      });
-      
-      if (!response.ok) {
-        console.error(`Failed to update ${action} stats`);
-      }
-      
-      // Update local state
-      setResources(resources.map(r => {
-        if (r._id === resourceId) {
-          const updatedStats = { ...r.stats };
-          if (action === 'view') updatedStats.views = (updatedStats.views || 0) + 1;
-          if (action === 'download') updatedStats.downloads = (updatedStats.downloads || 0) + 1;
-          return { ...r, stats: updatedStats };
-        }
-        return r;
-      }));
-      
-    } catch (error) {
-      console.error(`Failed to update ${action} stats:`, error);
-    }
-  };
-
-  useEffect(() => {
-    console.log('Current resources state:', resources);
-  }, [resources]);
 
   return (
     <div className="p-6">
@@ -343,280 +407,113 @@ export const PlacementResources = () => {
         <Briefcase className="mr-2 h-6 w-6 text-indigo-600" />
         Placement Preparation Resources
       </h1>
-      
-      <div className="mb-8">
-        <p className="text-gray-700 mb-6 dark:text-gray-400">
-          Access comprehensive placement preparation resources organized by categories. These materials can help you prepare for technical interviews, improve your resume, and enhance your soft skills.
-        </p>
-        
-        {user && user.role === 'faculty' && (
-          <div className="mb-6">
-            {!showUploadForm && !selectedCategory ? (
-              <button
-                onClick={() => setShowUploadForm(true)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-              >
-                Upload Placement Resource
-              </button>
-            ) : null}
-          </div>
-        )}
-        
-        {showUploadForm && !selectedCategory && (
-          <div className="mb-6">
-            <button
-              onClick={() => setShowUploadForm(false)}
-              className="mb-4 text-indigo-600 hover:text-indigo-700 flex items-center"
-            >
-              ← Back to Resources
-            </button>
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Select a Placement Category</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {placementCategories.map(category => (
-                  <div 
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className="p-4 border border-gray-200 rounded-lg hover:bg-indigo-50 cursor-pointer transition-colors"
-                  >
-                    <h3 className="font-medium text-indigo-600">{category.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{category.description}</p>
-                  </div>
-                ))}
+
+      {/* Category grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {placementCategories.map((category) => (
+          <motion.div
+            key={category.id}
+            whileHover={{ y: -5 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setSelectedCategory(category.id)}
+            className="bg-white rounded-lg shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow border border-gray-100"
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-semibold text-lg text-indigo-700">{category.name}</h3>
+                <p className="text-gray-600 text-sm mt-1">{category.description}</p>
               </div>
+              <ChevronRight className="h-5 w-5 text-gray-400" />
             </div>
-          </div>
-        )}
-        
-        {showUploadForm && selectedCategory && (
-          <div className="mb-6">
-            <button
-              onClick={() => {
-                setSelectedCategory(null);
-              }}
-              className="mb-4 text-indigo-600 hover:text-indigo-700 flex items-center"
+            <div className="mt-4 text-xs text-gray-500">
+              {getCategoryResources(category.id).length} {getCategoryResources(category.id).length === 1 ? 'resource' : 'resources'} available
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Selected category view */}
+      {selectedCategory && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+          {getCategoryResources(selectedCategory).map((resource) => (
+            <motion.div
+              key={resource._id}
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={(e) => handleResourceClick(resource, e)}
             >
-              ← Back to Categories
-            </button>
-            <ResourceUpload 
-              onUpload={handleUpload} 
-              initialSubject={`Placement - ${placementCategories.find(cat => cat.id === selectedCategory)?.name}`}
-              initialSemester={0} // Placement resources are semester-agnostic
-              initialCategory="placement"
-              isPlacementResource={true}
-              placementCategory={selectedCategory} 
-            />
-          </div>
-        )}
-        
-        {!showUploadForm && !selectedCategory && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-              {placementCategories.map((category) => {
-                const categoryResources = getCategoryResources(category.id);
-                return (
-                  <div
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className="bg-white rounded-lg shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow border border-gray-100"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-semibold text-lg text-indigo-700">{category.name}</h3>
-                        <p className="text-gray-600 text-sm mt-1">{category.description}</p>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <div className="mt-4 text-xs text-gray-500">
-                      {categoryResources.length} {categoryResources.length === 1 ? 'resource' : 'resources'} available
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            <AIResourceSearch initialSearchType="placement" />
-          </>
-        )}
-        
-        {!showUploadForm && selectedCategory && (
-          <div>
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className="mb-6 text-indigo-600 hover:text-indigo-700 flex items-center"
-            >
-              ← Back to All Categories
-            </button>
-            
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold">
-                {placementCategories.find(cat => cat.id === selectedCategory)?.name} Resources
-              </h2>
-              {user && user.role === 'faculty' && (
-                <button
-                  onClick={() => {
-                    setShowUploadForm(true);
-                  }}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm"
-                >
-                  Add {placementCategories.find(cat => cat.id === selectedCategory)?.name} Resource
-                </button>
-              )}
-            </div>
-            
-            {isLoading ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader className="h-8 w-8 text-indigo-600 animate-spin" />
-                <span className="ml-2 text-gray-600">Loading resources...</span>
-              </div>
-            ) : (
-              <>
-                {getCategoryResources(selectedCategory).length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    {getCategoryResources(selectedCategory).map((resource) => (
-                      <div
-                        key={resource._id}
-                        className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start">
-                            {getResourceIcon(resource.type)}
-                            <div className="ml-4">
-                              <h3 className="font-medium text-indigo-700">{resource.title}</h3>
-                              <p className="text-gray-600 text-sm mt-1">{resource.description}</p>
-                              
-                              <div className="flex flex-wrap mt-3 text-xs space-x-2">
-                                <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full capitalize">
-                                  {resource.type}
-                                </span>
-                                {resource.fileUrl && (
-                                  <button 
-                                    onClick={(e) => handleResourceDownload(resource, e)}
-                                    className="bg-green-100 text-green-800 px-2 py-1 rounded-full flex items-center"
-                                  >
-                                    <FileText className="h-3 w-3 mr-1" /> View Document
-                                  </button>
-                                )}
-                                {resource.link && (
-                                  <a 
-                                    href={resource.link} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center"
-                                  >
-                                    <ExternalLink className="h-3 w-3 mr-1" /> Open Link
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center">
-                            <button
-                              onClick={(e) => handleLikeResource(resource._id, e)}
-                              className={`text-gray-500 hover:text-indigo-600 p-1 ${
-                                resource.likedBy?.includes(user?._id) ? 'text-indigo-600' : ''
-                              }`}
-                              disabled={submittingLike}
-                            >
-                              <ThumbsUp className={`h-4 w-4 ${
-                                resource.likedBy?.includes(user?._id) ? 'fill-indigo-600' : ''
-                              }`} />
-                            </button>
-                            
-                            {user && user.role === 'faculty' && (
-                              <button 
-                                onClick={(e) => handleDeleteResource(resource._id, e)}
-                                className="text-red-500 hover:text-red-700 p-1 ml-2"
-                                title="Delete resource"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="mt-3 flex items-center space-x-6 text-xs text-gray-500">
-                          <div className="flex items-center space-x-1">
-                            <Eye className="h-3 w-3" />
-                            <span>{resource.stats?.views || 0} views</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <ThumbsUp className="h-3 w-3" />
-                            <span>{resource.stats?.likes || 0} likes</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <MessageSquare className="h-3 w-3" />
-                            <span>{resource.comments?.length || resource.stats?.comments || 0} comments</span>
-                          </div>
-                        </div>
-                        
-                        {/* Comment section */}
-                        <div className="mt-4">
-                          {resource.comments && resource.comments.length > 0 && (
-                            <div className="mb-3 space-y-2">
-                              <h4 className="text-sm font-semibold text-gray-700">Comments</h4>
-                              {resource.comments.slice(0, 3).map((comment: any, index: number) => (
-                                <div key={index} className="bg-gray-50 p-2 rounded text-sm">
-                                  <div className="font-medium">{comment.author?.fullName || 'User'}</div>
-                                  <div className="text-gray-600">{comment.content}</div>
-                                </div>
-                              ))}
-                              {resource.comments.length > 3 && (
-                                <div className="text-xs text-indigo-600 cursor-pointer">
-                                  View all {resource.comments.length} comments
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* Comment form */}
-                          {user && (
-                            <form onSubmit={(e) => handleCommentSubmit(resource._id, commentText, e)} className="flex mt-2">
-                              <input
-                                type="text"
-                                placeholder="Add a comment..."
-                                className="flex-1 border rounded-l-md px-3 py-1 text-sm"
-                                value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
-                              />
-                              <button
-                                type="submit"
-                                className="bg-indigo-600 text-white px-3 py-1 rounded-r-md text-sm"
-                                disabled={submittingComment || !commentText.trim()}
-                              >
-                                Post
-                              </button>
-                            </form>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-10">
-                    <p className="text-gray-500">No resources available for {placementCategories.find(cat => cat.id === selectedCategory)?.name} yet.</p>
-                    {user && user.role === 'faculty' && (
-                      <button
-                        onClick={() => setShowUploadForm(true)}
-                        className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-                      >
-                        Add First Resource
-                      </button>
+              {/* Resource content */}
+              <div className="flex flex-col h-full">
+                <div className="flex items-start mb-3">
+                  {getResourceIcon(resource.type)}
+                  <div className="ml-3 flex-1">
+                    <h3 className="font-medium text-gray-800">{resource.title}</h3>
+                    {resource.description && (
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{resource.description}</p>
                     )}
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-      </div>
-      
-      {/* Document Viewer */}
+                </div>
+
+                {/* Stats section */}
+                <div className="mt-auto">
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex space-x-4">
+                      <span className="flex items-center">
+                        <Eye className="h-4 w-4 mr-1" />
+                        {resource.stats?.views || 0}
+                      </span>
+                      <span className="flex items-center">
+                        <ThumbsUp className={`h-4 w-4 mr-1 ${resource.likedBy?.includes(user?._id) ? 'text-red-500' : ''}`} />
+                        {resource.stats?.likes || 0}
+                      </span>
+                      <span className="flex items-center">
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        {resource.stats?.comments || 0}
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBookmarkResource(resource._id);
+                        }}
+                        className="p-1 rounded hover:bg-gray-100"
+                      >
+                        <Bookmark 
+                          className={`h-4 w-4 ${
+                            bookmarks[resource._id] ? 'fill-yellow-500 text-yellow-500' : 'text-gray-400'
+                          }`} 
+                        />
+                      </button>
+
+                      {user?.role === 'faculty' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteResource(resource._id);
+                          }}
+                          className="p-1 rounded hover:bg-gray-100"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-400" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Document viewer */}
       {showDocViewer && selectedResource && (
         <DocumentViewer
           fileUrl={selectedResource.fileUrl}
-          fileName={selectedResource.fileName || `${selectedResource.title}.pdf`}
+          fileName={selectedResource.fileName || selectedResource.title}
           onClose={() => setShowDocViewer(false)}
         />
       )}
@@ -624,4 +521,4 @@ export const PlacementResources = () => {
   );
 };
 
-export default PlacementResources;
+export default PlacementResourcesPage;

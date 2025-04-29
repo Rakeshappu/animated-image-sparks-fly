@@ -113,6 +113,19 @@ export const SearchBar = () => {
     setShowAiSummary(false);
   };
 
+  const clearSearch = () => {
+    setFilters({
+      query: '',
+      type: [],
+      category: []
+    });
+    setSearchResults(null);
+    setApiError(null);
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
+
   // Focus the search input on component mount
   useEffect(() => {
     if (searchInputRef.current) {
@@ -127,7 +140,7 @@ export const SearchBar = () => {
           type="text"
           ref={searchInputRef}
           placeholder="Search course materials in your semester..."
-          className="w-full px-4 py-3 pl-12 pr-10 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
+          className="w-full px-4 py-3 pl-12 pr-20 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
           value={filters.query}
           onChange={(e) => setFilters({ ...filters, query: e.target.value })}
         />
@@ -138,25 +151,37 @@ export const SearchBar = () => {
             <Search className="h-5 w-5 text-gray-400" />
           )}
         </div>
-        <button 
-          type="button"
-          className="absolute right-3 top-3 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <Filter className="h-5 w-5" />
-        </button>
-        <button 
-          type="submit"
-          className="absolute right-12 top-2 p-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
-        >
-          <Search className="h-5 w-5" />
-        </button>
+        
+        <div className="absolute right-3 top-3 flex space-x-1">
+          {filters.query && (
+            <button
+              type="button"
+              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              onClick={clearSearch}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
+          <button 
+            type="button"
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-5 w-5" />
+          </button>
+          <button 
+            type="submit"
+            className="p-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+          >
+            <Search className="h-5 w-5" />
+          </button>
+        </div>
       </form>
       
       {showFilters && (
         <div 
           ref={filterRef}
-          className="mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 z-20 relative"
+          className="mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 z-20 absolute w-full"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -216,7 +241,20 @@ export const SearchBar = () => {
               </div>
             </div>
           </div>
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-between">
+            <button
+              type="button"
+              className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+              onClick={() => {
+                setFilters({
+                  query: filters.query,
+                  type: [],
+                  category: []
+                });
+              }}
+            >
+              Clear Filters
+            </button>
             <button
               type="button"
               className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"

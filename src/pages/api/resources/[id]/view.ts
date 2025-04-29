@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Increment view count
+    // Initialize stats object if it doesn't exist
     if (!resource.stats) {
       resource.stats = {
         views: 1,
@@ -56,10 +56,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           date: today,
           count: 1
         }],
+        studentFeedback: []
       };
     } else {
+      // Update existing stats
       resource.stats.views = (resource.stats.views || 0) + 1;
       resource.stats.lastViewed = new Date();
+      
+      // Initialize daily views array if it doesn't exist
+      if (!resource.stats.dailyViews) {
+        resource.stats.dailyViews = [];
+      }
       
       // Update daily views with today's date
       const existingDailyView = resource.stats.dailyViews?.find(dv => {
@@ -72,9 +79,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (existingDailyView) {
         existingDailyView.count = (existingDailyView.count || 0) + 1;
       } else {
-        if (!resource.stats.dailyViews) {
-          resource.stats.dailyViews = [];
-        }
         resource.stats.dailyViews.push({
           date: today,
           count: 1
@@ -82,12 +86,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
     
-    console.log('Updating view count for resource:', id);
-    console.log('Resource category:', resource.category);
-    console.log('Resource stats before save:', JSON.stringify(resource.stats));
-    
+    // Save the resource with updated stats immediately
     await resource.save();
-    console.log('Resource saved with updated view count:', resource.stats.views);
+    console.log(`Updated view count for resource ${id} to ${resource.stats.views}`);
+
+    // Determine the source of the view
+    let source = 'other';
+    
+    // Check X-Source header first (set by our frontend)
+    if (req.headers['x-source']) {
+      source = req.headers['x-source'] as string;
+    }
+    // If not set, try to determine from referer
+    else if (req.headers.referer) {
+      if (req.headers.referer.includes('study-materials')) {
+        source = 'study-materials';
+      } else if (req.headers.referer.includes('bookmark')) {
+        source = 'bookmarks';
+      } else if (req.headers.referer.includes('placement')) {
+        source = 'placement';
+      }
+    }
+
+    console.log(`View source determined as: ${source}`);
 
     // Create activity record if user is logged in
     if (userId) {
@@ -100,40 +121,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message = `Viewed study resource: ${resource.title}`;
         }
 
-        // Check for recent duplicate activity (within last minute)
-        const recentActivity = await Activity.findOne({
+        console.log(`Creating activity record. Source: ${source}, Resource: ${resource.title}`);
+
+        // Create new activity
+        await Activity.create({
           user: new mongoose.Types.ObjectId(userId),
           type: 'view',
           resource: resource._id,
-          timestamp: { $gte: new Date(Date.now() - 60000) } // Last minute
+          timestamp: new Date(),
+          message: message,
+          source: source
         });
         
-        let activity;
-        
-        if (recentActivity) {
-          // Update existing activity timestamp
-          recentActivity.timestamp = new Date();
-          await recentActivity.save();
-          activity = recentActivity;
-          console.log(`Updated existing view activity for user ${userId} and resource ${id}:`, activity._id);
-        } else {
-          // Create new activity
-          activity = await Activity.create({
-            user: new mongoose.Types.ObjectId(userId),
-            type: 'view',
-            resource: resource._id,
-            timestamp: new Date(),
-            message: message
-          });
-          console.log(`Created view activity for user ${userId} and resource ${id}:`, activity._id);
-        }
+        console.log(`Activity record created for user ${userId}, resource ${id}`);
       } catch (activityError) {
         console.error('Failed to create activity record:', activityError);
         // Continue with view tracking even if activity creation fails
       }
     }
 
-    // Return the updated count immediately (important for UI updates)
+    // Return the updated count immediately
     return res.status(200).json({ 
       success: true, 
       views: resource.stats.views,
@@ -145,6 +152,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error) {
     console.error('Error updating view count:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' });
   }
 }

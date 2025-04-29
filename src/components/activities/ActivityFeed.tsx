@@ -53,7 +53,7 @@ interface ActivityFeedProps {
 
 export const ActivityFeed = ({ 
   activities: propActivities, 
-  refreshInterval = 5000, 
+  refreshInterval = 100000, 
   maxItems = 3 
 }: ActivityFeedProps) => {
   const [activities, setActivities] = useState<Activity[]>([]);

@@ -1,6 +1,8 @@
+
 import mongoose from 'mongoose';
 import { User } from './models/User';
 import { Resource } from './models/Resource';
+import { Activity } from './models/Activity';
 
 export async function initDatabase() {
   try {
@@ -12,6 +14,7 @@ export async function initDatabase() {
     await Promise.all([
       User.createCollection(),
       Resource.createCollection(),
+      Activity.createCollection(),
     ]);
 
     // Create indexes
@@ -21,11 +24,32 @@ export async function initDatabase() {
       Resource.collection.createIndex({ uploadedBy: 1 }),
       Resource.collection.createIndex({ semester: 1 }),
       Resource.collection.createIndex({ type: 1 }),
+      Activity.collection.createIndex({ user: 1, timestamp: -1 }),
+      Activity.collection.createIndex({ resource: 1 }),
+      Activity.collection.createIndex({ type: 1 }),
+      Activity.collection.createIndex({ source: 1 }),
     ]);
 
+    // Log the models available for the MongoDB status banner
+    const modelNames = mongoose.modelNames();
+    console.log('Available models:', modelNames);
+
     console.log('Database initialized successfully');
+    return {
+      connected: true,
+      message: 'Connected to MongoDB database',
+      serverInfo: {
+        host: mongoose.connection.host,
+        name: mongoose.connection.name,
+        models: modelNames
+      }
+    };
   } catch (error) {
     console.error('Database initialization failed:', error);
-    throw error;
+    return {
+      connected: false,
+      message: error instanceof Error ? error.message : 'Failed to connect to MongoDB',
+      error
+    };
   }
 }

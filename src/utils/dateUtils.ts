@@ -43,3 +43,4 @@ export const addDaysSafely = (dateString: string, days: number, formatter: strin
     return 'Invalid date';
   }
 };
+export const formatDateToRelative = (dateString: string): string => {}

@@ -70,7 +70,13 @@ export const UploadWorkflow = ({
 
   const handleSemesterSelect = (semester: SemesterNumber) => {
     setSelectedSemester(semester);
-    setStep('subject-creation');
+    
+    // If from sidebar, we need to go to the next appropriate step
+    if (isFromSidebar) {
+      setStep('subject-creation'); // Default to subject creation
+    } else {
+      setStep('subject-creation');
+    }
   };
 
   const handlePlacementCategorySelect = (categoryId: string, categoryName: string) => {
@@ -80,10 +86,22 @@ export const UploadWorkflow = ({
   };
 
   const handleCreateSubjectFolders = (newSubjects: SubjectData[]) => {
-    onSelectOption('create-subject-folders', { 
-      semester: selectedSemester, 
-      subjects: newSubjects 
-    });
+    if (isFromSidebar) {
+      // Handle sidebar create subject folders
+      console.log('Creating subject folders from sidebar:', newSubjects);
+      onSelectOption('create-subject-folders', { 
+        semester: selectedSemester, 
+        subjects: newSubjects 
+      });
+      // Navigate after action
+      navigate('/faculty/dashboard');
+    } else {
+      // Normal behavior for dashboard
+      onSelectOption('create-subject-folders', { 
+        semester: selectedSemester, 
+        subjects: newSubjects 
+      });
+    }
   };
 
   const handleSkipToUpload = () => {

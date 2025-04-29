@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -191,18 +190,37 @@ const SidebarLink = ({
   text: string; 
   path: string;
   active: boolean;
-}) => (
-  <Link
-    to={path}
-    className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${
-      active 
-        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
-        : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400'
-    }`}
-  >
-    <span className={active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}>{icon}</span>
-    <span>{text}</span>
-  </Link>
-);
+}) => {
+  if (text === 'Upload') {
+    return (
+      <Link
+        to={path}
+        state={{ isFromSidebar: true }}
+        className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${
+          active 
+            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
+            : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400'
+        }`}
+      >
+        <span className={active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}>{icon}</span>
+        <span>{text}</span>
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      to={path}
+      className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${
+        active 
+          ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
+          : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400'
+      }`}
+    >
+      <span className={active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}>{icon}</span>
+      <span>{text}</span>
+    </Link>
+  );
+};
 
 export default Sidebar;

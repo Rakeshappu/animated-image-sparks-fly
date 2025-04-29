@@ -65,11 +65,11 @@ const StudentCompetitiveProgramming = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center dark:text-gray-200">
           <Code className="mr-2 h-6 w-6 text-indigo-600" />
           Competitive Programming Resources
         </h1>
-        <p className="mt-1 text-gray-600">
+        <p className="mt-1 text-gray-600 dark:text-gray-400">
           Curated resources to help you excel in competitive programming and technical interviews
         </p>
       </header>

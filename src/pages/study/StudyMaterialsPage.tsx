@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { SearchBar } from '../../components/search/SearchBar';
 import { SubjectFolder } from '../../components/study/SubjectFolder';
@@ -7,6 +8,8 @@ import { FacultyResource } from '../../types/faculty';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { Book } from 'lucide-react';
+import { checkDatabaseConnection } from '../../services/resource.service';
+import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
 
 export const StudyMaterialsPage = () => {
   const { user } = useAuth();
@@ -15,6 +18,27 @@ export const StudyMaterialsPage = () => {
   const [resources, setResources] = useState<FacultyResource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [availableSemesters, setAvailableSemesters] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8]);
+  const [dbStatus, setDbStatus] = useState<any>(null);
+  
+  // Check MongoDB connection status
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        const status = await checkDatabaseConnection();
+        setDbStatus(status);
+        console.log('MongoDB connection status in Study Materials:', status);
+      } catch (err) {
+        console.error('Failed to check DB connection:', err);
+      }
+    };
+    
+    checkConnection();
+    
+    // Check connection status every 30 seconds
+    const intervalId = setInterval(checkConnection, 30000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
   
   // Poll for updates to get the latest resources
   useEffect(() => {
@@ -120,6 +144,9 @@ export const StudyMaterialsPage = () => {
       animate="visible"
       variants={containerVariants}
     >
+      {/* MongoDB Status Banner - always show it */}
+      <MongoDBStatusBanner status={dbStatus} />
+      
       <motion.div variants={itemVariants} className="mb-6">
         <SearchBar />
       </motion.div>
@@ -174,3 +201,5 @@ export const StudyMaterialsPage = () => {
     </motion.div>
   );
 };
+
+export default StudyMaterialsPage;

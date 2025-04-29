@@ -38,20 +38,34 @@ export const StudentStatsChart: React.FC<StudentStatsChartProps> = ({ data }) =>
       return result;
     }
 
-    // Sort data by date
-    const sortedData = [...rawData].sort((a, b) => {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
+    // First ensure we have entries for the last 7 days including today
+    const result = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
-    // Take the last 7 days
-    const lastWeekData = sortedData.slice(-7);
+    // Create an array with the last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const day = new Date();
+      day.setDate(today.getDate() - i);
+      day.setHours(0, 0, 0, 0);
+      
+      const dateStr = day.toISOString().split('T')[0];
+      
+      // Find if we have data for this day
+      const existingData = rawData.find(item => {
+        const itemDate = new Date(item.date);
+        itemDate.setHours(0, 0, 0, 0);
+        return itemDate.getTime() === day.getTime();
+      });
+      
+      result.push({
+        date: day.toLocaleDateString('en-US', { weekday: 'short' }),
+        fullDate: dateStr,
+        count: existingData ? existingData.count : 0
+      });
+    }
     
-    // Format for display
-    return lastWeekData.map(item => ({
-      date: new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }),
-      fullDate: new Date(item.date).toISOString().split('T')[0],
-      count: item.count
-    }));
+    return result;
   };
   
   const chartData = formatChartData(data);

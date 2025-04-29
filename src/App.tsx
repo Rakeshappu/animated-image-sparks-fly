@@ -13,7 +13,7 @@ import { StarredPage as StudentStarredPage } from './pages/storage/StarredPage';
 import { DownloadsPage } from './pages/storage/DownloadsPage';
 import { TrashPage as StudentTrashPage } from './pages/storage/TrashPage';
 import { SettingsPage as StudentSettingsPage } from './pages/settings/SettingsPage';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
+import AdminDashboard  from './pages/admin/AdminDashboard';
 import PlacementResources from './pages/placement/PlacementResources';
 import { SubjectDetailPage } from './pages/study/SubjectDetailPage';
 import UsersManagement from './pages/admin/UsersManagement';

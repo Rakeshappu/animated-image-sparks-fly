@@ -42,11 +42,18 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({
   
   // Function to get activity count for a specific day
   const getActivityCountForDay = (day: number) => {
+    // Format date strings consistently for comparison
     const dateStr = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    
+    // Search for matching activity by date
     const activity = data.find(a => {
+      if (!a || !a.date) return false;
+      
       // Handle different date formats
-      return a.date.startsWith(dateStr) || a.date === dateStr;
+      const aDate = typeof a.date === 'string' ? a.date : a.date.toString();
+      return aDate.includes(dateStr);
     });
+    
     return activity ? activity.count : 0;
   };
   
