@@ -77,3 +77,6 @@ export const formatDate = (dateString: string, format: string = 'MM/DD/YYYY'): s
     return 'Unknown date';
   }
 };
+
+// Add a formatDateToRelative alias for backward compatibility
+export const formatDateToRelative = formatTimeAgo;

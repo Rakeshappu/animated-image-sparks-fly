@@ -72,9 +72,9 @@ export const Dashboard = () => {
   }, [user, fetchDashboardData]);
 
   // Handle search results
-  const handleSearchResults = (results: FacultyResource[]) => {
+  const handleSearchResults = (results: FacultyResource[], hasSearched: boolean) => {
     setSearchResults(results);
-    setSearchPerformed(results.length > 0 || results.length === 0);
+    setSearchPerformed(hasSearched);
   };
 
   return (
@@ -94,7 +94,7 @@ export const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {searchResults.map((resource) => (
                 <div 
-                  key={resource.id || resource._id}
+                  key={resource.id}
                   className="bg-white p-4 rounded-lg shadow"
                 >
                   <h3 className="font-medium text-indigo-600">{resource.title}</h3>

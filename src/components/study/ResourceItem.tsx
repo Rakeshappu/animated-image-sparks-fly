@@ -27,7 +27,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   const commentRef = useRef<HTMLDivElement>(null);
   
   // Ensure we have a valid resource ID
-  const resourceId = resource.id || resource._id;
+  const resourceId = resource.id || '';
 
   // Use custom hook to detect clicks outside the comment section
   useOutsideClick(commentRef, () => {
@@ -109,6 +109,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   // Handle download
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening the viewer
+    e.preventDefault();
     
     // Implement download logic
     try {
@@ -206,27 +207,29 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   };
 
   return (
-    <div 
-      className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
-      onClick={handleView}
-    >
-      <div className="flex items-start mb-3">
-        <div className="mr-3 mt-1">
-          {getResourceIcon()}
+    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+      <div 
+        className="cursor-pointer"
+        onClick={handleView}
+      >
+        <div className="flex items-start mb-3">
+          <div className="mr-3 mt-1">
+            {getResourceIcon()}
+          </div>
+          <div className="flex-1">
+            <h3 className="font-medium text-gray-800">{resource.title}</h3>
+            {resource.description && (
+              <p className="text-sm text-gray-500 mt-1 line-clamp-2">{resource.description}</p>
+            )}
+          </div>
         </div>
-        <div className="flex-1">
-          <h3 className="font-medium text-gray-800">{resource.title}</h3>
-          {resource.description && (
-            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{resource.description}</p>
-          )}
+        
+        <div className="flex items-center text-xs text-gray-500 mt-1 mb-3">
+          <span>{formatTimeAgo(resource.createdAt || resource.uploadDate || '')}</span>
         </div>
       </div>
       
-      <div className="flex items-center text-xs text-gray-500 mt-1 mb-3">
-        <span>{formatTimeAgo(resource.createdAt || resource.uploadDate || '')}</span>
-      </div>
-      
-      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+      <div className="flex items-center justify-between pt-2 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center space-x-3">
           <div className="flex items-center text-gray-500 text-xs">
             <Eye className="h-3.5 w-3.5 mr-1" />

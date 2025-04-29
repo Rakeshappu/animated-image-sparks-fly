@@ -83,8 +83,10 @@ export const PlacementResourcesPage = () => {
   };
   
   // Handle search results
-  const handleSearchResults = (results: FacultyResource[]) => {
-    setFilteredResources(results);
+  const handleSearchResults = (results: FacultyResource[], hasSearched: boolean) => {
+    if (hasSearched) {
+      setFilteredResources(results);
+    }
   };
   
   // Sort resources based on selected sort option
@@ -241,7 +243,7 @@ export const PlacementResourcesPage = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {sortedResources.map((resource) => (
-            <motion.div key={resource.id || resource._id} variants={itemVariants}>
+            <motion.div key={resource.id} variants={itemVariants}>
               <ResourceItem 
                 resource={resource} 
                 source="placement"

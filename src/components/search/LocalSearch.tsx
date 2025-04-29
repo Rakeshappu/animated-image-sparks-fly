@@ -6,7 +6,7 @@ import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 interface LocalSearchProps {
   resources: any[];
-  onSearchResults: (results: any[]) => void;
+  onSearchResults: (results: any[], hasSearched: boolean) => void;
   placeholder?: string;
 }
 
@@ -17,6 +17,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     type: [] as string[],
     category: [] as string[]
   });
+  const [hasUserSearched, setHasUserSearched] = useState(false);
   const { user } = useAuth();
   const filterRef = useRef<HTMLDivElement>(null);
   
@@ -27,6 +28,14 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
 
   // Memoize the search function to prevent unnecessary re-renders
   const performSearch = useCallback(() => {
+    // Only search if there's a search term or filters applied
+    const isSearchActive = searchTerm.trim() !== '' || filters.type.length > 0 || filters.category.length > 0;
+    
+    if (!isSearchActive) {
+      onSearchResults([], false);
+      return;
+    }
+    
     const term = searchTerm.toLowerCase().trim();
     
     let filtered = [...resources];
@@ -66,13 +75,35 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
       filtered = filtered.filter(resource => filters.category.includes(resource.category));
     }
 
-    onSearchResults(filtered);
+    onSearchResults(filtered, isSearchActive);
   }, [searchTerm, filters, resources, user, onSearchResults]);
 
   // Run search when search term, filters or resources change
   useEffect(() => {
-    performSearch();
-  }, [searchTerm, filters, resources, performSearch]);
+    if (hasUserSearched) {
+      performSearch();
+    }
+  }, [searchTerm, filters, resources, performSearch, hasUserSearched]);
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setHasUserSearched(true);
+  };
+
+  const handleFilterChange = (type: 'type' | 'category', value: string, checked: boolean) => {
+    setHasUserSearched(true);
+    if (checked) {
+      setFilters({
+        ...filters,
+        [type]: [...filters[type], value],
+      });
+    } else {
+      setFilters({
+        ...filters,
+        [type]: filters[type].filter((item) => item !== value),
+      });
+    }
+  };
 
   const clearSearch = () => {
     setSearchTerm('');
@@ -80,6 +111,8 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
       type: [],
       category: []
     });
+    onSearchResults([], false);
+    setHasUserSearched(false);
   };
 
   return (
@@ -88,7 +121,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
         <input
           type="text"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearchInputChange}
           placeholder={placeholder}
           className="w-full pl-10 pr-20 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         />
@@ -131,19 +164,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
                       type="checkbox"
                       className="form-checkbox h-4 w-4 text-indigo-600"
                       checked={filters.type.includes(type)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setFilters({
-                            ...filters,
-                            type: [...filters.type, type],
-                          });
-                        } else {
-                          setFilters({
-                            ...filters,
-                            type: filters.type.filter((t) => t !== type),
-                          });
-                        }
-                      }}
+                      onChange={(e) => handleFilterChange('type', type, e.target.checked)}
                     />
                     <span className="ml-2 text-gray-700 dark:text-gray-300 capitalize">{type}</span>
                   </label>
@@ -159,19 +180,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
                       type="checkbox"
                       className="form-checkbox h-4 w-4 text-indigo-600"
                       checked={filters.category.includes(category)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setFilters({
-                            ...filters,
-                            category: [...filters.category, category],
-                          });
-                        } else {
-                          setFilters({
-                            ...filters,
-                            category: filters.category.filter((c) => c !== category),
-                          });
-                        }
-                      }}
+                      onChange={(e) => handleFilterChange('category', category, e.target.checked)}
                     />
                     <span className="ml-2 text-gray-700 dark:text-gray-300">{category}</span>
                   </label>
@@ -188,6 +197,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
                   type: [],
                   category: []
                 });
+                setHasUserSearched(true);
               }}
             >
               Clear Filters
