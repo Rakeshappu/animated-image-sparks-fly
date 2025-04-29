@@ -1,5 +1,5 @@
 
-import { format, parseISO, addDays } from 'date-fns';
+import { format, parseISO, addDays, formatDistanceToNow } from 'date-fns';
 
 export const formatDate = (date: string): string => {
   return new Date(date).toLocaleDateString('en-US', {
@@ -43,4 +43,22 @@ export const addDaysSafely = (dateString: string, days: number, formatter: strin
     return 'Invalid date';
   }
 };
-export const formatDateToRelative = (dateString: string): string => {}
+
+// Format date to relative time (e.g., "2 hours ago")
+export const formatDateToRelative = (dateString: string): string => {
+  try {
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return 'Unknown time';
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch (err) {
+    console.error('Error formatting relative date:', dateString, err);
+    return 'Invalid date';
+  }
+};

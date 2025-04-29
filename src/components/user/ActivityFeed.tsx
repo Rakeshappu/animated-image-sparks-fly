@@ -15,7 +15,7 @@ interface ActivityFeedProps {
 }
 
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({
-  limit = 10,
+  limit = 3, // Default to 3 as requested
   showTitle = true,
   autoRefresh = false,
   refreshInterval = 60000, // Default to 60 seconds
@@ -25,7 +25,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   const [loading, setLoading] = useState(true);
   const [showDocumentViewer, setShowDocumentViewer] = useState(false);
   const [selectedResource, setSelectedResource] = useState<any>(null);
-  const [refreshKey, setRefreshKey] = useState(0); // Use to force refresh
+  const [refreshKey, setRefreshKey] = useState(0);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const navigate = useNavigate();
 
@@ -115,7 +115,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 w-full ${className}`}>
       {showTitle && (
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold flex items-center">
@@ -174,6 +174,27 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                       </span>
                     )}
                   </div>
+                  {/* Add analytics info for the resource */}
+                  {activity.resource && activity.resource.stats && (
+                    <div className="flex space-x-3 mt-1 text-xs text-gray-500">
+                      <div className="flex items-center">
+                        <Eye className="h-3 w-3 mr-1" />
+                        <span>{activity.resource.stats.views || 0}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <ThumbsUp className="h-3 w-3 mr-1" />
+                        <span>{activity.resource.stats.likes || 0}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Download className="h-3 w-3 mr-1" />
+                        <span>{activity.resource.stats.downloads || 0}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <MessageSquare className="h-3 w-3 mr-1" />
+                        <span>{activity.resource.stats.comments || 0}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

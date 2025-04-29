@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { SearchBar } from '../../components/search/SearchBar';
+import { LocalSearch } from '../../components/search/LocalSearch';
 import { SubjectFolder } from '../../components/study/SubjectFolder';
 import { StudyMaterialsHeader } from '../../components/study/StudyMaterialsHeader';
 import { groupBySemester, groupBySubject } from '../../utils/studyUtils';
@@ -16,6 +16,7 @@ export const StudyMaterialsPage = () => {
   const [selectedSemester, setSelectedSemester] = useState<number>(1);
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'alphabetical'>('recent');
   const [resources, setResources] = useState<FacultyResource[]>([]);
+  const [filteredResources, setFilteredResources] = useState<FacultyResource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [availableSemesters, setAvailableSemesters] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8]);
   const [dbStatus, setDbStatus] = useState<any>(null);
@@ -55,11 +56,13 @@ export const StudyMaterialsPage = () => {
       
       // Set initial resources
       setResources([...window.sharedResources]);
+      setFilteredResources([...window.sharedResources]);
       
       // Set up polling to check for updates
       const intervalId = setInterval(() => {
         if (window.sharedResources) {
           setResources([...window.sharedResources]);
+          setFilteredResources([...window.sharedResources]);
         }
       }, 2000);
       
@@ -88,8 +91,13 @@ export const StudyMaterialsPage = () => {
     }
   }, [user]);
   
+  // Handle search results
+  const handleSearchResults = (results: FacultyResource[]) => {
+    setFilteredResources(results);
+  };
+  
   // Group resources by semester
-  const resourcesBySemester = groupBySemester(resources);
+  const resourcesBySemester = groupBySemester(filteredResources);
   
   // Get resources for selected semester
   const semesterResources = resourcesBySemester[selectedSemester] || [];
@@ -148,7 +156,11 @@ export const StudyMaterialsPage = () => {
       <MongoDBStatusBanner status={dbStatus} />
       
       <motion.div variants={itemVariants} className="mb-6">
-        <SearchBar />
+        <LocalSearch 
+          resources={resources} 
+          onSearchResults={handleSearchResults}
+          placeholder="Search your semester resources..."
+        />
       </motion.div>
       
       <motion.div variants={itemVariants} className="mb-8">

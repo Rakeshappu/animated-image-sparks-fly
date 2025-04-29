@@ -21,22 +21,31 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   const [commentText, setCommentText] = useState('');
   const [viewCount, setViewCount] = useState(resource.stats?.views || 0);
   const { user } = useAuth();
+  const resourceId = resource._id || resource.id;
 
   // Check if the user has liked the resource on component mount
   useEffect(() => {
-    if (user && resource && resource.likedBy) {
-      const userLiked = resource.likedBy.some(id => id === user._id);
-      setIsLiked(userLiked);
+    if (user && resourceId) {
+      const checkLikeStatus = async () => {
+        try {
+          const response = await api.get(`/api/resources/${resourceId}/like-status`);
+          setIsLiked(response.data.isLiked);
+        } catch (error) {
+          console.error('Error checking like status:', error);
+        }
+      };
+      
+      checkLikeStatus();
     }
-  }, [resource, user]);
+  }, [resourceId, user]);
 
   // Check if the user has bookmarked the resource
   useEffect(() => {
     const checkBookmarkStatus = async () => {
-      if (!user || !resource) return;
+      if (!user || !resourceId) return;
       
       try {
-        const response = await api.get(`/api/resources/${resource._id || resource.id}/bookmark-status`);
+        const response = await api.get(`/api/resources/${resourceId}/bookmark-status`);
         setIsBookmarked(response.data.isBookmarked);
       } catch (error) {
         console.error('Error checking bookmark status:', error);
@@ -44,7 +53,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
     };
     
     checkBookmarkStatus();
-  }, [resource, user]);
+  }, [resourceId, user]);
 
   // Handle resource viewing
   const handleView = async () => {
@@ -53,11 +62,11 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
       setViewCount(prev => prev + 1);
       
       // Track the view - this is important for analytics and activity feed
-      const response = await trackResourceView(resource._id || resource.id, source);
+      const response = await trackResourceView(resourceId, source);
       
       // Update the resource view count in shared resources for other components
       if (response && response.views) {
-        updateResourceViewCount(resource._id || resource.id, response.views);
+        updateResourceViewCount(resourceId, response.views);
       }
       
       // Show the document viewer
@@ -92,7 +101,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
     
     // Implement download logic
     try {
-      await api.post(`/api/resources/${resource._id || resource.id}/download`);
+      await api.post(`/api/resources/${resourceId}/download`);
       window.open(resource.fileUrl, '_blank');
       toast.success('Download started');
     } catch (error) {
@@ -111,7 +120,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
     }
     
     try {
-      const response = await api.post(`/api/resources/${resource._id || resource.id}/like`);
+      const response = await api.post(`/api/resources/${resourceId}/like`);
       setIsLiked(response.data.isLiked);
       toast.success(response.data.isLiked ? 'Resource liked' : 'Like removed');
     } catch (error) {
@@ -125,7 +134,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
     e.stopPropagation(); // Prevent opening the viewer
     
     try {
-      const response = await api.post(`/api/resources/${resource._id || resource.id}/bookmark`);
+      const response = await api.post(`/api/resources/${resourceId}/bookmark`);
       setIsBookmarked(response.data.bookmarked);
       toast.success(response.data.bookmarked ? 'Resource bookmarked' : 'Bookmark removed');
     } catch (error) {
@@ -152,7 +161,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
     if (!commentText.trim()) return;
     
     try {
-      await api.post(`/api/resources/${resource._id || resource.id}/comments`, { content: commentText });
+      await api.post(`/api/resources/${resourceId}/comments`, { content: commentText });
       setCommentText('');
       toast.success('Comment added');
     } catch (error) {
