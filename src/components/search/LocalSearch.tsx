@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, Filter, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
-import { FacultyResource } from '../../types/faculty';
 
 interface LocalSearchProps {
   resources: any[];
@@ -20,6 +19,9 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
   });
   const { user } = useAuth();
   const filterRef = useRef<HTMLDivElement>(null);
+  const prevResourcesRef = useRef<any[]>([]);
+  const prevSearchTermRef = useRef<string>('');
+  const prevFiltersRef = useRef<{type: string[], category: string[]}>({type: [], category: []});
   
   // Use custom hook to detect clicks outside the filter area
   useOutsideClick(filterRef, () => {
@@ -27,43 +29,56 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
   });
 
   useEffect(() => {
-    const performSearch = () => {
-      const term = searchTerm.toLowerCase().trim();
+    const filtersChanged = 
+      JSON.stringify(filters) !== JSON.stringify(prevFiltersRef.current);
+    const searchTermChanged = searchTerm !== prevSearchTermRef.current;
+    const resourcesChanged = resources.length !== prevResourcesRef.current.length;
+    
+    // Only perform search if something has actually changed
+    if (filtersChanged || searchTermChanged || resourcesChanged) {
+      performSearch();
       
-      let filtered = resources;
-      
-      // For students, only show resources from their semester
-      if (user?.role === 'student' && user.semester) {
-        filtered = filtered.filter(resource => resource.semester === user.semester);
-      }
-      
-      // Apply search term filter - search in title, description, subject, and also fileContent if available
-      if (term) {
-        filtered = filtered.filter(resource => {
-          return (
-            resource.title?.toLowerCase().includes(term) ||
-            resource.description?.toLowerCase().includes(term) ||
-            resource.subject?.toLowerCase().includes(term) ||
-            resource.fileContent?.toLowerCase().includes(term)
-          );
-        });
-      }
+      // Update refs with current values
+      prevFiltersRef.current = {...filters};
+      prevSearchTermRef.current = searchTerm;
+      prevResourcesRef.current = [...resources];
+    }
+  }, [searchTerm, filters, resources]);
 
-      // Apply type filters
-      if (filters.type.length > 0) {
-        filtered = filtered.filter(resource => filters.type.includes(resource.type));
-      }
-      
-      // Apply category filters
-      if (filters.category.length > 0) {
-        filtered = filtered.filter(resource => filters.category.includes(resource.category));
-      }
+  const performSearch = () => {
+    const term = searchTerm.toLowerCase().trim();
+    
+    let filtered = [...resources];
+    
+    // For students, only show resources from their semester
+    if (user?.role === 'student' && user.semester) {
+      filtered = filtered.filter(resource => resource.semester === user.semester);
+    }
+    
+    // Apply search term filter - search in title, description, subject, and also fileContent if available
+    if (term) {
+      filtered = filtered.filter(resource => {
+        return (
+          (resource.title?.toLowerCase().includes(term) || false) ||
+          (resource.description?.toLowerCase().includes(term) || false) ||
+          (resource.subject?.toLowerCase().includes(term) || false) ||
+          (resource.fileContent?.toLowerCase().includes(term) || false)
+        );
+      });
+    }
 
-      onSearchResults(filtered);
-    };
+    // Apply type filters
+    if (filters.type.length > 0) {
+      filtered = filtered.filter(resource => filters.type.includes(resource.type));
+    }
+    
+    // Apply category filters
+    if (filters.category.length > 0) {
+      filtered = filtered.filter(resource => filters.category.includes(resource.category));
+    }
 
-    performSearch();
-  }, [searchTerm, resources, user, filters, onSearchResults]);
+    onSearchResults(filtered);
+  };
 
   const clearSearch = () => {
     setSearchTerm('');

@@ -7,6 +7,7 @@ import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { trackResourceView, updateResourceViewCount } from '../../utils/studyUtils';
 import { useAuth } from '../../contexts/AuthContext';
+import { formatTimeAgo } from '../../utils/dateUtils';
 
 interface ResourceItemProps {
   resource: FacultyResource;
@@ -20,10 +21,11 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [viewCount, setViewCount] = useState(resource.stats?.views || 0);
+  const [likesCount, setLikesCount] = useState(resource.stats?.likes || 0);
   const { user } = useAuth();
   
   // Ensure we have a valid resource ID
-  const resourceId = resource._id || resource.id;
+  const resourceId = resource.id || resource._id;
 
   // Check if the user has liked the resource on component mount
   useEffect(() => {
@@ -58,7 +60,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   }, [resourceId, user]);
 
   // Handle resource viewing
-  const handleView = async () => {
+  const handleView = async (e: React.MouseEvent) => {
     try {
       // Update local state immediately for responsive UI
       setViewCount(prev => prev + 1);
@@ -115,6 +117,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   // Handle like
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening the viewer
+    e.preventDefault();
     
     if (!user) {
       toast.error('Please log in to like resources');
@@ -124,12 +127,8 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
     try {
       const response = await api.post(`/api/resources/${resourceId}/like`);
       setIsLiked(response.data.isLiked);
+      setLikesCount(prev => response.data.isLiked ? prev + 1 : prev - 1);
       toast.success(response.data.isLiked ? 'Resource liked' : 'Like removed');
-      
-      // Update the likes count directly in the resource
-      if (response.data.isLiked) {
-        setViewCount(prev => prev + 1);
-      }
     } catch (error) {
       console.error('Like error:', error);
       toast.error('Failed to like resource');
@@ -139,6 +138,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   // Handle bookmark
   const handleBookmark = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening the viewer
+    e.preventDefault();
     
     try {
       const response = await api.post(`/api/resources/${resourceId}/bookmark`);
@@ -153,6 +153,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   // Handle comment toggle
   const handleCommentToggle = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening the viewer
+    e.preventDefault();
     setShowComments(!showComments);
     // Reset comment text when closing comment section
     if (showComments) {
@@ -197,7 +198,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
       </div>
       
       <div className="flex items-center text-xs text-gray-500 mt-1 mb-3">
-        <span>Uploaded {new Date(resource.createdAt || resource.uploadDate || '').toLocaleDateString()}</span>
+        <span>{formatTimeAgo(resource.createdAt || resource.uploadDate || '')}</span>
       </div>
       
       <div className="flex items-center justify-between pt-2 border-t border-gray-100">
@@ -207,21 +208,21 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
             <span>{viewCount}</span>
           </div>
           
-          <div 
+          <button 
             className={`flex items-center ${isLiked ? 'text-red-500' : 'text-gray-500'} text-xs cursor-pointer hover:text-red-600`}
             onClick={handleLike}
           >
             <ThumbsUp className={`h-3.5 w-3.5 mr-1 ${isLiked ? 'fill-current' : ''}`} />
-            <span>{resource.stats?.likes || 0}</span>
-          </div>
+            <span>{likesCount}</span>
+          </button>
           
-          <div 
+          <button 
             className="flex items-center text-gray-500 text-xs cursor-pointer hover:text-indigo-600"
             onClick={handleCommentToggle}
           >
             <MessageSquare className="h-3.5 w-3.5 mr-1" />
             <span>{resource.stats?.comments || 0}</span>
-          </div>
+          </button>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -241,7 +242,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
         </div>
       </div>
       
-      {/* Comment section - only show when toggled */}
+      {/* Comment section - only show when toggled for this specific resource */}
       {showComments && (
         <div 
           className="mt-3 pt-3 border-t border-gray-100"

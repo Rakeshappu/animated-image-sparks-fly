@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { BarChart2, Book, Clock } from 'lucide-react';
-import { SearchBar } from '../search/SearchBar';
+import { BarChart2, Book } from 'lucide-react';
 import { UserBanner } from '../user/UserBanner';
 import { AnalyticsCard } from '../analytics/AnalyticsCard';
 import { QuickAccess } from '../resources/QuickAccess';
@@ -9,10 +8,8 @@ import { ActivityFeed } from '../user/ActivityFeed';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
-import Skeleton from '../ui/skeleton';
-import { motion } from 'framer-motion';
 import { LocalSearch } from '../search/LocalSearch';
+import { FacultyResource } from '../../types/faculty';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -21,8 +18,10 @@ export const Dashboard = () => {
     totalResources: 0,
     totalViews: 0
   });
-  const [resources, setResources] = useState<any[]>([]);
-  const [filteredResources, setFilteredResources] = useState<any[]>([]);
+  const [resources, setResources] = useState<FacultyResource[]>([]);
+  const [filteredResources, setFilteredResources] = useState<FacultyResource[]>([]);
+  const [searchResults, setSearchResults] = useState<FacultyResource[]>([]);
+  const [searchPerformed, setSearchPerformed] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -36,7 +35,7 @@ export const Dashboard = () => {
           let semesterTotalViews = 0;
           
           // If we have resources array with stats data for the semester
-          if (window.sharedResources && Array.isArray(window.sharedResources)) {
+          if (typeof window !== 'undefined' && window.sharedResources && Array.isArray(window.sharedResources)) {
             // Filter resources for user's semester
             const semesterResources = window.sharedResources.filter(
               resource => resource.semester === user.semester
@@ -75,8 +74,9 @@ export const Dashboard = () => {
   }, [user]);
 
   // Handle search results
-  const handleSearchResults = (results: any[]) => {
-    setFilteredResources(results);
+  const handleSearchResults = (results: FacultyResource[]) => {
+    setSearchResults(results);
+    setSearchPerformed(results.length > 0 || results.length === 0);
   };
 
   return (
@@ -88,6 +88,34 @@ export const Dashboard = () => {
           placeholder="Search through your semester resources..."
         />
       </div>
+      
+      {searchPerformed && (
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">Search Results</h2>
+          {searchResults.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {searchResults.map((resource) => (
+                <div 
+                  key={resource.id || resource._id}
+                  className="bg-white p-4 rounded-lg shadow"
+                >
+                  <h3 className="font-medium text-indigo-600">{resource.title}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{resource.description}</p>
+                  <div className="flex items-center mt-2 text-xs text-gray-500">
+                    <span className="mr-3 capitalize">{resource.type}</span>
+                    <span className="mr-3">{resource.subject}</span>
+                    <span>Semester {resource.semester}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white p-6 rounded-lg shadow text-center">
+              <p className="text-gray-600">No resources found matching your search.</p>
+            </div>
+          )}
+        </div>
+      )}
       
       <div className="mt-8">
         <UserBanner />
@@ -110,7 +138,7 @@ export const Dashboard = () => {
         />
       </div>
 
-      {/* Make Activity Feed take full width */}
+      {/* Activity Feed takes full width */}
       <div className="w-full">
         <ActivityFeed limit={3} showTitle={true} autoRefresh={true} />
       </div>
