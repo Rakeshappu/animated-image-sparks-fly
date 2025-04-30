@@ -5,7 +5,7 @@ import { Clock, Eye, ThumbsUp, Download, MessageSquare, BookOpen } from 'lucide-
 import { useInterval } from '../../hooks/useInterval';
 import { useNavigate } from 'react-router-dom';
 import { DocumentViewer } from '../document/DocumentViewer';
-import { formatDateToRelative } from '../../utils/dateUtils';
+import {formatDateToRelative}  from '../../utils/dateUtils';
 
 interface ActivityFeedProps {
   limit?: number;
@@ -97,7 +97,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 w-full ${className}`}>
       {showTitle && (
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold flex items-center">
+          <h3 className="text-lg font-semibold flex items-center dark:text-gray-200">
             <BookOpen className="h-5 w-5 mr-2 text-indigo-600" />
             Recent Activities
           </h3>

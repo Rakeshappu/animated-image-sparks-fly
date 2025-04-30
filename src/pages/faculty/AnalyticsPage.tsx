@@ -244,7 +244,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-md p-6">
+        {/* <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-lg font-semibold mb-4">Activity Over Past Week</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -268,10 +268,8 @@ export default function AnalyticsPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-md p-6">
+        </div> */}
+         <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-lg font-semibold mb-4">Overall Engagement</h2>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -292,6 +290,9 @@ export default function AnalyticsPage() {
           </ResponsiveContainer>
         </div>
       </div>
+      </div>
+      
+     
     </div>
   );
 }

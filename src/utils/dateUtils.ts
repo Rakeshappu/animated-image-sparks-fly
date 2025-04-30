@@ -80,3 +80,44 @@ export const formatDate = (dateString: string, format: string = 'MM/DD/YYYY'): s
 
 // Add a formatDateToRelative alias for backward compatibility
 export const formatDateToRelative = formatTimeAgo;
+
+/**
+ * Safely format a date with fallback for invalid dates
+ */
+export const formatDateSafely = (dateString: string, format: string = 'MM/DD/YYYY'): string => {
+  if (!dateString) return 'Unknown date';
+  
+  try {
+    const date = new Date(dateString);
+    
+    // Handle invalid date
+    if (isNaN(date.getTime())) return 'Unknown date';
+    
+    return formatDate(dateString, format);
+  } catch (e) {
+    console.error('Error formatting date safely:', e);
+    return 'Unknown date';
+  }
+};
+
+/**
+ * Add days to a date and return formatted string
+ */
+export const addDaysSafely = (dateString: string, daysToAdd: number, format: string = 'MM/DD/YYYY'): string => {
+  if (!dateString) return 'Unknown date';
+  
+  try {
+    const date = new Date(dateString);
+    
+    // Handle invalid date
+    if (isNaN(date.getTime())) return 'Unknown date';
+    
+    // Add days
+    date.setDate(date.getDate() + daysToAdd);
+    
+    return formatDateSafely(date.toISOString(), format);
+  } catch (e) {
+    console.error('Error adding days to date:', e);
+    return 'Unknown date';
+  }
+};

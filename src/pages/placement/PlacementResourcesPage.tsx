@@ -19,12 +19,12 @@ const categories = [
 ];
 
 export const PlacementResourcesPage = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [resources, setResources] = useState<FacultyResource[]>([]);
   const [filteredResources, setFilteredResources] = useState<FacultyResource[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('category'));
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('category') || 'general');
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'alphabetical'>('recent');
   const [isLoading, setIsLoading] = useState(true);
   
@@ -40,16 +40,7 @@ export const PlacementResourcesPage = () => {
         );
         
         setResources(placementResources);
-        
-        // If category is selected, filter by that category
-        if (selectedCategory) {
-          const categoryResources = placementResources.filter(
-            (resource) => resource.placementCategory === selectedCategory
-          );
-          setFilteredResources(categoryResources);
-        } else {
-          setFilteredResources(placementResources);
-        }
+        setFilteredResources(placementResources);
       }
       
       setIsLoading(false);
@@ -68,25 +59,33 @@ export const PlacementResourcesPage = () => {
     }, 5000);
     
     return () => clearInterval(intervalId);
-  }, [selectedCategory]);
+  }, []);
+  
+  // Filter resources by category
+  useEffect(() => {
+    if (!selectedCategory) {
+      setFilteredResources(resources);
+      return;
+    }
+    
+    const filtered = resources.filter(resource => 
+      resource.placementCategory === selectedCategory
+    );
+    
+    setFilteredResources(filtered);
+    
+    // Update URL search params when category changes
+    setSearchParams({ category: selectedCategory });
+  }, [selectedCategory, resources, setSearchParams]);
   
   // Handle category selection
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
-    navigate(`/placement-resources?category=${categoryId}`);
-  };
-  
-  // Go back to category list
-  const handleBackToCategories = () => {
-    setSelectedCategory(null);
-    navigate('/placement-resources');
   };
   
   // Handle search results
-  const handleSearchResults = (results: FacultyResource[], hasSearched: boolean) => {
-    if (hasSearched) {
-      setFilteredResources(results);
-    }
+  const handleSearchResults = (results: FacultyResource[]) => {
+    setFilteredResources(results);
   };
   
   // Sort resources based on selected sort option
@@ -129,50 +128,6 @@ export const PlacementResourcesPage = () => {
     }
   };
   
-  // Show category selection view if no category is selected
-  if (!selectedCategory) {
-    return (
-      <motion.div 
-        className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <motion.div variants={itemVariants}>
-          <button 
-            onClick={() => navigate('/')} 
-            className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors mb-6"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </button>
-          
-          <h1 className="text-2xl font-bold mb-2">Placement Preparation Resources</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Select a category to explore resources for placement preparation.
-          </p>
-        </motion.div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map(category => (
-            <motion.div
-              key={category.id}
-              variants={itemVariants}
-              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer border border-gray-100"
-              onClick={() => handleCategorySelect(category.id)}
-            >
-              <h2 className="text-xl font-medium text-gray-800 mb-2">{category.name}</h2>
-              <p className="text-gray-500">
-                {resources.filter(r => r.placementCategory === category.id).length} resources available
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-    );
-  }
-  
-  // Show category resources view
   return (
     <motion.div 
       className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900"
@@ -182,28 +137,43 @@ export const PlacementResourcesPage = () => {
     >
       <motion.div variants={itemVariants}>
         <button 
-          onClick={handleBackToCategories} 
+          onClick={() => navigate('/')} 
           className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Categories
+          Back to Dashboard
         </button>
         
-        <h1 className="text-2xl font-bold mb-2">
-          {categories.find(c => c.id === selectedCategory)?.name}
-        </h1>
+        <h1 className="text-2xl font-bold mb-2">Placement Preparation Resources</h1>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Explore resources for {categories.find(c => c.id === selectedCategory)?.name.toLowerCase()}.
+          Explore resources to help you prepare for placement opportunities.
         </p>
       </motion.div>
       
       <motion.div variants={itemVariants} className="mb-6">
         <LocalSearch 
-          resources={resources.filter(r => r.placementCategory === selectedCategory)} 
+          resources={resources} 
           onSearchResults={handleSearchResults} 
-          placeholder={`Search ${selectedCategory} resources...`}
+          placeholder="Search placement resources..."
         />
       </motion.div>
+      
+      <div className="flex flex-wrap mb-6">
+        {categories.map(category => (
+          <motion.button
+            key={category.id}
+            variants={itemVariants}
+            className={`px-4 py-2 rounded-full mr-2 mb-2 ${
+              selectedCategory === category.id
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+            } transition-colors`}
+            onClick={() => handleCategorySelect(category.id)}
+          >
+            {category.name}
+          </motion.button>
+        ))}
+      </div>
       
       <motion.div variants={itemVariants} className="mb-6 flex justify-end">
         <div className="relative inline-block">
@@ -234,7 +204,9 @@ export const PlacementResourcesPage = () => {
           <Book className="h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-700">No resources found</h3>
           <p className="text-gray-500 text-center mt-1">
-            No resources available for {categories.find(c => c.id === selectedCategory)?.name.toLowerCase()}
+            {selectedCategory 
+              ? `No resources available for ${categories.find(c => c.id === selectedCategory)?.name}` 
+              : 'No placement resources available'}
           </p>
         </motion.div>
       ) : (
@@ -243,7 +215,7 @@ export const PlacementResourcesPage = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {sortedResources.map((resource) => (
-            <motion.div key={resource.id} variants={itemVariants}>
+            <motion.div key={resource._id} variants={itemVariants}>
               <ResourceItem 
                 resource={resource} 
                 source="placement"

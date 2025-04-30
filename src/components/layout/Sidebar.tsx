@@ -1,7 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import cropped from '../../../public/uploads/cropped.png'
 
 import { 
   BarChart2, 
@@ -14,7 +14,6 @@ import {
   Menu, 
   X,
   FileText,
-  Share2,
   ShieldCheck,
   Database,
   GraduationCap
@@ -76,7 +75,13 @@ export const Sidebar = () => {
   const FacultyLinks = () => (
     <>
       <SidebarLink icon={<FolderOpen />} text="My Resources" path="/faculty/dashboard" active={isActive('/faculty/dashboard')} />
-      <SidebarLink icon={<Upload />} text="Upload" path="/faculty/upload" active={isActive('/faculty/upload')} />
+      <SidebarLink 
+        icon={<Upload />} 
+        text="Upload" 
+        path="/faculty/upload" 
+        active={isActive('/faculty/upload')} 
+        isUpload={true}
+      />
       <SidebarLink icon={<BarChart2 />} text="Analytics" path="/faculty/analytics" active={isActive('/faculty/analytics')} />
       <SidebarLink icon={<Trash />} text="Trash" path="/faculty/trash" active={isActive('/faculty/trash')} />
     </>
@@ -131,12 +136,8 @@ export const Sidebar = () => {
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div onClick={handleLogoClick} className="flex items-center space-x-3 cursor-pointer">
-            {/* <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg"> */}
-            <div className="relative flex items-center justify-center w-10 h-9 rounded-full  text-white shadow-lg">
-       
-              {/* <Share2 className="w-5 h-5" /> */}
-              <span><img src={cropped} alt="logo" className="h-13 w-18"/></span>
-
+            <div className="relative flex items-center justify-center w-10 h-9 rounded-full text-white shadow-lg">
+              <span><img src="/uploads/cropped.png" alt="logo" className="h-13 w-18"/></span>
             </div>
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">VersatileShare</h2>
           </div>
@@ -180,37 +181,35 @@ export const Sidebar = () => {
   );
 };
 
-const SidebarLink = ({ 
-  icon, 
-  text, 
-  path, 
-  active 
-}: { 
+interface SidebarLinkProps { 
   icon: React.ReactNode; 
   text: string; 
   path: string;
   active: boolean;
-}) => {
-  if (text === 'Upload') {
-    return (
-      <Link
-        to={path}
-        state={{ isFromSidebar: true }}
-        className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${
-          active 
-            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
-            : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400'
-        }`}
-      >
-        <span className={active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}>{icon}</span>
-        <span>{text}</span>
-      </Link>
-    );
-  }
+  isUpload?: boolean;
+}
+
+const SidebarLink = ({ 
+  icon, 
+  text, 
+  path, 
+  active,
+  isUpload = false
+}: SidebarLinkProps) => {
+  const navigate = useNavigate();
+  
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isUpload) {
+      e.preventDefault();
+      navigate(path, { state: { isFromSidebar: true } });
+    }
+  };
 
   return (
     <Link
       to={path}
+      state={{ isFromSidebar: isUpload }}
+      onClick={handleClick}
       className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${
         active 
           ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 

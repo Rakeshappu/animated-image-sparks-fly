@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Filter, X } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 interface LocalSearchProps {
@@ -40,13 +40,14 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     
     let filtered = [...resources];
     
-    // For students, only show resources from their semester if user.role is student
+    // For students, show both resources from their semester AND placement resources
     if (user?.role === 'student' && user.semester) {
       filtered = filtered.filter(resource => {
-        // For placement resources, show regardless of semester
+        // Include placement resources for students
         if (resource.category === 'placement') {
           return true;
         }
+        // For regular study resources, filter by semester
         return resource.semester === user.semester;
       });
     }
@@ -72,18 +73,28 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     
     // Apply category filters
     if (filters.category.length > 0) {
-      filtered = filtered.filter(resource => filters.category.includes(resource.category));
+      filtered = filtered.filter(resource => 
+        filters.category.includes(resource.category) || 
+        filters.category.includes(resource.placementCategory)
+      );
     }
 
     onSearchResults(filtered, isSearchActive);
   }, [searchTerm, filters, resources, user, onSearchResults]);
 
-  // Run search when search term, filters or resources change
+  // Run search when search term or filters change
   useEffect(() => {
     if (hasUserSearched) {
       performSearch();
     }
-  }, [searchTerm, filters, resources, performSearch, hasUserSearched]);
+  }, [searchTerm, filters, hasUserSearched, performSearch]);
+
+  // Run search when resources change but only if user has searched before
+  useEffect(() => {
+    if (hasUserSearched && resources.length > 0) {
+      performSearch();
+    }
+  }, [resources, hasUserSearched, performSearch]);
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -116,7 +127,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full md:pr-6">
       <div className="relative">
         <input
           type="text"
@@ -152,7 +163,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
       {showFilters && (
         <div 
           ref={filterRef}
-          className="mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 z-20 absolute w-full"
+          className="mt-2 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 absolute w-full"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -162,7 +173,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
                   <label key={type} className="flex items-center">
                     <input
                       type="checkbox"
-                      className="form-checkbox h-4 w-4 text-indigo-600"
+                      className="form-checkbox h-4 w-4 text-indigo-600 rounded"
                       checked={filters.type.includes(type)}
                       onChange={(e) => handleFilterChange('type', type, e.target.checked)}
                     />
@@ -173,12 +184,12 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
             </div>
             <div>
               <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Categories</h3>
-              <div className="space-y-2">
-                {['Lecture Notes', 'Assignments', 'Lab Manuals', 'Previous Year Papers', 'Reference Materials', 'placement'].map((category) => (
+              <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                {['placement', 'Lecture Notes', 'Assignments', 'Lab Manuals', 'Previous Year Papers', 'Reference Materials', 'study', 'common', 'aptitude', 'interview', 'resume', 'coding', 'companies', 'general'].map((category) => (
                   <label key={category} className="flex items-center">
                     <input
                       type="checkbox"
-                      className="form-checkbox h-4 w-4 text-indigo-600"
+                      className="form-checkbox h-4 w-4 text-indigo-600 rounded"
                       checked={filters.category.includes(category)}
                       onChange={(e) => handleFilterChange('category', category, e.target.checked)}
                     />
