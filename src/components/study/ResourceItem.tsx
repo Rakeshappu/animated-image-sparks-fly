@@ -27,7 +27,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
   const commentRef = useRef<HTMLDivElement>(null);
   
   // Ensure we have a valid resource ID
-  const resourceId = resource.id || '';
+  const resourceId = resource.id || resource._id || '';
 
   // Use custom hook to detect clicks outside the comment section
   useOutsideClick(commentRef, () => {
@@ -205,6 +205,10 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({ resource, source = '
       toast.error('Failed to add comment');
     }
   };
+
+  if (!resource) {
+    return <div>Resource not found</div>;
+  }
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">

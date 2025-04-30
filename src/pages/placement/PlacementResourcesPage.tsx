@@ -8,6 +8,7 @@ import { FacultyResource } from '../../types/faculty';
 import { LocalSearch } from '../../components/search/LocalSearch';
 import { useAuth } from '../../contexts/AuthContext';
 import { trackResourceView } from '../../utils/studyUtils';
+import { toast } from 'react-hot-toast';
 
 const categories = [
   { id: 'aptitude', name: 'Aptitude Tests' },
@@ -27,6 +28,8 @@ export const PlacementResourcesPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('category') || 'general');
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'alphabetical'>('recent');
   const [isLoading, setIsLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState<FacultyResource[]>([]);
+  const [searchPerformed, setSearchPerformed] = useState(false);
   
   // Load resources from shared resources
   useEffect(() => {
@@ -39,6 +42,7 @@ export const PlacementResourcesPage = () => {
           (resource: FacultyResource) => resource.category === 'placement'
         );
         
+        console.log("Found placement resources:", placementResources.length);
         setResources(placementResources);
         setFilteredResources(placementResources);
       }
@@ -81,26 +85,32 @@ export const PlacementResourcesPage = () => {
   // Handle category selection
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
+    // Reset search when changing categories
+    setSearchPerformed(false);
   };
   
   // Handle search results
-  const handleSearchResults = (results: FacultyResource[]) => {
-    setFilteredResources(results);
+  const handleSearchResults = (results: FacultyResource[], hasSearched: boolean) => {
+    setSearchResults(results);
+    setSearchPerformed(hasSearched);
   };
   
   // Sort resources based on selected sort option
   const sortedResources = (() => {
+    // Use search results if search was performed, otherwise use filtered resources
+    const resourcesToSort = searchPerformed ? searchResults : filteredResources;
+    
     if (sortBy === 'recent') {
-      return [...filteredResources].sort((a, b) => 
+      return [...resourcesToSort].sort((a, b) => 
         new Date(b.createdAt || b.uploadDate || '').getTime() - 
         new Date(a.createdAt || a.uploadDate || '').getTime()
       );
     } else if (sortBy === 'popular') {
-      return [...filteredResources].sort((a, b) => 
+      return [...resourcesToSort].sort((a, b) => 
         (b.stats?.views || 0) - (a.stats?.views || 0)
       );
     } else {
-      return [...filteredResources].sort((a, b) => 
+      return [...resourcesToSort].sort((a, b) => 
         a.title.localeCompare(b.title)
       );
     }
@@ -215,7 +225,7 @@ export const PlacementResourcesPage = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {sortedResources.map((resource) => (
-            <motion.div key={resource._id} variants={itemVariants}>
+            <motion.div key={resource._id || resource.id} variants={itemVariants}>
               <ResourceItem 
                 resource={resource} 
                 source="placement"

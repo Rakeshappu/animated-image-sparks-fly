@@ -113,7 +113,7 @@ export const Dashboard = () => {
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900">
-      <div className="mb-6">
+      <div className="mb-6 max-w-3xl mx-auto">
         <LocalSearch 
           resources={resources} 
           onSearchResults={handleSearchResults} 
@@ -123,7 +123,7 @@ export const Dashboard = () => {
       
       {/* Search results with fixed positioning and proper close button */}
       {searchPerformed && (
-        <div className="mb-6 fixed z-50 md:left-[calc(16rem+1.5rem)] left-6 right-6 top-24 max-w-[calc(100%-3rem)] md:max-w-[calc(100%-18rem)] bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-y-auto">
+        <div className="mb-6 fixed z-50 left-0 right-0 mx-auto top-24 max-w-3xl bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-y-auto">
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Search Results</h2>

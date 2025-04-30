@@ -11,7 +11,7 @@ export const formatTimeAgo = (dateString: string): string => {
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
     // Handle invalid date
-    if (isNaN(date.getTime())) return 'Unknown date';
+    if (isNaN(date.getTime())) return 'Just now';
     
     // Less than a minute
     if (seconds < 60) {

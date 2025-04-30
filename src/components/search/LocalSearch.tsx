@@ -79,6 +79,10 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
       );
     }
 
+    // DEBUG logs
+    console.log("Search performed:", { term, filters, resultsCount: filtered.length });
+    console.log("Sample results:", filtered.slice(0, 3));
+    
     onSearchResults(filtered, isSearchActive);
   }, [searchTerm, filters, resources, user, onSearchResults]);
 
@@ -89,18 +93,13 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     }
   }, [searchTerm, filters, hasUserSearched, performSearch]);
 
-  // Run search when resources change but only if user has searched before
-  useEffect(() => {
-    if (hasUserSearched && resources.length > 0) {
-      performSearch();
-    }
-  }, [resources, hasUserSearched, performSearch]);
-
+  // Handle search input change
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setHasUserSearched(true);
   };
 
+  // Handle filter change
   const handleFilterChange = (type: 'type' | 'category', value: string, checked: boolean) => {
     setHasUserSearched(true);
     if (checked) {
@@ -116,6 +115,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     }
   };
 
+  // Clear search
   const clearSearch = () => {
     setSearchTerm('');
     setFilters({
@@ -127,7 +127,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
   };
 
   return (
-    <div className="relative w-full md:pr-6">
+    <div className="relative w-full">
       <div className="relative">
         <input
           type="text"
