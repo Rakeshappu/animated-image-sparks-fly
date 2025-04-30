@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { BarChart2, Book, X } from 'lucide-react';
 import { UserBanner } from '../user/UserBanner';
 import { AnalyticsCard } from '../analytics/AnalyticsCard';
@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { LocalSearch } from '../search/LocalSearch';
 import { FacultyResource } from '../../types/faculty';
 import { useNavigate } from 'react-router-dom';
+import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -23,6 +24,14 @@ export const Dashboard = () => {
   const [resources, setResources] = useState<FacultyResource[]>([]);
   const [searchResults, setSearchResults] = useState<FacultyResource[]>([]);
   const [searchPerformed, setSearchPerformed] = useState(false);
+  const searchResultsRef = useRef<HTMLDivElement>(null);
+
+  // Use outside click hook to close search results
+  useOutsideClick(searchResultsRef, () => {
+    if (searchPerformed) {
+      setSearchPerformed(false);
+    }
+  });
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -102,11 +111,15 @@ export const Dashboard = () => {
       if (resource.id || resource._id) {
         navigate(`/resources/${resource.id || resource._id}`);
       }
+      
+      // Close search results after navigating
+      setSearchPerformed(false);
     } catch (err) {
       console.error('Failed to track view or navigate:', err);
       // Still try to navigate even if tracking fails
       if (resource.id || resource._id) {
         navigate(`/resources/${resource.id || resource._id}`);
+        setSearchPerformed(false);
       }
     }
   };
@@ -123,7 +136,11 @@ export const Dashboard = () => {
       
       {/* Search results with fixed positioning and proper close button */}
       {searchPerformed && (
-        <div className="mb-6 fixed z-50 left-0 right-0 mx-auto top-24 max-w-3xl bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-y-auto">
+        <div 
+          ref={searchResultsRef}
+          className="mb-6 fixed z-50 left-1/2 transform -translate-x-1/2 top-24 max-w-3xl w-full md:w-3/4 lg:w-2/3 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-y-auto mx-4"
+          style={{ maxWidth: "calc(100% - 2rem)" }}
+        >
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Search Results</h2>
@@ -136,7 +153,7 @@ export const Dashboard = () => {
               </button>
             </div>
             {searchResults.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {searchResults.map((resource) => (
                   <div 
                     key={resource.id || resource._id}

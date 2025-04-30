@@ -115,6 +115,14 @@ export const PlacementResourcesPage = () => {
       );
     }
   })();
+
+  // Handle resource click
+  const handleResourceClick = (resource: FacultyResource) => {
+    if (resource._id || resource.id) {
+      const resourceId = resource._id || resource.id;
+      navigate(`/resources/${resourceId}`);
+    }
+  };
   
   // Animation variants
   const containerVariants = {
@@ -225,7 +233,12 @@ export const PlacementResourcesPage = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {sortedResources.map((resource) => (
-            <motion.div key={resource._id || resource.id} variants={itemVariants}>
+            <motion.div 
+              key={resource._id || resource.id} 
+              variants={itemVariants}
+              onClick={() => handleResourceClick(resource)}
+              className="cursor-pointer"
+            >
               <ResourceItem 
                 resource={resource} 
                 source="placement"

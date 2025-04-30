@@ -80,7 +80,7 @@ export const Sidebar = () => {
         text="Upload" 
         path="/faculty/upload" 
         active={isActive('/faculty/upload')} 
-        isUpload={true}
+        specialAction={() => navigate('/faculty/upload', { state: { isFromSidebar: true } })}
       />
       <SidebarLink icon={<BarChart2 />} text="Analytics" path="/faculty/analytics" active={isActive('/faculty/analytics')} />
       <SidebarLink icon={<Trash />} text="Trash" path="/faculty/trash" active={isActive('/faculty/trash')} />
@@ -137,7 +137,7 @@ export const Sidebar = () => {
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div onClick={handleLogoClick} className="flex items-center space-x-3 cursor-pointer">
             <div className="relative flex items-center justify-center w-10 h-9 rounded-full text-white shadow-lg">
-              <span><img src="/uploads/cropped.png" alt="logo" className="h-13 w-18"/></span>
+              <span className="font-bold text-xl">V</span>
             </div>
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">VersatileShare</h2>
           </div>
@@ -187,6 +187,7 @@ interface SidebarLinkProps {
   path: string;
   active: boolean;
   isUpload?: boolean;
+  specialAction?: () => void;
 }
 
 const SidebarLink = ({ 
@@ -194,21 +195,20 @@ const SidebarLink = ({
   text, 
   path, 
   active,
-  isUpload = false
+  isUpload = false,
+  specialAction
 }: SidebarLinkProps) => {
-  const navigate = useNavigate();
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (isUpload) {
+    if (specialAction) {
       e.preventDefault();
-      navigate(path, { state: { isFromSidebar: true } });
+      specialAction();
     }
   };
 
   return (
     <Link
       to={path}
-      state={{ isFromSidebar: isUpload }}
       onClick={handleClick}
       className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${
         active 

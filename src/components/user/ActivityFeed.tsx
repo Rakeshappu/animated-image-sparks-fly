@@ -4,8 +4,7 @@ import { activityService } from '../../services/activity.service';
 import { Clock, Eye, ThumbsUp, Download, MessageSquare, BookOpen } from 'lucide-react';
 import { useInterval } from '../../hooks/useInterval';
 import { useNavigate } from 'react-router-dom';
-import { DocumentViewer } from '../document/DocumentViewer';
-import {formatDateToRelative}  from '../../utils/dateUtils';
+import { formatTimeAgo } from '../../utils/dateUtils';
 
 interface ActivityFeedProps {
   limit?: number;
@@ -24,8 +23,6 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 }) => {
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDocumentViewer, setShowDocumentViewer] = useState(false);
-  const [selectedResource, setSelectedResource] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const navigate = useNavigate();
@@ -80,11 +77,12 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   const handleResourceClick = (activity: any) => {
     if (!activity.resource) return;
     
-    if (activity.resource.fileUrl) {
-      setSelectedResource(activity.resource);
-      setShowDocumentViewer(true);
+    // Direct navigation to the resource page
+    if (activity.resource._id || activity.resource.id) {
+      const resourceId = activity.resource._id || activity.resource.id;
+      navigate(`/resources/${resourceId}`);
     } else {
-      // Handle navigation to resource based on category
+      // Fallback navigation based on category
       if (activity.resource.category === 'placement') {
         navigate(`/placement-resources?category=${activity.resource.placementCategory || ''}`);
       } else {
@@ -144,7 +142,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                     {activity.message}
                   </p>
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    <span>{formatDateToRelative(activity.timestamp)}</span>
+                    <span>{formatTimeAgo(activity.timestamp)}</span>
                     {activity.source && (
                       <span className="ml-2 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">
                         {activity.source === 'study-materials' ? 'Study' : 
@@ -165,10 +163,6 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                         <span>{activity.resource.stats.likes || 0}</span>
                       </div>
                       <div className="flex items-center">
-                        <Download className="h-3 w-3 mr-1" />
-                        <span>{activity.resource.stats.downloads || 0}</span>
-                      </div>
-                      <div className="flex items-center">
                         <MessageSquare className="h-3 w-3 mr-1" />
                         <span>{activity.resource.stats.comments || 0}</span>
                       </div>
@@ -178,26 +172,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               </div>
             ))}
           </div>
-          {/* Optional: Only show last refresh time if auto-refresh is enabled */}
-          {autoRefresh && (
-            <div className="text-xs text-right text-gray-400 mt-3 opacity-70">
-              Last updated: {lastRefresh.toLocaleTimeString()}
-            </div>
-          )}
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-          <p>No recent activities found</p>
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+          <p className="text-gray-500 dark:text-gray-400">No recent activities found.</p>
         </div>
-      )}
-      
-      {/* Document viewer for viewing resources */}
-      {showDocumentViewer && selectedResource && (
-        <DocumentViewer
-          fileUrl={selectedResource.fileUrl}
-          fileName={selectedResource.fileName || selectedResource.title}
-          onClose={() => setShowDocumentViewer(false)}
-        />
       )}
     </div>
   );
