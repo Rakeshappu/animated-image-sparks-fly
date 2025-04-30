@@ -25,13 +25,14 @@ export const Dashboard = () => {
   const [searchResults, setSearchResults] = useState<FacultyResource[]>([]);
   const [searchPerformed, setSearchPerformed] = useState(false);
   const searchResultsRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLDivElement>(null);
 
   // Use outside click hook to close search results
   useOutsideClick(searchResultsRef, () => {
     if (searchPerformed) {
       setSearchPerformed(false);
     }
-  });
+  }, [searchInputRef]);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -126,7 +127,7 @@ export const Dashboard = () => {
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900">
-      <div className="mb-6 max-w-3xl mx-auto">
+      <div className="mb-6 max-w-3xl mx-auto" ref={searchInputRef}>
         <LocalSearch 
           resources={resources} 
           onSearchResults={handleSearchResults} 
@@ -139,7 +140,7 @@ export const Dashboard = () => {
         <div 
           ref={searchResultsRef}
           className="mb-6 fixed z-50 left-1/2 transform -translate-x-1/2 top-24 max-w-3xl w-full md:w-3/4 lg:w-2/3 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-y-auto mx-4"
-          style={{ maxWidth: "calc(100% - 2rem)" }}
+          style={{ maxWidth: "calc(100% - 2rem)", left: "50%", transform: "translateX(-50%)" }}
         >
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">

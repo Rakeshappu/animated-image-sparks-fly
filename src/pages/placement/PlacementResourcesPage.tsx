@@ -43,6 +43,10 @@ export const PlacementResourcesPage = () => {
         );
         
         console.log("Found placement resources:", placementResources.length);
+        if (placementResources.length > 0) {
+          console.log("Sample placement resource:", placementResources[0]);
+        }
+        
         setResources(placementResources);
         setFilteredResources(placementResources);
       }
@@ -236,7 +240,6 @@ export const PlacementResourcesPage = () => {
             <motion.div 
               key={resource._id || resource.id} 
               variants={itemVariants}
-              onClick={() => handleResourceClick(resource)}
               className="cursor-pointer"
             >
               <ResourceItem 

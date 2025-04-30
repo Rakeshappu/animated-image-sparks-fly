@@ -186,7 +186,6 @@ interface SidebarLinkProps {
   text: string; 
   path: string;
   active: boolean;
-  isUpload?: boolean;
   specialAction?: () => void;
 }
 
@@ -195,7 +194,6 @@ const SidebarLink = ({
   text, 
   path, 
   active,
-  isUpload = false,
   specialAction
 }: SidebarLinkProps) => {
   

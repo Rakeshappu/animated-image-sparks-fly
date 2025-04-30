@@ -1,30 +1,34 @@
 
 import { useEffect, RefObject } from 'react';
 
-/**
- * A hook that detects clicks outside of a specified element
- * @param ref - Reference to the element to detect clicks outside of
- * @param callback - Function to call when a click outside is detected
- */
 export const useOutsideClick = (
   ref: RefObject<HTMLElement>,
-  callback: () => void
+  callback: () => void,
+  exceptRefs: RefObject<HTMLElement>[] = []
 ) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+      // Check if the click was outside the ref element 
+      const isOutside = ref.current && !ref.current.contains(event.target as Node);
+      
+      // Check if the click wasn't on any of the exception elements
+      const notOnExceptions = exceptRefs.every(exceptRef => 
+        !exceptRef.current || !exceptRef.current.contains(event.target as Node)
+      );
+      
+      if (isOutside && notOnExceptions) {
         callback();
       }
     };
 
     // Add event listener
     document.addEventListener('mousedown', handleClickOutside);
-
-    // Cleanup
+    
+    // Clean up
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [ref, callback]);
+  }, [ref, callback, exceptRefs]);
 };
 
 export default useOutsideClick;

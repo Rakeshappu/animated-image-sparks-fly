@@ -79,9 +79,15 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
       );
     }
 
-    // DEBUG logs
+    // Enable this to debug placement resource matching
     console.log("Search performed:", { term, filters, resultsCount: filtered.length });
-    console.log("Sample results:", filtered.slice(0, 3));
+    
+    // Debug logs for placement resources
+    const placementResources = filtered.filter(resource => resource.category === 'placement');
+    console.log("Placement resources found:", placementResources.length);
+    if (placementResources.length > 0) {
+      console.log("Sample placement resource:", placementResources[0]);
+    }
     
     onSearchResults(filtered, isSearchActive);
   }, [searchTerm, filters, resources, user, onSearchResults]);
