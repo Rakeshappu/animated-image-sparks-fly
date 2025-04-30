@@ -95,6 +95,7 @@ export const PlacementResourcesPage = () => {
   
   // Handle search results
   const handleSearchResults = (results: FacultyResource[], hasSearched: boolean) => {
+    console.log("Search results returned:", results.length, "has searched:", hasSearched);
     setSearchResults(results);
     setSearchPerformed(hasSearched);
   };
@@ -122,6 +123,7 @@ export const PlacementResourcesPage = () => {
 
   // Handle resource click
   const handleResourceClick = (resource: FacultyResource) => {
+    console.log("Resource clicked:", resource);
     if (resource._id || resource.id) {
       const resourceId = resource._id || resource.id;
       navigate(`/resources/${resourceId}`);
@@ -241,6 +243,7 @@ export const PlacementResourcesPage = () => {
               key={resource._id || resource.id} 
               variants={itemVariants}
               className="cursor-pointer"
+              onClick={() => handleResourceClick(resource)}
             >
               <ResourceItem 
                 resource={resource} 

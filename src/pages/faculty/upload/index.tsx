@@ -1,57 +1,60 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UploadWorkflow } from '../../../components/faculty/UploadWorkflow';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { createResource, createSubjectFolders } from '../../../services/resource.service';
+import { createResource } from '../../../services/resource.service';
+import { ArrowLeft } from 'lucide-react';
 
-const UploadPage = () => {
-  const navigate = useNavigate();
+const FacultyUploadPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isUploading, setIsUploading] = useState(false);
   const isFromSidebar = location.state?.isFromSidebar || false;
   
-  // Output debug information
-  useEffect(() => {
-    console.log('Upload page loaded with isFromSidebar:', isFromSidebar);
-  }, [isFromSidebar]);
-
-  const handleUploadOption = async (option: string, data?: any) => {
-    try {
-      if (option === 'direct-upload') {
-        // For direct resource upload
+  console.log("Upload page loaded with state:", location.state);
+  console.log("Is from sidebar:", isFromSidebar);
+  
+  const handleSelectOption = async (option: string, data: any) => {
+    console.log('Option selected:', option, data);
+    
+    if (option === 'direct-upload' && data.title) {
+      // This handles the final submission from the direct upload
+      try {
+        setIsUploading(true);
+        console.log('Uploading resource:', data);
+        
+        // Create a new FormData object for the upload
         const formData = new FormData();
         
+        // Add all the necessary fields
         formData.append('title', data.title);
         formData.append('description', data.description);
         formData.append('type', data.type);
         formData.append('subject', data.subject);
         formData.append('semester', String(data.semester));
         
+        // Add file or link based on the resource type
         if (data.type === 'link') {
           formData.append('link', data.link);
         } else if (data.file) {
           formData.append('file', data.file);
         }
         
+        // Upload the resource directly using the service
         const response = await createResource(formData);
-        console.log('Resource created:', response);
+        console.log('Resource uploaded:', response);
         
+        // After successful upload, navigate to dashboard
         toast.success('Resource uploaded successfully!');
         navigate('/faculty/dashboard');
-      } 
-      else if (option === 'create-subject-folders') {
-        // For creating subject folders
-        const { semester, subjects } = data;
-        
-        const response = await createSubjectFolders(semester, subjects);
-        console.log('Subject folders created:', response);
-        
-        toast.success('Subject folders created successfully!');
-        navigate('/faculty/dashboard');
+      } catch (error: any) {
+        console.error('Upload error:', error);
+        toast.error(error.message || 'Failed to upload resource');
+      } finally {
+        setIsUploading(false);
       }
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error(error.message || 'Upload failed');
     }
   };
 
@@ -60,11 +63,19 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Upload Resources</h1>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <button
+        onClick={() => navigate('/faculty/dashboard')}
+        className="mb-6 text-indigo-600 hover:text-indigo-700 flex items-center"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Dashboard
+      </button>
+
+      <h1 className="text-2xl font-bold mb-6">Upload Learning Resources</h1>
       
       <UploadWorkflow 
-        onSelectOption={handleUploadOption}
+        onSelectOption={handleSelectOption} 
         onCancel={handleCancel}
         showAvailableSubjects={true}
         isFromSidebar={isFromSidebar}
@@ -73,4 +84,4 @@ const UploadPage = () => {
   );
 };
 
-export default UploadPage;
+export default FacultyUploadPage;

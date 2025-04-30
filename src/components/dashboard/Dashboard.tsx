@@ -125,8 +125,13 @@ export const Dashboard = () => {
     }
   };
 
+  // Close search results
+  const handleCloseSearchResults = () => {
+    setSearchPerformed(false);
+  };
+
   return (
-    <div className="p-6 bg-gray-50 dark:bg-gray-900">
+    <div className="p-6 bg-gray-50 dark:bg-gray-900 max-w-full">
       <div className="mb-6 max-w-3xl mx-auto" ref={searchInputRef}>
         <LocalSearch 
           resources={resources} 
@@ -139,14 +144,14 @@ export const Dashboard = () => {
       {searchPerformed && (
         <div 
           ref={searchResultsRef}
-          className="mb-6 fixed z-50 left-1/2 transform -translate-x-1/2 top-24 max-w-3xl w-full md:w-3/4 lg:w-2/3 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-y-auto mx-4"
-          style={{ maxWidth: "calc(100% - 2rem)", left: "50%", transform: "translateX(-50%)" }}
+          className="mb-6 fixed z-50 top-24 max-w-3xl w-full md:w-3/4 lg:w-2/3 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-y-auto"
+          style={{ left: "50%", transform: "translateX(-50%)", maxWidth: "calc(100% - 300px)" }}
         >
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Search Results</h2>
               <button
-                onClick={() => setSearchPerformed(false)}
+                onClick={handleCloseSearchResults}
                 className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-1"
                 aria-label="Close search results"
               >

@@ -28,6 +28,13 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
 
   // Memoize the search function to prevent unnecessary re-renders
   const performSearch = useCallback(() => {
+    console.log('Performing search with term:', searchTerm);
+    console.log('Total resources available:', resources.length);
+    
+    // Check if there are placement resources
+    const placementResources = resources.filter(r => r.category === 'placement');
+    console.log('Placement resources available:', placementResources.length);
+    
     // Only search if there's a search term or filters applied
     const isSearchActive = searchTerm.trim() !== '' || filters.type.length > 0 || filters.category.length > 0;
     
@@ -39,58 +46,51 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     const term = searchTerm.toLowerCase().trim();
     
     let filtered = [...resources];
-    
-    // For students, show both resources from their semester AND placement resources
-    if (user?.role === 'student' && user.semester) {
-      filtered = filtered.filter(resource => {
-        // Include placement resources for students
-        if (resource.category === 'placement') {
-          return true;
-        }
-        // For regular study resources, filter by semester
-        return resource.semester === user.semester;
-      });
-    }
+    console.log('Filtering from total resources:', filtered.length);
     
     // Apply search term filter - search in title, description, subject, and also fileContent if available
     if (term) {
       filtered = filtered.filter(resource => {
-        return (
-          (resource.title?.toLowerCase().includes(term) || false) ||
-          (resource.description?.toLowerCase().includes(term) || false) ||
-          (resource.subject?.toLowerCase().includes(term) || false) ||
-          (resource.category?.toLowerCase().includes(term) || false) ||
-          (resource.placementCategory?.toLowerCase().includes(term) || false) ||
-          (resource.fileContent?.toLowerCase().includes(term) || false)
-        );
+        const matchesTitle = resource.title?.toLowerCase().includes(term) || false;
+        const matchesDescription = resource.description?.toLowerCase().includes(term) || false;
+        const matchesSubject = resource.subject?.toLowerCase().includes(term) || false;
+        const matchesCategory = resource.category?.toLowerCase().includes(term) || false;
+        const matchesPlacementCategory = resource.placementCategory?.toLowerCase().includes(term) || false;
+        const matchesFileContent = resource.fileContent?.toLowerCase().includes(term) || false;
+        
+        return matchesTitle || matchesDescription || matchesSubject || matchesCategory || 
+               matchesPlacementCategory || matchesFileContent;
       });
+      
+      console.log('After term filtering:', filtered.length);
     }
 
     // Apply type filters
     if (filters.type.length > 0) {
       filtered = filtered.filter(resource => filters.type.includes(resource.type));
+      console.log('After type filtering:', filtered.length);
     }
     
     // Apply category filters
     if (filters.category.length > 0) {
-      filtered = filtered.filter(resource => 
-        filters.category.includes(resource.category) || 
-        filters.category.includes(resource.placementCategory)
-      );
+      filtered = filtered.filter(resource => {
+        return filters.category.includes(resource.category || '') || 
+               filters.category.includes(resource.placementCategory || '');
+      });
+      console.log('After category filtering:', filtered.length);
     }
 
-    // Enable this to debug placement resource matching
-    console.log("Search performed:", { term, filters, resultsCount: filtered.length });
+    // Debug - count placement resources after filtering
+    const placementResourcesAfterFiltering = filtered.filter(r => r.category === 'placement');
+    console.log('Placement resources after filtering:', placementResourcesAfterFiltering.length);
     
-    // Debug logs for placement resources
-    const placementResources = filtered.filter(resource => resource.category === 'placement');
-    console.log("Placement resources found:", placementResources.length);
-    if (placementResources.length > 0) {
-      console.log("Sample placement resource:", placementResources[0]);
+    // Debug selected resources
+    if (filtered.length > 0) {
+      console.log('Sample of filtered resources:', filtered.slice(0, 2));
     }
     
     onSearchResults(filtered, isSearchActive);
-  }, [searchTerm, filters, resources, user, onSearchResults]);
+  }, [searchTerm, filters, resources, onSearchResults]);
 
   // Run search when search term or filters change
   useEffect(() => {
@@ -98,6 +98,19 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
       performSearch();
     }
   }, [searchTerm, filters, hasUserSearched, performSearch]);
+
+  // Run search on component mount if we have resources
+  useEffect(() => {
+    if (resources.length > 0) {
+      console.log('Resources loaded:', resources.length);
+      // Check if there are placement resources
+      const placementResources = resources.filter(r => r.category === 'placement');
+      console.log('Placement resources available on load:', placementResources.length);
+      if (placementResources.length > 0) {
+        console.log('Sample placement resource:', placementResources[0]);
+      }
+    }
+  }, [resources]);
 
   // Handle search input change
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

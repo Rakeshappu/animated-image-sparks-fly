@@ -107,3 +107,52 @@ export const formatDate = (date: string | Date): string => {
     return 'Unknown date';
   }
 };
+
+/**
+ * Safely format a date with fallback for invalid dates
+ * @param {string|Date} date - Date string or Date object
+ * @returns {string} Formatted date string or fallback message
+ */
+export const formatDateSafely = (date: string | Date | null | undefined): string => {
+  if (!date) return 'N/A';
+  
+  try {
+    const parsedDate = typeof date === 'string' ? new Date(date) : date;
+    
+    if (isNaN(parsedDate.getTime())) {
+      return 'Invalid date';
+    }
+    
+    return parsedDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch (error) {
+    console.error('Error formatting date safely:', error);
+    return 'N/A';
+  }
+};
+
+/**
+ * Safely add days to a date with fallback for invalid dates
+ * @param {Date} date - Base date
+ * @param {number} days - Number of days to add
+ * @returns {Date} New date with added days or current date as fallback
+ */
+export const addDaysSafely = (date: Date | string | null | undefined, days: number): Date => {
+  try {
+    const parsedDate = date ? (typeof date === 'string' ? new Date(date) : date) : new Date();
+    
+    if (isNaN(parsedDate.getTime())) {
+      return new Date(); // Return current date as fallback
+    }
+    
+    const result = new Date(parsedDate);
+    result.setDate(result.getDate() + days);
+    return result;
+  } catch (error) {
+    console.error('Error adding days to date:', error);
+    return new Date(); // Return current date as fallback
+  }
+};

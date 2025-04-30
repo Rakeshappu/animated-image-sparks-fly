@@ -80,7 +80,10 @@ export const Sidebar = () => {
         text="Upload" 
         path="/faculty/upload" 
         active={isActive('/faculty/upload')} 
-        specialAction={() => navigate('/faculty/upload', { state: { isFromSidebar: true } })}
+        specialAction={() => {
+          console.log("Navigating to upload page with sidebar state");
+          navigate('/faculty/upload', { state: { isFromSidebar: true } });
+        }}
       />
       <SidebarLink icon={<BarChart2 />} text="Analytics" path="/faculty/analytics" active={isActive('/faculty/analytics')} />
       <SidebarLink icon={<Trash />} text="Trash" path="/faculty/trash" active={isActive('/faculty/trash')} />
@@ -200,6 +203,7 @@ const SidebarLink = ({
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (specialAction) {
       e.preventDefault();
+      console.log(`Special action triggered for ${text}`);
       specialAction();
     }
   };
