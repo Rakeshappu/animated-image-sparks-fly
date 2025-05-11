@@ -99,3 +99,5 @@ export const QuickAccess = () => {
     </div>
   );
 };
+
+export default QuickAccess;

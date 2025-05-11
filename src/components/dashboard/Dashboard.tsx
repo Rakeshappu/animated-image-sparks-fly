@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { BarChart2, Book, X } from 'lucide-react';
 import { UserBanner } from '../user/UserBanner';
@@ -99,17 +98,27 @@ export const Dashboard = () => {
     setSearchPerformed(hasSearched);
   };
 
-  // Handle resource click - track view and navigate to resource
+  // Handle resource click - track view and navigate to resource based on its type
   const handleResourceClick = async (resource: FacultyResource) => {
     try {
-      // Track view
+      // Track view if resource has an ID
       if (resource.id || resource._id) {
         const resourceId = resource.id || resource._id;
         await api.post(`/api/resources/${resourceId}/view`);
       }
       
-      // Navigate to resource
-      if (resource.id || resource._id) {
+      // Determine the correct path to navigate
+      if (resource.subject && resource.category !== 'placement') {
+        // For study materials, navigate to subject page
+        console.log(`Navigating to subject: /study/${resource.subject}`);
+        navigate(`/study/${resource.subject}`);
+      } else if (resource.category === 'placement') {
+        // For placement resources, navigate to placement page
+        console.log('Navigating to placement resources');
+        navigate('/placement');
+      } else if (resource.id || resource._id) {
+        // Default: view the specific resource
+        console.log(`Viewing resource directly: ${resource.id || resource._id}`);
         navigate(`/resources/${resource.id || resource._id}`);
       }
       
@@ -117,22 +126,18 @@ export const Dashboard = () => {
       setSearchPerformed(false);
     } catch (err) {
       console.error('Failed to track view or navigate:', err);
-      // Still try to navigate even if tracking fails
-      if (resource.id || resource._id) {
-        navigate(`/resources/${resource.id || resource._id}`);
-        setSearchPerformed(false);
-      }
+      toast.error('Failed to open resource');
     }
   };
 
-  // Close search results
+  // Close search results - fixed to properly reset the state
   const handleCloseSearchResults = () => {
     setSearchPerformed(false);
   };
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900 max-w-full">
-      <div className="mb-6 max-w-3xl mx-auto" ref={searchInputRef}>
+      <div className="mb-6 max-w-6xl mx-auto" ref={searchInputRef}>
         <LocalSearch 
           resources={resources} 
           onSearchResults={handleSearchResults} 
@@ -145,15 +150,16 @@ export const Dashboard = () => {
         <div 
           ref={searchResultsRef}
           className="mb-6 fixed z-50 top-24 max-w-3xl w-full md:w-3/4 lg:w-2/3 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-y-auto"
-          style={{ left: "50%", transform: "translateX(-50%)", maxWidth: "calc(100% - 300px)" }}
+          style={{ left: "58%", top:"20%", transform: "translateX(-50%)", maxWidth: "calc(100% - 32px)" }}
         >
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Search Results</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Search Results</h2>
               <button
                 onClick={handleCloseSearchResults}
-                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-1"
+                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                 aria-label="Close search results"
+                type="button"
               >
                 <X className="h-5 w-5" />
               </button>

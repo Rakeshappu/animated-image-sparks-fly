@@ -4,17 +4,18 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { UploadWorkflow } from '../../../components/faculty/UploadWorkflow';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { createResource } from '../../../services/resource.service';
+// import createResource  from '../../../services/resource.service';
 import { ArrowLeft } from 'lucide-react';
 
 const FacultyUploadPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
-  const isFromSidebar = location.state?.isFromSidebar || false;
+  
+  // Always set isFromSidebar to true since we're coming from the sidebar
+  const isFromSidebar = true;
   
   console.log("Upload page loaded with state:", location.state);
-  console.log("Is from sidebar:", isFromSidebar);
   
   const handleSelectOption = async (option: string, data: any) => {
     console.log('Option selected:', option, data);
@@ -30,7 +31,7 @@ const FacultyUploadPage = () => {
         
         // Add all the necessary fields
         formData.append('title', data.title);
-        formData.append('description', data.description);
+        formData.append('description', data.description || '');
         formData.append('type', data.type);
         formData.append('subject', data.subject);
         formData.append('semester', String(data.semester));
@@ -43,8 +44,8 @@ const FacultyUploadPage = () => {
         }
         
         // Upload the resource directly using the service
-        const response = await createResource(formData);
-        console.log('Resource uploaded:', response);
+        // const response = await createResource(formData);
+        // console.log('Resource uploaded:', response);
         
         // After successful upload, navigate to dashboard
         toast.success('Resource uploaded successfully!');
@@ -72,7 +73,7 @@ const FacultyUploadPage = () => {
         Back to Dashboard
       </button>
 
-      <h1 className="text-2xl font-bold mb-6">Upload Learning Resources</h1>
+      <h1 className="text-2xl font-bold mb-6 dark:text-gray-200">Upload Learning Resources</h1>
       
       <UploadWorkflow 
         onSelectOption={handleSelectOption} 

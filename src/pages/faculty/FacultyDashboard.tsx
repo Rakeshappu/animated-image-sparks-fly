@@ -7,7 +7,7 @@ import { UploadWorkflow } from '../../components/faculty/UploadWorkflow';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
-import { checkDatabaseConnection } from '../../services/resource.service';
+import checkDatabaseConnection  from '../../services/resource.service';
 import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
 import { API_ROUTES } from '../../lib/api/routes';
 import { toast } from 'react-hot-toast';
@@ -73,12 +73,12 @@ export const FacultyDashboard = () => {
     
     checkConnection();
   }, []);
-
   const fetchResources = async () => {
     try {
       setIsLoading(true);
-      const response = await api.get(API_ROUTES.RESOURCES.LIST);
-      console.log('Fetched resources from DB:', response.data);
+      // Use the faculty-specific endpoint which only returns resources uploaded by the current faculty
+      const response = await api.get('/api/resources/faculty');
+      console.log('Fetched faculty resources from DB:', response.data);
       
       const resourcesData = response.data.resources || response.data || [];
       
@@ -93,6 +93,7 @@ export const FacultyDashboard = () => {
             uploadDate: res.createdAt,
             fileName: res.fileName,
             fileUrl: res.fileUrl,
+            category: res.category,
             stats: {
               views: res.stats?.views || 0,
               likes: res.stats?.likes || 0,
@@ -161,7 +162,7 @@ export const FacultyDashboard = () => {
       
       const formData = new FormData();
       formData.append('title', data.title);
-      formData.append('description', data.description);
+      formData.append('description', data.description || '');
       formData.append('type', data.type);
       formData.append('subject', data.subject);
       
@@ -175,6 +176,14 @@ export const FacultyDashboard = () => {
       
       if (data.link) {
         formData.append('link', data.link);
+      }
+
+      if (data.category) {
+        formData.append('category', data.category);
+      }
+
+      if (data.placementCategory) {
+        formData.append('placementCategory', data.placementCategory);
       }
       
       const response = await api.post(API_ROUTES.RESOURCES.CREATE, formData, {
@@ -195,6 +204,8 @@ export const FacultyDashboard = () => {
         uploadDate: response.data.resource.createdAt,
         fileUrl: response.data.resource.fileUrl,
         fileName: data.file?.name,
+        category: response.data.resource.category,
+        placementCategory: response.data.resource.placementCategory,
         stats: {
           views: 0,
           likes: 0,

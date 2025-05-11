@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import api from '../services/api';
 
@@ -17,22 +17,30 @@ export function useDownloads() {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    const fetchDownloads = async () => {
-      try {
-        const response = await api.get(`/api/user/${user?._id}/downloads`);
-        setDownloadedItems(response.data.downloads);
-      } catch (error) {
-        console.error('Error fetching downloads:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchDownloads();
+  const fetchDownloads = useCallback(async () => {
+    try {
+      if (!user?._id) return;
+      
+      setIsLoading(true);
+      const response = await api.get(`/api/user/${user._id}/downloads`);
+      setDownloadedItems(response.data.downloads);
+    } catch (error) {
+      console.error('Error fetching downloads:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, [user]);
 
-  return { downloadedItems, isLoading };
+  // Function to refresh downloads
+  const refreshDownloads = useCallback(() => {
+    fetchDownloads();
+  }, [fetchDownloads]);
+
+  useEffect(() => {
+    if (user) {
+      fetchDownloads();
+    }
+  }, [user, fetchDownloads]);
+
+  return { downloadedItems, isLoading, refreshDownloads };
 }

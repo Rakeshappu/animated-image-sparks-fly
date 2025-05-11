@@ -7,7 +7,7 @@ import { VerifyEmailPage } from './pages/auth/VerifyEmailPage';
 import { FacultyDashboard } from './pages/faculty/FacultyDashboard';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { ProfilePage } from './pages/profile/ProfilePage';
-import { StudyMaterialsPage } from './pages/study/StudyMaterialsPage';
+import StudyMaterialsPage  from './pages/study/StudyMaterialsPage';
 import PrivateRoute from './components/auth/PrivateRoute';
 import { StarredPage as StudentStarredPage } from './pages/storage/StarredPage';
 import { DownloadsPage } from './pages/storage/DownloadsPage';
@@ -19,14 +19,15 @@ import { SubjectDetailPage } from './pages/study/SubjectDetailPage';
 import UsersManagement from './pages/admin/UsersManagement';
 import AllResources from './pages/admin/AllResources';
 import EligibleUSNs from './pages/admin/EligibleUSNs';
-
+import BulkSemesterUpdate from './pages/admin/BulkSemesterUpdate';
 import AnalyticsPage from './pages/faculty/AnalyticsPage';
 import { StudentsPage } from './pages/faculty/StudentsPage';
 import { StarredPage as FacultyStarredPage } from './pages/faculty/StarredPage';
 import { TrashPage as FacultyTrashPage } from './pages/faculty/TrashPage';
 import { SettingsPage as FacultySettingsPage } from './pages/faculty/SettingsPage';
 
-import { UploadWorkflow } from './components/faculty/UploadWorkflow';
+import FacultyUploadPage from './pages/faculty/upload';
+import AdminUploadPage from './pages/admin/upload';
 import StudentCompetitiveProgramming from './pages/competitive/StudentCompetitiveProgramming';
 
 function App() {
@@ -185,22 +186,7 @@ function App() {
                     <Sidebar />
                     <div className="flex-1">
                       <Header />
-                      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <UploadWorkflow 
-                          onSelectOption={(option, data) => {
-                            console.log("Selected option:", option, data);
-                            if (option === 'direct-upload' && data) {
-                              if (data.resourceType === 'placement') {
-                                console.log("Handling placement resource upload:", data);
-                              }
-                            }
-                          }} 
-                          onCancel={() => {
-                            window.location.href = '/faculty/dashboard';
-                          }}
-                          showAvailableSubjects={true}
-                        />
-                      </div>
+                      <FacultyUploadPage />
                     </div>
                   </div>
                 </PrivateRoute>
@@ -299,17 +285,7 @@ function App() {
                     <Sidebar />
                     <div className="flex-1">
                       <Header />
-                      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <UploadWorkflow 
-                          onSelectOption={(option, data) => {
-                            console.log("Admin selected option:", option, data);
-                          }}
-                          onCancel={() => {
-                            window.location.href = '/admin/dashboard';
-                          }}
-                          showAvailableSubjects={true}
-                        />
-                      </div>
+                      <AdminUploadPage />
                     </div>
                   </div>
                 </PrivateRoute>
@@ -342,6 +318,20 @@ function App() {
                           window.location.href = `/admin/resources/${resourceId}/analytics`;
                         }}
                       />
+                    </div>
+                  </div>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/bulk-semester"
+              element={
+                <PrivateRoute role="admin">
+                  <div className="flex">
+                    <Sidebar />
+                    <div className="flex-1">
+                      <Header />
+                      <BulkSemesterUpdate />
                     </div>
                   </div>
                 </PrivateRoute>

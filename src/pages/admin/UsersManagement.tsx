@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { 
   User, Search, Trash2, CheckCircle, XCircle,
-  Edit, Shield, Users as UsersIcon, Laptop, Mail, UserPlus, Eye
+  Eye, Shield, Users as UsersIcon, Laptop, Mail, UserPlus
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -130,19 +129,35 @@ const UsersManagement = () => {
     setShowDetailsModal(true);
   };
 
-  const handleEditUser = (user: AppUser) => {
-    // Redirect to user edit page
-    navigate(`/admin/users/edit/${user._id}`);
+  const handleEditUser = (userId: string) => {
+    // Navigate to edit page with correct user ID
+    navigate(`/admin/users/edit/${userId}`);
   };
 
   const handleVerifyUser = async (userId: string, verify: boolean) => {
     try {
       setVerifyingUser(userId);
       
-      const response = await api.post('/api/admin/users/verify', {
-        userId,
-        verify
-      });
+      // Explicitly get token to ensure it's included
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Authentication token missing. Please log in again.');
+        return;
+      }
+      
+      console.log('Verifying user with ID:', userId, 'Setting verified to:', verify);
+      
+      const response = await api.post('/api/admin/users/verify', 
+        { userId, verify },
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+      
+      console.log('Verify API response:', response.data);
       
       if (response.data && response.data.success) {
         // Update user in state
@@ -157,7 +172,7 @@ const UsersManagement = () => {
       }
     } catch (error) {
       console.error('Error verifying user:', error);
-      toast.error(verify ? 'Failed to verify user' : 'Failed to revoke verification');
+      toast.error(verify ? 'Failed to verify user. You may need to refresh your admin session.' : 'Failed to revoke verification');
     } finally {
       setVerifyingUser(null);
     }
@@ -210,7 +225,14 @@ const UsersManagement = () => {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+    
+    // Convert to proper date format
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
+    return date.toLocaleDateString();
   };
 
   if (isLoading) {
@@ -398,13 +420,6 @@ const UsersManagement = () => {
                             title="View user details"
                           >
                             <Eye size={18} />
-                          </button>
-                          <button 
-                            onClick={() => handleEditUser(user)} 
-                            className="text-indigo-600 hover:text-indigo-900 dark:hover:text-indigo-400"
-                            title="Edit user"
-                          >
-                            <Edit size={18} />
                           </button>
                           {currentUser?._id !== user._id && (
                             <button 
@@ -597,15 +612,6 @@ const UsersManagement = () => {
                 </button>
 
                 <div className="flex space-x-3">
-                  <button
-                    onClick={() => {
-                      setShowDetailsModal(false);
-                      handleEditUser(selectedUser);
-                    }}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                  >
-                    Edit User
-                  </button>
                   <button
                     onClick={() => setShowDetailsModal(false)}
                     className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"

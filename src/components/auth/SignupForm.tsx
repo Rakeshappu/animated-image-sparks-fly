@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UserRole, SignupFormData } from '../../types/auth';
 import { FormField } from './FormField';
-import { Share2, ArrowLeft, ArrowRight, GraduationCap, Users } from 'lucide-react';
+import { Share2, ArrowLeft, ArrowRight, GraduationCap, Users, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import cropped from '../../../public/uploads/cropped.png'
 
@@ -90,7 +90,6 @@ export const SignupForm = ({ role, onSubmit }: SignupFormProps) => {
           >
             {/* <Share2 className="h-10 w-10 text-indigo-600" /> */}
             <span><img src={cropped} alt="logo" className="h-20 w-30"/></span>
-
             <span className="ml-2 text-3xl font-bold text-indigo-600">VersatileShare</span>
           </motion.div>
           
@@ -102,18 +101,27 @@ export const SignupForm = ({ role, onSubmit }: SignupFormProps) => {
               >
                 <GraduationCap className="h-8 w-8 text-indigo-600" />
               </motion.div>
-            ) : (
+            ) : role === 'faculty' ? (
               <motion.div 
                 className="flex items-center justify-center p-3 bg-purple-50 rounded-full" 
                 whileHover={{ scale: 1.05 }}
               >
                 <Users className="h-8 w-8 text-purple-600" />
               </motion.div>
+            ) : (
+              <motion.div 
+                className="flex items-center justify-center p-3 bg-red-50 rounded-full" 
+                whileHover={{ scale: 1.05 }}
+              >
+                <ShieldCheck className="h-8 w-8 text-red-600" />
+              </motion.div>
             )}
           </div>
           
           <h2 className="text-2xl font-extrabold text-gray-900">
-            {role === 'student' ? 'Student Registration' : 'Faculty Registration'}
+            {role === 'student' ? 'Student Registration' : 
+             role === 'faculty' ? 'Faculty Registration' : 
+             'Administrator Registration'}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Create your account to start sharing and accessing resources
@@ -232,7 +240,9 @@ export const SignupForm = ({ role, onSubmit }: SignupFormProps) => {
               className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
                 role === 'student' 
                   ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500' 
-                  : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+                  : role === 'faculty'
+                  ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+                  : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
               } focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors`}
             >
               <span className="absolute right-3 inset-y-0 flex items-center">

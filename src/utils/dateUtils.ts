@@ -1,4 +1,3 @@
-
 /**
  * Format a date string or timestamp to a human-readable relative time (e.g., "2 hours ago")
  * @param {string|Date} date - Date string, timestamp, or Date object
@@ -113,24 +112,19 @@ export const formatDate = (date: string | Date): string => {
  * @param {string|Date} date - Date string or Date object
  * @returns {string} Formatted date string or fallback message
  */
-export const formatDateSafely = (date: string | Date | null | undefined): string => {
-  if (!date) return 'N/A';
+export const formatDateSafely = (dateStr: string): string => {
+  if (!dateStr) return 'Unknown date';
   
   try {
-    const parsedDate = typeof date === 'string' ? new Date(date) : date;
-    
-    if (isNaN(parsedDate.getTime())) {
-      return 'Invalid date';
-    }
-    
-    return parsedDate.toLocaleDateString('en-US', {
+    const date = new Date(dateStr);
+    return new Intl.DateTimeFormat('en-US', { 
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
-    });
+      day: '2-digit'
+    }).format(date);
   } catch (error) {
-    console.error('Error formatting date safely:', error);
-    return 'N/A';
+    console.error('Error formatting date:', error);
+    return 'Invalid date';
   }
 };
 
@@ -140,19 +134,19 @@ export const formatDateSafely = (date: string | Date | null | undefined): string
  * @param {number} days - Number of days to add
  * @returns {Date} New date with added days or current date as fallback
  */
-export const addDaysSafely = (date: Date | string | null | undefined, days: number): Date => {
+export const addDaysSafely = (dateStr: string, daysToAdd: number): string => {
+  if (!dateStr) return 'Unknown date';
+  
   try {
-    const parsedDate = date ? (typeof date === 'string' ? new Date(date) : date) : new Date();
-    
-    if (isNaN(parsedDate.getTime())) {
-      return new Date(); // Return current date as fallback
-    }
-    
-    const result = new Date(parsedDate);
-    result.setDate(result.getDate() + days);
-    return result;
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + daysToAdd);
+    return new Intl.DateTimeFormat('en-US', { 
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit'
+    }).format(date);
   } catch (error) {
     console.error('Error adding days to date:', error);
-    return new Date(); // Return current date as fallback
+    return 'Invalid date';
   }
 };

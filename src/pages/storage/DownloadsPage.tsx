@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { Download, FileText, Star, Trash } from 'lucide-react';
 import { useDownloads } from '../../hooks/useDownloads';
 import { Skeleton } from '../../components/ui/skeleton';
+import api from '../../services/api';
 
 export const DownloadsPage = () => {
-  const { downloadedItems, isLoading } = useDownloads();
+  const { downloadedItems, isLoading, refreshDownloads } = useDownloads();
   const [starredIds, setStarredIds] = useState<string[]>([]);
 
   const toggleStar = (id: string) => {
@@ -19,7 +20,7 @@ export const DownloadsPage = () => {
   const removeFromDownloads = async (id: string) => {
     try {
       await api.delete(`/api/user/downloads/${id}`);
-      setDownloadedItems(downloadedItems.filter(item => item.id !== id));
+      refreshDownloads(); // Use the refresh method from the hook
     } catch (error) {
       console.error('Error removing download:', error);
     }
@@ -96,3 +97,5 @@ export const DownloadsPage = () => {
     </div>
   );
 };
+
+export default DownloadsPage;

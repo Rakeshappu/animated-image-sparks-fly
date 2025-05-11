@@ -1,8 +1,9 @@
 
-import { Resource } from '../types';
+import { FacultyResource } from '../types/faculty';
 import api from '../services/api';
 
-export const groupBySemester = (resources: Resource[]): Record<number, Resource[]> => {
+// Use FacultyResource instead of Resource
+export const groupBySemester = (resources: FacultyResource[]): Record<number, FacultyResource[]> => {
   return resources.reduce((acc, resource) => {
     const semester = resource.semester;
     if (!acc[semester]) {
@@ -10,10 +11,10 @@ export const groupBySemester = (resources: Resource[]): Record<number, Resource[
     }
     acc[semester].push(resource);
     return acc;
-  }, {} as Record<number, Resource[]>);
+  }, {} as Record<number, FacultyResource[]>);
 };
 
-export const groupBySubject = (resources: Resource[]): Record<string, Resource[]> => {
+export const groupBySubject = (resources: FacultyResource[]): Record<string, FacultyResource[]> => {
   return resources.reduce((acc, resource) => {
     const subject = resource.subject;
     if (!acc[subject]) {
@@ -21,10 +22,10 @@ export const groupBySubject = (resources: Resource[]): Record<string, Resource[]
     }
     acc[subject].push(resource);
     return acc;
-  }, {} as Record<string, Resource[]>);
+  }, {} as Record<string, FacultyResource[]>);
 };
 
-export const filterResourcesByTag = (resources: Resource[], tag: string): Resource[] => {
+export const filterResourcesByTag = (resources: FacultyResource[], tag: string): FacultyResource[] => {
   return resources.filter(resource => resource.category === tag);
 };
 
@@ -50,7 +51,8 @@ export const trackResourceView = async (resourceId: string, source: string = 'st
 // Add helper for immediate view count update
 export const updateResourceViewCount = (resourceId: string, newCount: number) => {
   if (typeof window !== 'undefined' && window.sharedResources) {
-    window.sharedResources = window.sharedResources.map(resource => {
+    // Type cast to ensure TypeScript knows we're making a valid update
+    window.sharedResources = window.sharedResources.map((resource) => {
       if (resource.id === resourceId || resource._id === resourceId) {
         return {
           ...resource,

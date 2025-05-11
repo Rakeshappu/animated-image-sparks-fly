@@ -50,7 +50,7 @@ export const TrashPage = () => {
       
       // Filter to ensure we only get items with deletedAt value
       const validTrashedItems = Array.isArray(data.items) ? 
-        data.items.filter(item => item.deletedAt && item.deletedAt !== null && item.deletedAt !== 'null') : 
+        data.items.filter((item: TrashedItem) => item.deletedAt && item.deletedAt !== null && item.deletedAt !== 'null') : 
         [];
         
       setTrashedItems(validTrashedItems);
@@ -161,10 +161,10 @@ export const TrashPage = () => {
                         <span className="mx-1">•</span>
                         <span>{item.size}</span>
                         <span className="mx-1">•</span>
-                        <span>Deleted on {formatDateSafely(item.deletedAt, 'MMM dd, yyyy')}</span>
+                        <span>Deleted on {formatDateSafely(item.deletedAt)}</span>
                       </p>
                       <p className="text-xs text-red-500">
-                        Will be deleted permanently on {addDaysSafely(item.deletedAt, 30, 'MMM dd, yyyy')}
+                        Will be deleted permanently on {addDaysSafely(item.deletedAt, 30)}
                       </p>
                     </div>
                   </div>

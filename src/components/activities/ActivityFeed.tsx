@@ -29,7 +29,7 @@ interface Activity {
 const getActivityIcon = (type: Activity['type']) => {
   switch (type) {
     case 'view':
-      return <Eye className="h-5 w-5 text-blue-500" />;
+      return <Eye  className="h-5 w-5 text-blue-500" />;
     case 'download':
       return <Download className="h-5 w-5 text-green-500" />;
     case 'upload':

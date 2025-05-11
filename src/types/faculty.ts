@@ -12,11 +12,14 @@ export interface UploadFormData {
 }
 
 export interface SubjectFolder {
-  _id: string;
-  name: string;
-  semester?: number; 
-  lecturerName?: string;
+  _id?: string;
+  id?: string;
+  name?: string;
   subjectName?: string;
+  lecturerName?: string;
+  semester?: number;
+  code?: string;
+  department?: string;
 }
 
 // Define the SubjectData interface for subject creation
@@ -24,6 +27,8 @@ export interface SubjectData {
   subjectName: string;
   lecturerName: string;
   semester: number;
+  name?: string;
+  department?: string;
 }
 
 // Update the FacultyResource interface to include all needed properties
@@ -35,7 +40,7 @@ export interface FacultyResource {
   type: string;
   subject: string;
   semester: number;
-  category?: string;
+  category?: "common" | "study" | "placement" | undefined;
   placementCategory?: string;
   uploadDate?: string;
   fileName?: string;
@@ -55,7 +60,7 @@ export interface FacultyResource {
 
 // Define SearchResource interface for search results
 export interface SearchResource {
-  _id: string;
+
   id?: string;
   title: string;
   description?: string;
@@ -65,4 +70,9 @@ export interface SearchResource {
   fileUrl?: string;
   category?: string;
   placementCategory?: string;
+  url?: string;
+  thumbnailUrl?: string;
+  publishedDate?: string;
+  source?: string;
+  author?: string;
 }

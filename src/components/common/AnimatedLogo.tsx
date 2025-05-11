@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import  Logo  from './Logo'; // Assuming Logo is in the same directory
 
 interface AnimatedLogoProps {
   className?: string;
@@ -39,7 +40,7 @@ export const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
           <div className="animate-spin rounded-full h-full w-full border-4 border-t-indigo-600 border-b-indigo-600 border-l-transparent border-r-transparent"></div>
         </div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-indigo-600 font-bold text-2xl">V</span>
+          <span className="text-indigo-600 font-bold text-2xl">VersatileShare</span>
         </div>
       </div>
     </div>

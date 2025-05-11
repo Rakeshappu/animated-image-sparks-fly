@@ -11,6 +11,7 @@ export interface User {
   semester?: number;
   secretNumber?: string;
   isEmailVerified: boolean;
+  isVerified?: boolean;
   streak?: number;
   avatar?: string;
   googleId?: string;

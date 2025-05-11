@@ -24,7 +24,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [lastRefresh] = useState(new Date());
   const navigate = useNavigate();
 
   // Function to fetch activities
@@ -35,7 +35,6 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
       // Only update state if the data has changed (to prevent unnecessary re-renders)
       if (JSON.stringify(data) !== JSON.stringify(activities)) {
         setActivities(data);
-        setLastRefresh(new Date());
       }
     } catch (error) {
       console.error('Failed to fetch activities:', error);
@@ -77,16 +76,18 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   const handleResourceClick = (activity: any) => {
     if (!activity.resource) return;
     
-    // Direct navigation to the resource page
-    if (activity.resource._id || activity.resource.id) {
-      const resourceId = activity.resource._id || activity.resource.id;
-      navigate(`/resources/${resourceId}`);
+    // Navigation based on resource type and category
+    if (activity.resource.subject) {
+      // Study material resources with subject should go to study materials page
+      navigate(`/study/${encodeURIComponent(activity.resource.subject)}`);
+    } else if (activity.resource.category === 'placement') {
+      // Placement resources should go to placement resources page
+      navigate(`/placement-resources?category=${activity.resource.placementCategory || ''}`);
     } else {
-      // Fallback navigation based on category
-      if (activity.resource.category === 'placement') {
-        navigate(`/placement-resources?category=${activity.resource.placementCategory || ''}`);
-      } else {
-        navigate(`/study-materials?subject=${activity.resource.subject || ''}`);
+      // Fallback to direct resource view
+      const resourceId = activity.resource._id || activity.resource.id;
+      if (resourceId) {
+        navigate(`/resources/${resourceId}`);
       }
     }
   };

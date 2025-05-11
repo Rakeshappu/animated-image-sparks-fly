@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // If token doesn't have role but local storage does, show warning
         if (userData.role && !tokenRole) {
           console.warn('Token missing role information. Consider re-login.');
-          toast.warn('Your session may need refreshing. Consider logging out and back in.', {
+          toast.error('Your session may need refreshing. Consider logging out and back in.', {
             duration: 6000
           });
         }

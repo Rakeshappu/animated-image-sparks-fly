@@ -6,7 +6,7 @@ import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
 import { checkDatabaseConnection } from '../../services/resource.service';
 import { motion } from 'framer-motion';
 import { Book, BookOpen, Award, Calendar, User, Clock, Bookmark, FileText, Video, Link as LinkIcon, BarChart3, ArrowRight } from 'lucide-react';
-import { DashboardCard } from '../../components/dashboard/DashboardCard';
+import DashboardCard from '../../components/dashboard/DashboardCard';
 import { useAuth as useAuthContext } from '../../contexts/AuthContext';
 import { CircularProgress } from '../../components/ui/CircularProgress';
 import { ActivityCalendar } from '../../components/student/ActivityCalendar';
@@ -80,7 +80,7 @@ const StudentDashboard = () => {
           className="mb-6"
         >
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Welcome back, {user?.name || 'Student'}!
+            Welcome back, {user?.fullName || 'Student'}!
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}

@@ -11,7 +11,7 @@ import api from '../../../services/api';
 export const SignupForm = () => {
   const navigate = useNavigate();
   const { setError } = useAuth();
-  const selectedRole = localStorage.getItem('selectedRole') as 'student' | 'faculty';
+  const selectedRole = localStorage.getItem('selectedRole') as 'student' | 'faculty' | 'admin';
   
   const handleSubmit = async (formData: SignupFormData) => {
     try {
@@ -38,8 +38,16 @@ export const SignupForm = () => {
         const response = await api.post('/api/auth/signup', formData);
         
         if (response && response.data) {
-          toast.success('Registration successful! Please verify your email.');
-          navigate('/auth/verify', { state: { email: formData.email } });
+          toast.success('Registration successful!');
+          
+          // For admin role, redirect to admin approval pending page
+          if (formData.role === 'admin') {
+            navigate('/auth/admin-approval-pending', { state: { email: formData.email } });
+          } else {
+            // For students and faculty, navigate to email verification
+            toast.success('Please verify your email.');
+            navigate('/auth/verify', { state: { email: formData.email } });
+          }
         }
       } catch (apiError: any) {
         console.error('API signup error:', apiError);
@@ -58,4 +66,3 @@ export const SignupForm = () => {
     <SignupFormComponent role={selectedRole} onSubmit={handleSubmit} />
   );
 };
-

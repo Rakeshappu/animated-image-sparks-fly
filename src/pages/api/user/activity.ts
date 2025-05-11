@@ -64,9 +64,82 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       console.log(`Found ${activities.length} recent activities for user ${user._id}`);
       
+      // Also fetch weekly activity counts for chart
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
+      // Get daily activity data for the past week
+      const dailyActivity = await Activity.aggregate([
+        {
+          $match: {
+            user: user._id,
+            timestamp: { $gte: oneWeekAgo }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$timestamp" },
+              month: { $month: "$timestamp" },
+              day: { $dayOfMonth: "$timestamp" },
+              type: "$type"
+            },
+            count: { $sum: 1 },
+            date: { $first: "$timestamp" }
+          }
+        },
+        { $sort: { "date": 1 } }
+      ]);
+      
+      // Format for chart display - last 7 days including today
+      const chartData = [];
+      
+      // Generate data for last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        date.setHours(0, 0, 0, 0);
+        
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        
+        const dateStr = date.toLocaleDateString('en-US', { weekday: 'short' });
+        
+        // Find matching activities for each type
+        const uploads = dailyActivity.find(item => 
+          item._id.year === year && 
+          item._id.month === month && 
+          item._id.day === day &&
+          item._id.type === 'upload'
+        );
+        
+        const downloads = dailyActivity.find(item => 
+          item._id.year === year && 
+          item._id.month === month && 
+          item._id.day === day &&
+          item._id.type === 'download'
+        );
+        
+        const views = dailyActivity.find(item => 
+          item._id.year === year && 
+          item._id.month === month && 
+          item._id.day === day &&
+          item._id.type === 'view'
+        );
+        
+        chartData.push({
+          name: dateStr,
+          uploads: uploads ? uploads.count : 0,
+          downloads: downloads ? downloads.count : 0,
+          views: views ? views.count : 0
+        });
+      }
+      
       // Return empty array if no activities found
       return res.status(200).json({ 
         activities: activities || [],
+        weeklyActivity: chartData,
         success: true
       });
       

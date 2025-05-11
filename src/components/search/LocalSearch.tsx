@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Filter, X } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 interface LocalSearchProps {
@@ -18,28 +17,36 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     category: [] as string[]
   });
   const [hasUserSearched, setHasUserSearched] = useState(false);
-  const { user } = useAuth();
-  const filterRef = useRef<HTMLDivElement>(null);
+  const [isResultsVisible, setIsResultsVisible] = useState(false);
   
-  // Use custom hook to detect clicks outside the filter area
+  const filterRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  
+  // Use custom hook to detect clicks outside the filter and search results areas
   useOutsideClick(filterRef, () => {
     if (showFilters) setShowFilters(false);
   });
+  
+  // Close search results when clicking outside
+  useOutsideClick(resultsRef, () => {
+    if (isResultsVisible) {
+      setIsResultsVisible(false);
+      setHasUserSearched(false);
+    }
+  }, [searchInputRef]);
 
   // Memoize the search function to prevent unnecessary re-renders
   const performSearch = useCallback(() => {
     console.log('Performing search with term:', searchTerm);
     console.log('Total resources available:', resources.length);
     
-    // Check if there are placement resources
-    const placementResources = resources.filter(r => r.category === 'placement');
-    console.log('Placement resources available:', placementResources.length);
-    
     // Only search if there's a search term or filters applied
     const isSearchActive = searchTerm.trim() !== '' || filters.type.length > 0 || filters.category.length > 0;
     
     if (!isSearchActive) {
       onSearchResults([], false);
+      setIsResultsVisible(false);
       return;
     }
     
@@ -79,10 +86,6 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
       });
       console.log('After category filtering:', filtered.length);
     }
-
-    // Debug - count placement resources after filtering
-    const placementResourcesAfterFiltering = filtered.filter(r => r.category === 'placement');
-    console.log('Placement resources after filtering:', placementResourcesAfterFiltering.length);
     
     // Debug selected resources
     if (filtered.length > 0) {
@@ -90,6 +93,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
     }
     
     onSearchResults(filtered, isSearchActive);
+    setIsResultsVisible(true);
   }, [searchTerm, filters, resources, onSearchResults]);
 
   // Run search when search term or filters change
@@ -103,12 +107,6 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
   useEffect(() => {
     if (resources.length > 0) {
       console.log('Resources loaded:', resources.length);
-      // Check if there are placement resources
-      const placementResources = resources.filter(r => r.category === 'placement');
-      console.log('Placement resources available on load:', placementResources.length);
-      if (placementResources.length > 0) {
-        console.log('Sample placement resource:', placementResources[0]);
-      }
     }
   }, [resources]);
 
@@ -141,12 +139,20 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
       type: [],
       category: []
     });
-    onSearchResults([], false);
     setHasUserSearched(false);
+    setIsResultsVisible(false);
+    onSearchResults([], false); // Clear the search results immediately
+  };
+
+  // Close search results explicitly
+  const closeSearchResults = () => {
+    setIsResultsVisible(false);
+    setHasUserSearched(false);
+    onSearchResults([], false);
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" ref={searchInputRef}>
       <div className="relative">
         <input
           type="text"
@@ -165,6 +171,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
               type="button"
               className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               onClick={clearSearch}
+              aria-label="Clear search"
             >
               <X className="h-5 w-5" />
             </button>
@@ -173,6 +180,7 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
             type="button"
             className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             onClick={() => setShowFilters(!showFilters)}
+            aria-label="Show filters"
           >
             <Filter className="h-5 w-5" />
           </button>
@@ -240,6 +248,19 @@ export const LocalSearch = ({ resources, onSearchResults, placeholder = "Search 
               Apply Filters
             </button>
           </div>
+        </div>
+      )}
+      
+      {/* Pass resultsRef to parent component so they can add proper ref to results div */}
+      {isResultsVisible && hasUserSearched && (
+        <div className="absolute w-full shadow-lg z-10 text-right p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md mt-1" ref={resultsRef}>
+          <button
+            onClick={closeSearchResults}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            aria-label="Close search results"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
       )}
     </div>

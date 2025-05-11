@@ -16,7 +16,8 @@ import {
   FileText,
   ShieldCheck,
   Database,
-  GraduationCap
+  GraduationCap,
+  School
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -80,10 +81,6 @@ export const Sidebar = () => {
         text="Upload" 
         path="/faculty/upload" 
         active={isActive('/faculty/upload')} 
-        specialAction={() => {
-          console.log("Navigating to upload page with sidebar state");
-          navigate('/faculty/upload', { state: { isFromSidebar: true } });
-        }}
       />
       <SidebarLink icon={<BarChart2 />} text="Analytics" path="/faculty/analytics" active={isActive('/faculty/analytics')} />
       <SidebarLink icon={<Trash />} text="Trash" path="/faculty/trash" active={isActive('/faculty/trash')} />
@@ -97,6 +94,7 @@ export const Sidebar = () => {
       <SidebarLink icon={<Users />} text="Manage Users" path="/admin/users" active={isActive('/admin/users')} />
       <SidebarLink icon={<Database />} text="All Resources" path="/admin/resources" active={isActive('/admin/resources')} />
       <SidebarLink icon={<GraduationCap />} text="Eligible USNs" path="/admin/eligible-usns" active={isActive('/admin/eligible-usns')} />
+      <SidebarLink icon={<School />} text="Bulk Semester Update" path="/admin/bulk-semester" active={isActive('/admin/bulk-semester')} />
       <SidebarLink icon={<Trash />} text="Trash" path="/admin/trash" active={isActive('/admin/trash')} />
     </>
   );
@@ -140,7 +138,7 @@ export const Sidebar = () => {
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div onClick={handleLogoClick} className="flex items-center space-x-3 cursor-pointer">
             <div className="relative flex items-center justify-center w-10 h-9 rounded-full text-white shadow-lg">
-              <span className="font-bold text-xl">V</span>
+              <span><img src="/uploads/cropped.png" alt="logo" className="h-13 w-18"/></span>
             </div>
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">VersatileShare</h2>
           </div>
@@ -200,11 +198,14 @@ const SidebarLink = ({
   specialAction
 }: SidebarLinkProps) => {
   
+  const navigate = useNavigate();
+  
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
     if (specialAction) {
-      e.preventDefault();
-      console.log(`Special action triggered for ${text}`);
       specialAction();
+    } else {
+      navigate(path);
     }
   };
 

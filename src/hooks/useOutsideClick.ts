@@ -8,8 +8,10 @@ export const useOutsideClick = (
 ) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (!ref.current) return; // Skip if ref is not attached
+      
       // Check if the click was outside the ref element 
-      const isOutside = ref.current && !ref.current.contains(event.target as Node);
+      const isOutside = !ref.current.contains(event.target as Node);
       
       // Check if the click wasn't on any of the exception elements
       const notOnExceptions = exceptRefs.every(exceptRef => 

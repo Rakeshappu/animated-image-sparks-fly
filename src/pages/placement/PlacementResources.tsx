@@ -7,7 +7,7 @@ import { UploadFormData } from '../../types/faculty';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { API_ROUTES } from '../../lib/api/routes';
-import { getResources, deleteResource } from '../../services/resource.service';
+// import { getResources, deleteResource } from '../../services/resource.service';
 import { 
   Briefcase, ChevronRight, Download, Link as LinkIcon, ArrowLeft,
   FileText, Loader, Trash2, ThumbsUp, MessageSquare, Eye, 

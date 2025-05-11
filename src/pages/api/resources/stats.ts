@@ -5,6 +5,51 @@ import { Resource } from '../../../lib/db/models/Resource';
 import { Activity } from '../../../lib/db/models/Activity';
 import mongoose from 'mongoose';
 
+// Define types to fix TypeScript errors
+interface DailyView {
+  date: Date;
+  count: number;
+}
+
+interface ResourceStats {
+  views: number;
+  downloads: number;
+  likes: number;
+  comments: number;
+  lastViewed: Date;
+  dailyViews: DailyView[];
+  studentFeedback?: { rating: number; count: number }[];
+}
+
+interface ResourceType {
+  _id: string;
+  title: string;
+  description?: string;
+  type: 'document' | 'video' | 'note' | 'link';
+  stats?: ResourceStats;
+  likedBy: string[];
+  deletedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ActivityType {
+  _id: string;
+  user: mongoose.Types.ObjectId;
+  type: 'view' | 'download' | 'upload' | 'like' | 'comment';
+  resource?: mongoose.Types.ObjectId;
+  timestamp: Date;
+  details?: any;
+}
+
+interface DailyActivityData {
+  name: string;
+  date: string;
+  uploads: number;
+  downloads: number;
+  views: number;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -34,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log(`Total resources: ${totalResources}`);
       
       // Get resource type distribution
-      let resources = [];
+      let resources: ResourceType[] = [];
       try {
         resources = await Resource.find({ deletedAt: null }).lean();
         console.log(`Found ${resources.length} resources`);
@@ -48,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       let totalDownloads = 0;
       
       try {
-        resources.forEach(resource => {
+        resources.forEach((resource: ResourceType) => {
           totalViews += (resource.stats?.views || 0);
           totalLikes += (resource.stats?.likes || 0);
           totalDownloads += (resource.stats?.downloads || 0);
@@ -71,7 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
       
       // Get activities from the past week
-      let activities = [];
+      let activities: ActivityType[] = [];
       try {
         activities = await Activity.find({
           timestamp: { $gte: oneWeekAgo },
@@ -84,8 +129,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       // Group activities by day
-      const dailyActivity = [];
-      const dayMap = new Map();
+      const dailyActivity: DailyActivityData[] = [];
+      const dayMap = new Map<string, DailyActivityData>();
       
       // Initialize the past 7 days
       for (let i = 6; i >= 0; i--) {
@@ -105,7 +150,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       // Count activities by day
       try {
-        activities.forEach(activity => {
+        activities.forEach((activity: ActivityType) => {
           if (!activity.timestamp) {
             console.log('Activity missing timestamp:', activity);
             return;
@@ -115,7 +160,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const dayStr = date.toISOString().split('T')[0];
           
           if (dayMap.has(dayStr)) {
-            const dayData = dayMap.get(dayStr);
+            const dayData = dayMap.get(dayStr)!;
             if (activity.type === 'view') dayData.views += 1;
             if (activity.type === 'download') dayData.downloads += 1;
             if (activity.type === 'upload') dayData.uploads += 1;
@@ -134,7 +179,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const todayActivities = activities.filter(activity => {
+      const todayActivities = activities.filter((activity: ActivityType) => {
         if (!activity.timestamp) return false;
         const activityDate = new Date(activity.timestamp);
         activityDate.setHours(0, 0, 0, 0);
@@ -223,7 +268,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             resource.stats.dailyViews = [];
           }
           
-          const todayViewIndex = resource.stats.dailyViews.findIndex(view => {
+          const todayViewIndex = resource.stats.dailyViews.findIndex((view: DailyView) => {
             const viewDate = new Date(view.date);
             return viewDate.toDateString() === today.toDateString();
           });
@@ -261,7 +306,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               downloads: 0,
               likes: 0,
               comments: 0,
-              lastViewed: new Date()
+              lastViewed: new Date(),
+              dailyViews: []
             };
           }
           resource.stats.downloads += 1;
@@ -289,7 +335,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               downloads: 0,
               likes: 0,
               comments: 0,
-              lastViewed: new Date()
+              lastViewed: new Date(),
+              dailyViews: []
             };
           }
           resource.stats.likes += 1;
@@ -320,7 +367,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               downloads: 0,
               likes: 0,
               comments: 0,
-              lastViewed: new Date()
+              lastViewed: new Date(),
+              dailyViews: []
             };
           }
           resource.stats.comments += 1;

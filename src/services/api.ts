@@ -1,48 +1,46 @@
 
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { decodeToken } from '../utils/authUtils';
+// Fix the invalid import by using a named import from react-router-dom
+import { useNavigate } from 'react-router-dom';
 
-// Create an axios instance with default configs
+// Create axios instance
 const api = axios.create({
-  baseURL: '/',  // Using relative URLs for development
+  baseURL: '/', // Base URL for all API requests
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000, // 15 seconds
 });
 
-// Request interceptor for adding auth tokens
+// Request interceptor for API calls
 api.interceptors.request.use(
   (config) => {
+    // Get the token from localStorage
     const token = localStorage.getItem('token');
+    
+    // If token exists, add it to the authorization header
     if (token) {
-      const isAdminRoute = config.url?.includes('/admin/');
-      const isAuthAdminRoute = config.url?.includes('/auth/admin-check');
-      
-      if (isAdminRoute || isAuthAdminRoute) {
-        console.log('Admin route detected:', config.url);
-        
-        // For admin routes, verify token has admin role
-        try {
-          const payload = decodeToken(token);
-          console.log('Token payload for admin request:', payload);
-          
-          if (!payload?.role || payload.role !== 'admin') {
-            console.warn('Token missing admin role for admin route:', config.url);
-            // We'll still send the request with the token, but log this warning
-            // The server will check the database for admin status as a fallback
-          }
-        } catch (error) {
-          console.error('Error processing token for admin request:', error);
-        }
-      }
-      
       config.headers.Authorization = `Bearer ${token}`;
+      
+      // Log admin-specific requests for debugging
+      if (config.url && config.url.includes('/admin/')) {
+        console.log('Admin request detected:', config.url, 'Adding token header');
+      }
     }
     
-    // Debug log request
-    console.log('API Request:', config.method?.toUpperCase(), config.url, config.data || '');
+    // For admin routes, ensure the correct content-type and additional headers if needed
+    if (config.url && config.url.includes('/admin/')) {
+      console.log('Setting up admin request headers for:', config.url);
+      
+      // For user verification endpoint specifically:
+      if (config.url.includes('/admin/users/verify')) {
+        console.log('Special handling for admin verify user request');
+        // Make sure we're not overriding if it's multipart/form-data
+        if (config.headers['Content-Type'] !== 'multipart/form-data') {
+          config.headers['Content-Type'] = 'application/json';
+        }
+      }
+    }
     
     return config;
   },
@@ -51,75 +49,72 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for handling errors
+// Add a response interceptor to handle errors globally
 api.interceptors.response.use(
-  (response: AxiosResponse) => {
-    // Debug log successful response
-    console.log('API Response [' + response.status + ']:', response.data);
+  (response) => {
+    // Return the successful response
     return response;
   },
-  (error: AxiosError) => {
-    // Debug log error response
-    const data = error.response?.data;
-    const status = error.response?.status;
-    const url = error.config?.url;
-    const method = error.config?.method;
-    
-    console.error('API Response Error:', {
-      status,
-      statusText: error.response?.statusText,
-      url,
-      method,
-      data,
-      error: error.message
-    });
-
-    // Handle authentication errors
-    if (status === 401) {
-      console.error('Authentication error:', data);
-      // Clear storage on auth errors
-      if (url !== '/api/auth/login') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+  (error) => {
+    // Handle error responses
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls outside of the range of 2xx
+      if (error.response.status === 401) {
+        // Handle unauthorized access (e.g., token expired)
+        console.error('Authentication failed:', error.response.data);
         
-        // Redirect to login after a short delay
-        setTimeout(() => {
+        // Check if we're already on the login page to avoid redirect loops
+        if (window.location.pathname !== '/auth/login') {
+          toast.error('Your session has expired. Please log in again.');
+          
+          // Clear auth data
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('tokenExpiry');
+          
+          // Redirect to login
           window.location.href = '/auth/login';
-        }, 100);
-        
-        toast.error('Session expired. Please login again.');
-      }
-    }
-    
-    // Special handling for admin permission errors
-    if (status === 403) {
-      if (url?.includes('/admin/')) {
-        console.warn('Admin permission denied:', url);
-        
-        // Check if user role in localstorage is admin
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-          try {
+        }
+      } else if (error.response.status === 403) {
+        // Handle forbidden access (e.g., insufficient permissions)
+        console.error('Permission denied:', error.response.data);
+
+        if (error.config.url.includes('/admin/')) {
+          // Special handling for admin routes
+          console.log('Admin permission denied:', error.config.url);
+          toast.error('Admin access required for this operation. Please log out and log back in to refresh your session.');
+          
+          // Get user details from localStorage
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
             const userData = JSON.parse(userStr);
-            console.log('Current user role in localStorage:', userData.role);
-            
-            // If user thinks they're admin but server disagrees
             if (userData.role === 'admin') {
-              toast.error((data as any)?.message || 'Your admin session needs to be refreshed. Please log out and log back in.');
+              // If user is supposed to be admin but getting 403, suggest refreshing token
+              toast.error('Your admin session may need refreshing. Please log out and log back in.');
             }
-          } catch (e) {
-            console.error('Error parsing user data:', e);
           }
         }
+      } else if (error.response.status === 404) {
+        // Handle not found
+        console.error('Resource not found:', error.response.data);
+      } else if (error.response.status === 500) {
+        // Handle server errors
+        console.error('Server error:', error.response.data);
+        toast.error('Something went wrong. Please try again later.');
       }
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received:', error.request);
+      toast.error('Server not responding. Please try again later.');
+    } else {
+      // Something happened in setting up the request
+      console.error('Request error:', error.message);
+      toast.error('Error connecting to server');
     }
 
-    // Format error for better handling
-    const errorObj: any = new Error(error.message);
-    errorObj.status = status;
-    errorObj.data = data;
-    
-    return Promise.reject(errorObj);
+    // Return the error for further handling if needed
+    return Promise.reject(error);
   }
 );
 

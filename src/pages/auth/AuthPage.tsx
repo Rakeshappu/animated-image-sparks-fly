@@ -5,6 +5,7 @@ import { RoleSelection } from './components/RoleSelection';
 import { SignupForm } from './components/SignupForm';
 import { EmailVerification } from './components/EmailVerification';
 import { LoginForm } from './components/LoginForm';
+import { AdminApprovalPendingPage } from './AdminApprovalPendingPage';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const AuthPage = () => {
@@ -32,6 +33,7 @@ export const AuthPage = () => {
       <Route path="signup" element={<SignupForm />} />
       <Route path="verify" element={<EmailVerification />} />
       <Route path="login" element={<LoginForm />} />
+      <Route path="admin-approval-pending" element={<AdminApprovalPendingPage />} />
     </Routes>
   );
 };

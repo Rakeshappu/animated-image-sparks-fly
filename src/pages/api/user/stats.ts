@@ -29,7 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const token = authHeader.split(' ')[1];
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string, role?: string };
+      const JWT_SECRET = process.env.JWT_SECRET as string;
+      decoded = jwt.verify(token, JWT_SECRET) as { userId: string, role?: string };
       if (!decoded || !decoded.userId) {
         return res.status(401).json({ error: 'Invalid token' });
       }
@@ -43,6 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const totalStudents = await User.countDocuments({ role: 'student' });
     const totalFaculty = await User.countDocuments({ role: 'faculty' });
     const totalAdmins = await User.countDocuments({ role: 'admin' });
+    const totalPendingAdmins = await User.countDocuments({ role: 'admin', isAdminVerified: false });
     
     // Get department distribution
     const departments = await User.aggregate([
@@ -136,51 +138,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? 100
       : Math.round(((currentWeekResources - previousWeekResources) / previousWeekResources) * 100);
     
-    // Get daily activity data for the past week
-    const dailyActivityData = await Activity.aggregate([
-      {
-        $match: {
-          timestamp: { $gte: sevenDaysAgo }
-        }
-      },
-      {
-        $group: {
-          _id: {
-            day: { $dayOfMonth: "$timestamp" },
-            month: { $month: "$timestamp" },
-            year: { $year: "$timestamp" }
-          },
-          count: { $sum: 1 }
-        }
-      },
-      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
-    ]);
-    
-    // Format daily activity data for chart
-    const weeklyActivity = Array(7).fill(0).map((_, index) => {
-      const date = new Date(today);
-      date.setDate(today.getDate() - (6 - index));
-      
-      const day = date.getDate();
-      const month = date.getMonth() + 1;
-      const year = date.getFullYear();
-      
-      const matchingData = dailyActivityData.find(
-        item => item._id.day === day && item._id.month === month && item._id.year === year
-      );
-      
-      return {
-        date: date.toLocaleDateString('en-US', { weekday: 'short' }),
-        value: matchingData ? matchingData.count : 0
-      };
-    });
-    
     return res.status(200).json({
       success: true,
       totalUsers,
       totalStudents,
       totalFaculty,
       totalAdmins,
+      totalPendingAdmins,
       departmentDistribution,
       recentRegistrations,
       totalResources,
@@ -190,7 +154,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       activityPercentageChange,
       userPercentageChange,
       resourcePercentageChange,
-      weeklyActivity,
       currentWeekActivities,
       previousWeekActivities,
       currentWeekUsers,

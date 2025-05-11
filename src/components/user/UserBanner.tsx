@@ -1,5 +1,6 @@
+
 import { useEffect, useState } from 'react';
-import { Award, Calendar } from 'lucide-react';
+import { Award, Calendar, BookOpen } from 'lucide-react';
 import { User } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { activityService } from '../../services/activity.service';
@@ -269,7 +270,7 @@ export const UserBanner = ({ user }: UserBannerProps) => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.5 }}
           >
-            <div className="flex items-center space-x-2">
+            {/* <div className="flex items-center space-x-2">
               <Calendar className="h-5 w-5 text-green-300" />
               <AnimatePresence mode="wait">
                 <motion.span 
@@ -285,8 +286,8 @@ export const UserBanner = ({ user }: UserBannerProps) => {
                   {activitiesToday}
                 </motion.span>
               </AnimatePresence>
-            </div>
-            <p className="text-sm text-indigo-200">Activities Today</p>
+            </div> */}
+            {/* <p className="text-sm text-indigo-200">Activities Today</p> */}
           </motion.div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-//src\pages\study\SubjectDetailPage.tsx
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Filter } from 'lucide-react';
@@ -36,11 +36,15 @@ export const SubjectDetailPage = () => {
   // Sort resources based on selected sort option
   const sortedResources = (() => {
     if (sortBy === 'recent') {
-      return [...resources].sort((a, b) => 
-        new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
-      );
+      return [...resources].sort((a, b) => {
+        const dateA = new Date(a.uploadDate || Date.now());
+        const dateB = new Date(b.uploadDate || Date.now());
+        return dateB.getTime() - dateA.getTime();
+      });
     } else if (sortBy === 'popular') {
-      return [...resources].sort((a, b) => b.stats.views - a.stats.views);
+      return [...resources].sort((a, b) => 
+        ((b.stats?.views || 0) - (a.stats?.views || 0))
+      );
     } else {
       return [...resources].sort((a, b) => a.title.localeCompare(b.title));
     }

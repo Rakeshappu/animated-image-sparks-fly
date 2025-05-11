@@ -148,7 +148,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get activity data grouped by day and type
     const dailyActivityData = await Activity.aggregate([
       {
-        $match: matchStage
+        $match: matchStage as any
       },
       {
         $group: {
@@ -162,7 +162,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           date: { $first: "$timestamp" }
         }
       },
-      { $sort: { date: 1 } }
+      { $sort: { "date": 1 } }
     ]);
     
     console.log('Activity data from past week:', JSON.stringify(dailyActivityData));
@@ -170,8 +170,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Format for chart display
     const dailyActivity = [];
     
+    // Generate data for last 7 days
     for (let i = 6; i >= 0; i--) {
-      const date = new Date(today);
+      const date = new Date();
       date.setDate(date.getDate() - i);
       date.setHours(0, 0, 0, 0);
       
@@ -231,8 +232,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       totalActivities,
       dailyActivity,
       activities: recentActivities,
-      streak: userStreak,  // Include streak in response
-      todayCount: todayActivities  // Include today's activity count
+      streak: userStreak,
+      todayCount: todayActivities
     });
   } catch (error) {
     console.error('Error fetching activity stats:', error);

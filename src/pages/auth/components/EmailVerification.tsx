@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/auth.service';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Mail } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 export const EmailVerification = () => {
   const location = useLocation();
@@ -18,6 +19,7 @@ export const EmailVerification = () => {
     try {
       console.log('Submitting OTP verification:', { email, otp }); 
       await authService.verifyOTP(email, otp);
+      toast.success('Email verified successfully');
       navigate('/auth/login');
     } catch (err: any) {
       console.error('OTP verification failed:', err);
@@ -26,6 +28,7 @@ export const EmailVerification = () => {
       } else {
         console.error('Error:', err.message);
       }
+      toast.error(err.message || 'Failed to verify email');
     } finally {
       setIsLoading(false);
     }
@@ -34,13 +37,14 @@ export const EmailVerification = () => {
   const handleResendOTP = async () => {
     try {
       await authService.resendOTP(email);
-      // You might want to show a success message here
+      toast.success('OTP resent successfully');
     } catch (err: any) {
       if (setError) {
         setError(err.message);
       } else {
         console.error('Error:', err.message);
       }
+      toast.error(err.message || 'Failed to resend OTP');
     }
   };
 
