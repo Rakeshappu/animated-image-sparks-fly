@@ -1,4 +1,3 @@
-
 import api from './api';
 import toast from 'react-hot-toast';
 
@@ -62,6 +61,7 @@ const authService = {
 
   forgotPassword: async (email: string) => {
     try {
+      // Use correct API path with leading slash
       const response = await api.post('/api/auth/forgot-password', { email });
       return response.data;
     } catch (error: any) {
@@ -96,7 +96,6 @@ const authService = {
     }
   },
   
-  // Add the missing OTP verification method
   verifyOTP: async (email: string, otp: string) => {
     try {
       const response = await api.post('/api/auth/verify-otp', { email, otp });
@@ -109,7 +108,6 @@ const authService = {
     }
   },
   
-  // Add method to resend OTP
   resendOTP: async (email: string) => {
     try {
       const response = await api.post('/api/auth/send-otp', { email });
@@ -122,7 +120,6 @@ const authService = {
     }
   },
   
-  // Check if the user is authenticated based on token and expiry
   isAuthenticated: () => {
     const token = localStorage.getItem('token');
     const tokenExpiry = localStorage.getItem('tokenExpiry');
@@ -131,19 +128,16 @@ const authService = {
       return false;
     }
     
-    // Check if token is expired
     const expiryDate = new Date(tokenExpiry);
     const now = new Date();
     
     return now < expiryDate;
   },
   
-  // Get token from localStorage
   getToken: () => {
     return localStorage.getItem('token');
   },
   
-  // Refresh token if needed
   refreshTokenIfNeeded: async () => {
     try {
       const token = localStorage.getItem('token');
@@ -156,16 +150,13 @@ const authService = {
       const expiryDate = new Date(tokenExpiry);
       const now = new Date();
       
-      // If token expires in less than 1 hour, refresh it
       const oneHour = 60 * 60 * 1000;
       if ((expiryDate.getTime() - now.getTime()) < oneHour) {
         console.log('Token will expire soon, refreshing...');
         
-        // Call refresh token endpoint
         const response = await api.post('/api/auth/refresh-token', { token });
         
         if (response.data.token) {
-          // Update token and expiry
           localStorage.setItem('token', response.data.token);
           const newExpiryTime = new Date();
           newExpiryTime.setDate(newExpiryTime.getDate() + 30);
@@ -183,6 +174,5 @@ const authService = {
   }
 };
 
-// Make sure we export both as default and named
 export { authService };
 export default authService;

@@ -6,8 +6,8 @@ import { FormField } from '../../../components/auth/FormField';
 import { LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-// Import logo from the correct path
-import cropped from '../../../../public/uploads/cropped.png';
+// Fix image import path
+import logoImage from '../../../assets/images/logo.png';
 
 export const LoginForm = () => {
   const { login, error, clearError } = useAuth(); 
@@ -79,7 +79,7 @@ export const LoginForm = () => {
     
     setResetLoading(true);
     try {
-      // Fix the forgot password API endpoint - use auth.service instead of direct fetch
+      // Use the auth service for consistency
       const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
@@ -129,7 +129,7 @@ export const LoginForm = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex items-center justify-center mb-6"
           >
-            <span><img src={cropped} alt="logo" className="h-20 w-30"/></span>
+            <span><img src={logoImage} alt="logo" className="h-20 w-30"/></span>
             <span className="ml-2 text-3xl font-bold text-indigo-600">VersatileShare</span>
           </motion.div>
           
