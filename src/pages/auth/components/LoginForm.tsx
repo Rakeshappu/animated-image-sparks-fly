@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { FormField } from '../../../components/auth/FormField';
-import { LogIn } from 'lucide-react';
+import { LogIn, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-// Fix image import path
-import logoImage from '../../../assets/images/logo.png';
+// Use a default icon instead of an image until you add a logo.png file
+// import logoImage from '../../../assets/images/logo.png';
 
 export const LoginForm = () => {
   const { login, error, clearError } = useAuth(); 
@@ -129,7 +129,8 @@ export const LoginForm = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex items-center justify-center mb-6"
           >
-            <span><img src={logoImage} alt="logo" className="h-20 w-30"/></span>
+            {/* Use an icon instead of image until you add logo.png */}
+            <Share2 className="h-10 w-10 text-indigo-600" />
             <span className="ml-2 text-3xl font-bold text-indigo-600">VersatileShare</span>
           </motion.div>
           

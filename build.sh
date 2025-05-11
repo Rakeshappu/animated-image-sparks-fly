@@ -5,5 +5,9 @@
 # Install dependencies
 npm install
 
+# Create necessary directories
+mkdir -p src/assets/images
+
 # Build the project
 npm run build
+

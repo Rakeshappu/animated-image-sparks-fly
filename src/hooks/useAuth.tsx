@@ -1,9 +1,13 @@
 
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
+import type { AuthContextType } from '../contexts/AuthContext';
 
-// Use a simple export syntax to avoid TypeScript issues
-export const useAuth = () => {
+/**
+ * Custom hook to access authentication context
+ * @returns Authentication context value
+ */
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   
   if (!context) {
