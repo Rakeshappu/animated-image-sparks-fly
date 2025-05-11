@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { LocalSearch } from '../../components/search/LocalSearch';
 import { SubjectFolder } from '../../components/study/SubjectFolder';
@@ -304,6 +303,7 @@ export const StudyMaterialsPage = () => {
                   <SubjectFolder 
                     subject={subject}
                     resources={subjectGroups[subject]}
+                    sortBy={sortBy}
                   />
                 </motion.div>
               ))}

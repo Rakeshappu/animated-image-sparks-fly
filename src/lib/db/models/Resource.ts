@@ -190,8 +190,15 @@ ResourceSchema.pre('save', function(next) {
   if (!this.likedBy) this.likedBy = [];
   if (!this.comments) this.comments = [];
   if (!this.tags) this.tags = [];
-  if (!this.stats.dailyViews) this.stats.dailyViews = [];
-  if (!this.stats.studentFeedback) this.stats.studentFeedback = [];
+  
+  // Fix the array type issues by creating proper arrays with mongoose
+  if (!this.stats.dailyViews) {
+    this.stats.dailyViews = [];
+  }
+  
+  if (!this.stats.studentFeedback) {
+    this.stats.studentFeedback = [];
+  }
   
   next();
 });
