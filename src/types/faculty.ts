@@ -20,6 +20,8 @@ export interface FacultyResource extends Omit<UploadFormData, 'file'> {
   fileUrl?: string;
   fileContent?: string;
   category?: 'study' | 'placement' | 'common';
+  uploadedByName?: string;
+  uploaderId?: string;
   stats: {
     views: number;
     likes: number;

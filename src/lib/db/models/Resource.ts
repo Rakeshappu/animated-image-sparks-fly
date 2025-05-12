@@ -1,5 +1,6 @@
+
 //src\lib\db\models\Resource.ts
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 import { getAllCategoryIds, getStandardizedCategory } from '../../../utils/placementCategoryUtils';
 
 // Define a daily view schema for statistics
@@ -52,11 +53,11 @@ const StatsSchema = new mongoose.Schema({
   },
   dailyViews: {
     type: [DailyViewSchema],
-    default: function() { return []; }
+    default: () => []
   },
   studentFeedback: {
     type: [StudentFeedbackSchema],
-    default: function() { return []; }
+    default: () => []
   }
 });
 
@@ -115,17 +116,15 @@ const ResourceSchema = new mongoose.Schema({
   },
   stats: {
     type: StatsSchema,
-    default: function() { 
-      return {
-        views: 0,
-        downloads: 0,
-        likes: 0,
-        comments: 0,
-        lastViewed: new Date(),
-        dailyViews: [],
-        studentFeedback: []
-      }; 
-    }
+    default: () => ({ 
+      views: 0,
+      downloads: 0,
+      likes: 0,
+      comments: 0,
+      lastViewed: new Date(),
+      dailyViews: [],
+      studentFeedback: []
+    })
   },
   category: {
     type: String,
@@ -160,7 +159,7 @@ const ResourceSchema = new mongoose.Schema({
         default: Date.now
       }
     }],
-    default: function() { return []; }
+    default: () => []
   },
   createdAt: {
     type: Date,
@@ -203,11 +202,6 @@ ResourceSchema.pre('save', function(next) {
       studentFeedback: []
     };
   }
-  
-  // Initialize arrays as proper mongoose arrays
-  if (!this.likedBy) this.likedBy = [];
-  if (!this.comments) this.comments = [];
-  if (!this.tags) this.tags = [];
   
   next();
 });
@@ -262,15 +256,54 @@ ResourceSchema.set('toJSON', {
   }
 });
 
+// Define Resource interface
+export interface IResource extends Document {
+  title: string;
+  description: string;
+  type: 'document' | 'video' | 'note' | 'link';
+  subject: string;
+  semester: number;
+  department?: string;
+  uploadedBy?: mongoose.Types.ObjectId;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  link?: string;
+  stats: {
+    views: number;
+    downloads: number;
+    likes: number;
+    comments: number;
+    lastViewed: Date;
+    dailyViews: Array<{ date: Date; count: number }>;
+    studentFeedback: Array<{ rating: number; count: number }>;
+  };
+  category?: 'study' | 'placement' | 'common';
+  placementCategory?: string;
+  tags?: string[];
+  likedBy?: mongoose.Types.ObjectId[];
+  comments?: Array<{ 
+    content: string; 
+    author: mongoose.Types.ObjectId; 
+    createdAt: Date;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+  id?: string;
+  softDelete(): Promise<IResource>;
+  restore(): Promise<IResource>;
+}
+
 // Safe export pattern for Next.js and Mongoose
-let Resource;
+let Resource: mongoose.Model<IResource>;
 
 try {
   // Check if the model already exists to prevent recompilation
-  Resource = mongoose.models.Resource || mongoose.model('Resource', ResourceSchema);
+  Resource = mongoose.models.Resource as mongoose.Model<IResource>;
 } catch (error) {
   // If model doesn't exist yet, create it
-  Resource = mongoose.model('Resource', ResourceSchema);
+  Resource = mongoose.model<IResource>('Resource', ResourceSchema);
 }
 
 export { Resource };

@@ -1,7 +1,7 @@
 
 import mongoose from 'mongoose';
 import { User } from './models/User';
-import { Resource } from './models/Resource';
+import { Resource, IResource } from './models/Resource';
 import { Activity } from './models/Activity';
 
 export async function initDatabase() {

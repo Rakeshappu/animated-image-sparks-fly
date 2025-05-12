@@ -1,5 +1,4 @@
 
-// This is a new file to fix the header component issue
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -12,7 +11,7 @@ export const Header = () => {
     if (user?.photoURL) {
       setProfileImage(user.photoURL);
     } else {
-      // Set a default image or empty string but not null
+      // Set a default image but ensure it's a string, not null
       setProfileImage('/default-avatar.png');
     }
   }, [user]);

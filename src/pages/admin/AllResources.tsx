@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   FileText, Search, Filter, ChevronDown, Upload, Download, Trash2, ThumbsUp, 
@@ -22,6 +21,30 @@ interface ResourceStats {
 
 interface AllResourcesProps {
   onViewAnalytics?: (resourceId: string) => void;
+}
+
+interface ApiResource {
+  _id: string;
+  title: string;
+  description: string;
+  type: string;
+  subject: string;
+  semester: number;
+  createdAt: string;
+  fileName?: string;
+  fileUrl?: string;
+  uploadedBy?: {
+    fullName: string;
+    _id: string;
+  };
+  department?: string;
+  stats?: {
+    views: number;
+    likes: number;
+    comments?: Array<any>;
+    downloads: number;
+    lastViewed?: string;
+  }
 }
 
 const AllResources = ({ onViewAnalytics }: AllResourcesProps) => {
@@ -69,7 +92,7 @@ const AllResources = ({ onViewAnalytics }: AllResourcesProps) => {
         const response = await api.get('/api/resources');
         
         if (response.data && response.data.resources) {
-          const formattedResources = response.data.resources.map((res: any) => ({
+          const formattedResources: FacultyResource[] = response.data.resources.map((res: ApiResource) => ({
             id: res._id,
             title: res.title,
             description: res.description,
@@ -77,9 +100,10 @@ const AllResources = ({ onViewAnalytics }: AllResourcesProps) => {
             subject: res.subject,
             semester: res.semester,
             uploadDate: res.createdAt,
+            createdAt: res.createdAt,
             fileName: res.fileName,
             fileUrl: res.fileUrl,
-            uploadedBy: res.uploadedBy?.fullName || 'Unknown',
+            uploadedByName: res.uploadedBy?.fullName || 'Unknown',
             uploaderId: res.uploadedBy?._id,
             department: res.department || '',
             stats: {
@@ -97,7 +121,7 @@ const AllResources = ({ onViewAnalytics }: AllResourcesProps) => {
           // Extract unique subjects
           const subjects = Array.from(new Set(
             formattedResources.map(res => res.subject).filter(Boolean)
-          ));
+          )) as string[];
           
           setAvailableSubjects(subjects);
         }
@@ -111,7 +135,7 @@ const AllResources = ({ onViewAnalytics }: AllResourcesProps) => {
           
           const subjects = Array.from(new Set(
             window.sharedResources.map(res => res.subject).filter(Boolean)
-          ));
+          )) as string[];
           
           setAvailableSubjects(subjects);
         }
