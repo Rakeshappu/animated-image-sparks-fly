@@ -51,8 +51,14 @@ const StatsSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  dailyViews: [DailyViewSchema],
-  studentFeedback: [StudentFeedbackSchema]
+  dailyViews: {
+    type: [DailyViewSchema],
+    default: () => []
+  },
+  studentFeedback: {
+    type: [StudentFeedbackSchema],
+    default: () => []
+  }
 });
 
 // Define the Resource schema
@@ -129,21 +135,24 @@ const ResourceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
-  comments: [{
-    content: {
-      type: String,
-      required: true
-    },
-    author: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
+  comments: {
+    type: [{
+      content: {
+        type: String,
+        required: true
+      },
+      author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    default: () => []
+  },
   createdAt: {
     type: Date,
     default: Date.now
