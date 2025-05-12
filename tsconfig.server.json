@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "dist",
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "include": ["src/server.ts", "src/server/**/*", "src/lib/**/*"],
+  "exclude": ["node_modules"]
+}

@@ -1,79 +1,212 @@
-
 import express from 'express';
-import { signup, login, verifyEmail, resendVerification } from '../controllers/auth.controller';
-import { authMiddleware } from '../middleware/auth.middleware';
+import { User } from '../../lib/db/models/User';
+import { generateOTP, generateVerificationToken } from '../../lib/auth/jwt';
+import { sendVerificationEmail } from '../../lib/email/sendEmail';
+import connectDB from '../../lib/db/connect';
 
 const router = express.Router();
 
-// Public auth routes
-router.post('/signup', signup);
-router.post('/login', login);
-router.post('/verify-email', verifyEmail);
-router.post('/resend-verification', resendVerification);
-
-// Protected routes that require authentication
-router.get('/me', authMiddleware, (req, res) => {
-  // Return full user object including role for client-side validation
-  res.json({ 
-    user: req.user,
-    timestamp: new Date().toISOString() 
-  });
-});
-
-// Admin-only routes
-router.get('/admin-check', authMiddleware, (req, res) => {
-  // Always return the token role for diagnosis
-  const tokenRole = req.user?.role;
-  
-  // Check explicitly for admin role in the token
-  if (req.user && tokenRole === 'admin') {
-    res.json({ 
-      message: 'You have admin access', 
-      user: req.user, 
-      timestamp: new Date().toISOString() 
-    });
-  } else {
-    console.error(`Admin access denied for user with role: ${tokenRole || 'undefined'}`);
-    
-    // Add a message indicating token doesn't have admin role
-    res.status(403).json({ 
-      error: 'Admin access required',
-      tokenRole: tokenRole || 'undefined',
-      userId: req.user?.userId,
-      message: 'Your token does not contain admin role information. Please log out and log back in.'
-    });
-  }
-});
-
-// Debug route to check token and role
-router.get('/debug-token', authMiddleware, (req, res) => {
+// Login route
+router.post('/login', async (req, res) => {
   try {
-    // Ensure user data exists in request
-    if (!req.user) {
-      return res.status(401).json({
-        error: 'No user data found in token'
-      });
+    await connectDB();
+    
+    const { email, password } = req.body;
+    
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    // Log for debugging
-    console.log('Debug token request - User:', req.user.userId, 'Role:', req.user.role);
+    // Check password
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
     
-    // Return detailed user information
-    res.json({
-      user: req.user,
-      role: req.user.role,
-      isAdmin: req.user.role === 'admin',
-      isFaculty: req.user.role === 'faculty',
-      isStudent: req.user.role === 'student',
-      timestamp: new Date().toISOString()
-    });
-  } catch (error: any) {
-    console.error('Error in debug-token route:', error);
-    res.status(500).json({ 
-      error: 'Error processing debug-token request',
-      message: error.message
-    });
+    // Generate token
+    const token = user.generateAuthToken();
+    
+    res.json({ token, user: user.toJSON() });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
-export default router;
+// Signup route
+router.post('/signup', async (req, res) => {
+  try {
+    await connectDB();
+    
+    const { email, password, fullName, role, department, phoneNumber, secretNumber } = req.body;
+    
+    // Check if user exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+    
+    // Validate faculty secret number
+    if (role === 'faculty' && (!secretNumber || secretNumber !== 'FACULTY2024')) {
+      return res.status(400).json({ error: 'Invalid faculty secret number' });
+    }
+    
+    // Generate verification token and OTP
+    const verificationToken = generateVerificationToken();
+    const otp = generateOTP();
+    
+    // Create user
+    const user = new User({
+      email,
+      password,
+      fullName,
+      role,
+      department,
+      phoneNumber,
+      secretNumber: role === 'faculty' ? secretNumber : undefined,
+      verificationToken,
+      verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      otp
+    });
+    
+    await user.save();
+    
+    // Send verification email
+    await sendVerificationEmail(email, verificationToken, otp);
+    
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Forgot password route
+router.post('/forgot-password', async (req, res) => {
+  try {
+    await connectDB();
+    
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    // Find user
+    const user = await User.findOne({ email });
+    
+    // Generate reset token regardless of whether user exists (security)
+    const resetToken = generateVerificationToken();
+    const otp = generateOTP();
+    
+    if (user) {
+      // Update user with reset token
+      user.resetPasswordToken = resetToken;
+      user.resetPasswordExpires = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
+      user.otp = otp;
+      await user.save();
+      
+      // Send reset email with OTP
+      try {
+        await sendVerificationEmail(email, resetToken, otp);
+        console.log('Password reset email sent');
+      } catch (emailError) {
+        console.error('Error sending password reset email:', emailError);
+      }
+    }
+    
+    // Always return success (security)
+    return res.status(200).json({ 
+      message: 'If your email is registered, you will receive password reset instructions.',
+      success: true
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    return res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+// Verify email route
+router.post('/verify-email', async (req, res) => {
+  try {
+    await connectDB();
+    
+    const { token, otp } = req.body;
+    
+    if (!token || !otp) {
+      return res.status(400).json({ error: 'Token and OTP are required' });
+    }
+    
+    // Find user
+    const user = await User.findOne({ 
+      verificationToken: token,
+      verificationTokenExpiry: { $gt: new Date() }
+    });
+    
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+    
+    // Verify OTP
+    if (user.otp !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP' });
+    }
+    
+    // Mark email as verified
+    user.isEmailVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpiry = undefined;
+    user.otp = undefined;
+    
+    await user.save();
+    
+    // Generate token
+    const authToken = user.generateAuthToken();
+    
+    res.json({ 
+      message: 'Email verified successfully', 
+      token: authToken,
+      user: user.toJSON()
+    });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Resend verification email
+router.post('/resend-verification', async (req, res) => {
+  try {
+    await connectDB();
+    
+    const { email } = req.body;
+    
+    // Find user
+    const user = await User.findOne({ email, isEmailVerified: false });
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid email or already verified' });
+    }
+    
+    // Generate new verification token and OTP
+    const otp = generateOTP();
+    const verificationToken = generateVerificationToken();
+    
+    // Update user
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    user.otp = otp;
+    await user.save();
+    
+    // Send new verification email
+    await sendVerificationEmail(email, verificationToken, otp);
+    
+    res.json({ message: 'Verification email resent successfully' });
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ error: 'Failed to resend verification email' });
+  }
+});
+
+module.exports = router;

@@ -1,37 +1,13 @@
 services:
   - type: web
-    name: your-app-name
+    name: versatile-share
     env: node
-    buildCommand: npm install && npm run render-build
-    startCommand: node dist/server.js
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 8080
 
-// build.sh - Create this file in your project root and make it executable (chmod +x build.sh)
-#!/bin/bash
-echo "Installing dependencies..."
-npm install
-
-echo "Building application..."
-npm run build
-
-echo "Checking build output directory..."
-ls -la dist/
-
-echo "Checking TypeScript declarations..."
-find dist -name "*.d.ts" | grep -q . && echo "Declarations found" || echo "No declarations found"
-
-echo "Build complete!"
-
-// Clean up artifacts on render
-// create a prebuild.sh script in your project root (chmod +x prebuild.sh) 
-#!/bin/bash
-echo "Cleaning up previous build artifacts..."
-rm -rf dist/
-rm -rf node_modules/.vite
-rm -rf .turbo
-
-echo "Environment information:"
-echo "Node version: $(node -v)"
-echo "NPM version: $(npm -v)"
+buildCommand: npm install && npm run build

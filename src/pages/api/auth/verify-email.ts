@@ -8,7 +8,7 @@ import Cors from 'cors';
 const cors = Cors({
   methods: ['POST', 'OPTIONS'],
   origin: process.env.NODE_ENV === 'development' 
-    ? ['http://localhost:5173'] 
+    ? ['http://localhost:8080'] 
     : ['your-production-domain.com'],
   credentials: true,
 });

@@ -8,7 +8,7 @@ import { verifyEmailConfig } from '../../../lib/email/config';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Credentials', 'true');

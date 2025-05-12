@@ -6,7 +6,7 @@ import connectDB from '../../../lib/db/connect';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
   res.setHeader('Access-Control-Allow-Methods', 'GET,DELETE,PATCH,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',

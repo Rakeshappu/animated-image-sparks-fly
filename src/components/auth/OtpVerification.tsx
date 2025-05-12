@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface OtpVerificationProps {
   email: string;
@@ -43,7 +42,7 @@ export const OtpVerification = ({ email, onResendOtp }: OtpVerificationProps) =>
     setOtp(newOtp);
     
     // Auto-focus next input if current input is filled
-    if (value && index < 5) {
+    if (value && index < 5 && inputRefs.current[index + 1]) {
       inputRefs.current[index + 1]?.focus();
     }
   };
