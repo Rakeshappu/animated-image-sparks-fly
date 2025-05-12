@@ -70,7 +70,7 @@ router.post('/forgot-password', async (req, res) => {
     user.resetPasswordExpires = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour expiry
     await user.save();
     
-    // In a real application, send an email with the reset token
+    // TODO: In a real application, send an email with the reset token
     console.log('Reset token generated:', resetToken);
     
     // Return success message without revealing if the email exists

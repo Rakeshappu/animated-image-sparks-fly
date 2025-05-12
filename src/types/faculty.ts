@@ -1,3 +1,4 @@
+
 export interface UploadFormData {
   title: string;
   description: string;
@@ -59,21 +60,19 @@ export interface FacultyResource {
 
 // Define SearchResource interface for search results
 export interface SearchResource {
+
   id?: string;
-  _id?: string;
   title: string;
   description?: string;
-  type: 'document' | 'video' | 'link' | 'note';
-  url?: string;
-  fileUrl?: string;
-  link?: string;
-  source?: string;
-  author?: string;
-  publishDate?: string;
-  thumbnailUrl?: string;
-  score?: number;
+  type: string;
   subject?: string;
   semester?: number;
-  category?: 'common' | 'study' | 'placement';
+  fileUrl?: string;
+  category?: string;
   placementCategory?: string;
+  url?: string;
+  thumbnailUrl?: string;
+  publishedDate?: string;
+  source?: string;
+  author?: string;
 }
