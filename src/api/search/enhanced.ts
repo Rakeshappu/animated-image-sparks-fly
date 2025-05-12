@@ -1,10 +1,11 @@
+
 import { Request, Response } from 'express';
-import { searchResources } from '../../lib/search/elasticsearch.ts';
-import { getCache, setCache } from '../../lib/cache/redis.ts';
-import connectDB from '../../lib/db/connect.ts';
-import { localMemoryCache } from '../../lib/cache/local-memory-cache.ts';
-import { generateText } from '../../services/openai.service.ts';
-import serperService from '../../services/serper.service.ts';
+import { searchResources } from '../../lib/search/elasticsearch';
+import { getCache, setCache } from '../../lib/cache/redis';
+import connectDB from '../../lib/db/connect';
+import { localMemoryCache } from '../../lib/cache/local-memory-cache';
+import { generateText } from '../../services/openai.service';
+import serperService from '../../services/serper.service';
 
 export default async function handler(req: Request, res: Response) {
   if (req.method !== 'GET') {

@@ -1,7 +1,7 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../../lib/db/connect.ts';
-import { EligibleUSN } from '../../../../lib/db/models/EligibleUSN.ts';
+import connectDB from '../../../../lib/db/connect';
+import { EligibleUSN } from '../../../../lib/db/models/EligibleUSN';
 import jwt from 'jsonwebtoken';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -1,10 +1,10 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../../lib/db/connect.ts';
-import { Resource } from '../../../../lib/db/models/Resource.ts';
+import connectDB from '../../../../lib/db/connect';
+import { Resource } from '../../../../lib/db/models/Resource';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import { notifyFacultyOfInteraction } from '../../../../lib/realtime/socket.ts';
+import { notifyFacultyOfInteraction } from '../../../../lib/realtime/socket';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Handle CORS preflight

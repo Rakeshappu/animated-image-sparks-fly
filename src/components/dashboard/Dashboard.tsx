@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { BarChart2, Book, X } from 'lucide-react';
-import { UserBanner } from '../user/UserBanner.ts';
-import { AnalyticsCard } from '../analytics/AnalyticsCard.ts';
-import { QuickAccess } from '../resources/QuickAccess.ts';
-import { ActivityFeed } from '../user/ActivityFeed.ts';
-import { useAuth } from '../../hooks/useAuth.ts';
-import api from '../../services/api.ts';
+import { UserBanner } from '../user/UserBanner';
+import { AnalyticsCard } from '../analytics/AnalyticsCard';
+import { QuickAccess } from '../resources/QuickAccess';
+import { ActivityFeed } from '../user/ActivityFeed';
+import { useAuth } from '../../hooks/useAuth';
+import api from '../../services/api';
 import toast from 'react-hot-toast';
-import { LocalSearch } from '../search/LocalSearch.ts';
-import { FacultyResource } from '../../types/faculty.ts';
+import { LocalSearch } from '../search/LocalSearch';
+import { FacultyResource } from '../../types/faculty';
 import { useNavigate } from 'react-router-dom';
-import { useOutsideClick } from '../../hooks/useOutsideClick.ts';
+import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 export const Dashboard = () => {
   const { user } = useAuth();

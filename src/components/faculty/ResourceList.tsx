@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
 import { FileText, Video, Link as LinkIcon, BarChart2, Eye, ThumbsUp, MessageSquare, Trash2 } from 'lucide-react';
-import { FacultyResource } from '../../types/faculty.ts';
-import { formatDate } from '../../utils/dateUtils.ts';
+import { FacultyResource } from '../../types/faculty';
+import { formatDate } from '../../utils/dateUtils';
 import { toast } from 'react-hot-toast';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog.ts';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import { useNavigate } from 'react-router-dom';
 
 interface ResourceListProps {

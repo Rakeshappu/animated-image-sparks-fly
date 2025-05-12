@@ -1,9 +1,9 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/db/connect.ts';
-import { notifyResourceUpload } from '../../../lib/realtime/socket.ts';
+import connectDB from '../../../lib/db/connect';
+import { notifyResourceUpload } from '../../../lib/realtime/socket';
 import jwt from 'jsonwebtoken';
-import { User } from '../../../lib/db/models/User.ts';
+import { User } from '../../../lib/db/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Handle CORS preflight

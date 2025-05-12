@@ -1,5 +1,5 @@
 
-import { User, UserRole } from '../types/auth.ts';
+import { User, UserRole } from '../types/auth';
 
 // Simulating a database of users
 const users = [

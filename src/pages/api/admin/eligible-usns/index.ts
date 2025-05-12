@@ -1,11 +1,11 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../../lib/db/connect.ts';
-import { EligibleUSN } from '../../../../lib/db/models/EligibleUSN.ts';
-import { User } from '../../../../lib/db/models/User.ts';
+import connectDB from '../../../../lib/db/connect';
+import { EligibleUSN } from '../../../../lib/db/models/EligibleUSN';
+import { User } from '../../../../lib/db/models/User';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
-import { checkAdminInDatabase } from '../../_middleware.ts';
+import { checkAdminInDatabase } from '../../_middleware';
 
 // CORS middleware with improved origins and headers
 const corsMiddleware = cors({

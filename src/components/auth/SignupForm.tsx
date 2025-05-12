@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UserRole, SignupFormData } from '../../types/auth.ts';
-import { FormField } from './FormField.ts';
+import { UserRole, SignupFormData } from '../../types/auth';
+import { FormField } from './FormField';
 import { Share2, ArrowLeft, ArrowRight, GraduationCap, Users, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import cropped from '../../../public/uploads/cropped.png'

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
-import { SubjectData, SubjectFolder } from '../../../types/faculty.ts';
+import { SubjectData, SubjectFolder } from '../../../types/faculty';
 import { toast } from 'react-hot-toast';
 
 interface SubjectCreationFormProps {

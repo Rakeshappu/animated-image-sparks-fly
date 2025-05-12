@@ -1,4 +1,4 @@
-import { SearchResource } from "../../types/faculty.ts";
+import { SearchResource } from "../../types/faculty";
 import { useState, useRef } from 'react';
 import { ExternalLink, FileText, Video, Globe, X } from "lucide-react";
 import { motion } from "framer-motion";

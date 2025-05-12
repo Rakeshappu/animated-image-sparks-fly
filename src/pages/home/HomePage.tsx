@@ -5,12 +5,12 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 // Lazy loaded components
-const EnhancedAISearch = lazy(() => import('../../components/search/EnhancedAISearch.ts'));
-const PaginatedResourceList = lazy(() => import('../../components/resources/PaginatedResourceList.ts'));
-const QuickAccess = lazy(() => import('../../components/resources/QuickAccess.ts'));
+const EnhancedAISearch = lazy(() => import('../../components/search/EnhancedAISearch'));
+const PaginatedResourceList = lazy(() => import('../../components/resources/PaginatedResourceList'));
+const QuickAccess = lazy(() => import('../../components/resources/QuickAccess'));
 
 // Import service
-import { getResources } from '../../services/resource.service.ts';
+import  getResources  from '../../services/resource.service';
 
 export const HomePage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -39,14 +39,7 @@ export const HomePage = () => {
   const fetchPagedResources = async (page: number, limit: number, filters: any = {}) => {
     try {
       setIsLoading(true);
-      const resources = await getResources({
-        page,
-        limit,
-        type: filters.type,
-        semester: filters.semester,
-        search: filters.search,
-        sortOrder: filters.sortOrder,
-      });
+      const resources = await getResources();
       
       setIsLoading(false);
       return {

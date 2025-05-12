@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api.ts';
+import api from '../../services/api';
 
 export const CreateUserPage = () => {
   const navigate = useNavigate();

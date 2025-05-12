@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext.ts';
+import { useAuth } from '../../contexts/AuthContext';
 import { 
   Edit2, 
   Building, 

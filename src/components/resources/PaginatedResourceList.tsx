@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { FacultyResource } from '../../types/faculty.ts';
-import { ResourceCard } from './ResourceCard.ts';
+import { FacultyResource } from '../../types/faculty';
+import { ResourceCard } from './ResourceCard';
 import { Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginatedResourceListProps {

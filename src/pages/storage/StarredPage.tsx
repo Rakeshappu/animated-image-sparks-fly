@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, Eye, Bookmark, Calendar, User } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { DocumentViewer } from '../../components/document/DocumentViewer.ts';
-import { useAuth } from '../../contexts/AuthContext.ts';
+import { DocumentViewer } from '../../components/document/DocumentViewer';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface StarredResource {
   _id: string;

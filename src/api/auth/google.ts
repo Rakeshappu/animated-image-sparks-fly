@@ -1,9 +1,9 @@
 
 import { Request, Response } from 'express';
-import { User } from '../../lib/db/models/User.ts';
-import { verifyGoogleToken } from '../../lib/auth/google.ts';
-import { generateToken } from '../../lib/auth/jwt.ts';
-import connectDB from '../../lib/db/connect.ts';
+import { User } from '../../lib/db/models/User';
+import { verifyGoogleToken } from '../../lib/auth/google';
+import { generateToken } from '../../lib/auth/jwt';
+import connectDB from '../../lib/db/connect';
 
 export default async function handler(req: Request, res: Response) {
   if (req.method !== 'POST') {

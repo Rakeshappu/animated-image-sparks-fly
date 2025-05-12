@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './useAuth.ts';
-import api from '../services/api.ts';
+import { useAuth } from './useAuth';
+import api from '../services/api';
 
 export interface DownloadedItem {
   id: string;

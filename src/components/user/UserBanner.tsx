@@ -1,12 +1,12 @@
 
 import { useEffect, useState } from 'react';
 import { Award, Calendar, BookOpen } from 'lucide-react';
-import { User } from '../../types/index.ts';
-import { useAuth } from '../../contexts/AuthContext.ts';
-import { activityService } from '../../services/activity.service.ts';
+import { User } from '../../types/index';
+import { useAuth } from '../../contexts/AuthContext';
+import { activityService } from '../../services/activity.service';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ProfileSkeleton } from '../ui/LoadingSkeletons.ts';
-import api from '../../services/api.ts';
+import { ProfileSkeleton } from '../ui/LoadingSkeletons';
+import api from '../../services/api';
 
 interface UserBannerProps {
   user?: User;

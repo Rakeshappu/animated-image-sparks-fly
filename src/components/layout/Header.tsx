@@ -1,13 +1,13 @@
 import { Search, Bell, LogOut, Settings, UserCircle, SunMoon, Loader } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext.ts';
+import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { generateText } from '../../services/openai.service.ts';
+import { generateText } from '../../services/openai.service';
 import { toast } from 'react-hot-toast';
-import { Notification } from '../../types/auth.ts';
-import api from '../../services/api.ts';
+import { Notification } from '../../types/auth';
+import api from '../../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { NotificationSkeleton } from '../ui/LoadingSkeletons.ts';
+import { NotificationSkeleton } from '../ui/LoadingSkeletons';
 
 export const Header = () => {
   const { user, logout } = useAuth();

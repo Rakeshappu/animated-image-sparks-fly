@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../hooks/useAuth.ts';
+import { useAuth } from '../../hooks/useAuth';
 import { Trash, FileText, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { formatDateSafely, addDaysSafely } from '../../utils/dateUtils.ts';
+import { formatDateSafely, addDaysSafely } from '../../utils/dateUtils';
 
 interface TrashedItem {
   id: string;

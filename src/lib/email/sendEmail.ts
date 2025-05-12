@@ -1,6 +1,6 @@
 
-import { transporter } from './config.ts';
-import { getVerificationEmailTemplate } from './templates.ts';
+import { transporter } from './config';
+import { getVerificationEmailTemplate } from './templates';
 
 export async function sendVerificationEmail(email: string, token: string, otp: string) {
   try {

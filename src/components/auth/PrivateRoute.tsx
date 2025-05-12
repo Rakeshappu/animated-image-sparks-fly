@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth.ts';
-import { AnimatedLogo } from '../common/AnimatedLogo.ts';
-import { UserRole } from '../../types/auth.ts';
+import { useAuth } from '../../hooks/useAuth';
+import { AnimatedLogo } from '../common/AnimatedLogo';
+import { UserRole } from '../../types/auth';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api.ts';
-import { API_ROUTES } from '../../lib/api/routes.ts';
-import { forceReloginIfNeeded } from '../../utils/authUtils.ts';
+import api from '../../services/api';
+import { API_ROUTES } from '../../lib/api/routes';
+import { forceReloginIfNeeded } from '../../utils/authUtils';
 
 interface PrivateRouteProps {
   children: React.ReactNode;

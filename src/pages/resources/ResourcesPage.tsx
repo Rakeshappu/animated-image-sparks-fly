@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
 import { DownloadCloud, Upload, Users, FileText, Loader } from 'lucide-react';
-import api from '../../services/api.ts';
+import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 
 // Type definitions

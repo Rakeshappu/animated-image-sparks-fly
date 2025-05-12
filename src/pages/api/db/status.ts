@@ -1,6 +1,6 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { verifyDbConnection } from '../../../lib/db/connect.ts';
+import { verifyDbConnection } from '../../../lib/db/connect';
 import cors from 'cors';
 import mongoose from 'mongoose';
 

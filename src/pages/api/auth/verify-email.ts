@@ -1,7 +1,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { User } from '../../../lib/db/models/User.ts';
-import connectDB from '../../../lib/db/connect.ts';
+import { User } from '../../../lib/db/models/User';
+import connectDB from '../../../lib/db/connect';
 import Cors from 'cors';
 
 // Initialize CORS middleware

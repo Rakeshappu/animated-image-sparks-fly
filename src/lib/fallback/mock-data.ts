@@ -1,5 +1,5 @@
 
-import { SubjectFolder } from '../../types/faculty.ts';
+import { SubjectFolder } from '../../types/faculty';
 
 // Mock resources when database is not available
 export const mockResources = [

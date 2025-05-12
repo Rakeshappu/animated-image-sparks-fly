@@ -1,10 +1,10 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import api from '../services/api.ts';
-import { API_ROUTES } from '../lib/api/routes.ts';
-import { User, UserRole } from '../types/auth.ts';
+import api from '../services/api';
+import { API_ROUTES } from '../lib/api/routes';
+import { User, UserRole } from '../types/auth';
 import { toast } from 'react-hot-toast';
-import { decodeToken } from '../utils/authUtils.ts';
+import { decodeToken } from '../utils/authUtils';
 
 interface AuthContextType {
   user: User | null;

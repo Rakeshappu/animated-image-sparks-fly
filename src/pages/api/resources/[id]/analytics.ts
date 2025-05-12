@@ -1,8 +1,8 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../../lib/db/connect.ts';
-import { Resource } from '../../../../lib/db/models/Resource.ts';
-import { Activity } from '../../../../lib/db/models/Activity.ts';
+import connectDB from '../../../../lib/db/connect';
+import { Resource } from '../../../../lib/db/models/Resource';
+import { Activity } from '../../../../lib/db/models/Activity';
 import jwt from 'jsonwebtoken';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

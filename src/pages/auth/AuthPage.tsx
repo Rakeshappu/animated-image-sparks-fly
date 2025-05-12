@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { RoleSelection } from './components/RoleSelection.ts';
-import { SignupForm } from './components/SignupForm.ts';
-import { EmailVerification } from './components/EmailVerification.ts';
-import { LoginForm } from './components/LoginForm.ts';
-import { AdminApprovalPendingPage } from './AdminApprovalPendingPage.ts';
-import { useAuth } from '../../contexts/AuthContext.ts';
+import { RoleSelection } from './components/RoleSelection';
+import { SignupForm } from './components/SignupForm';
+import { EmailVerification } from './components/EmailVerification';
+import { LoginForm } from './components/LoginForm';
+import { AdminApprovalPendingPage } from './AdminApprovalPendingPage';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const AuthPage = () => {
   const { user, loading } = useAuth();

@@ -1,4 +1,4 @@
-import { User, Activity, Resource } from '../types/index.ts';
+import { User, Activity, Resource } from '../types/index';
 
 export const currentUser: User = {
   _id: '1',

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { AIResourceSearch } from '../../components/search/AIResourceSearch.ts';
-import { useAuth } from '../../contexts/AuthContext.ts';
-import { ResourceUpload } from '../../components/faculty/ResourceUpload.ts';
-import { UploadFormData } from '../../types/faculty.ts';
+import { AIResourceSearch } from '../../components/search/AIResourceSearch';
+import { useAuth } from '../../contexts/AuthContext';
+import { ResourceUpload } from '../../components/faculty/ResourceUpload';
+import { UploadFormData } from '../../types/faculty';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api.ts';
-import { API_ROUTES } from '../../lib/api/routes.ts';
+import api from '../../services/api';
+import { API_ROUTES } from '../../lib/api/routes';
 import { 
   Briefcase, ChevronRight, Download, Link as LinkIcon, ArrowLeft,
   FileText, Loader, Trash2, ThumbsUp, MessageSquare, Eye, 
@@ -15,9 +15,9 @@ import {
   placementCategories, 
   getStandardizedCategory, 
   getCategoryNameById 
-} from '../../utils/placementCategoryUtils.ts';
-import { DocumentViewer } from '../../components/document/DocumentViewer.ts';
-import { activityService } from '../../services/activity.service.ts';
+} from '../../utils/placementCategoryUtils';
+import { DocumentViewer } from '../../components/document/DocumentViewer';
+import  {activityService}  from '../../services/activity.service';
 import { motion } from 'framer-motion';
 
 export const PlacementResourcesPage = () => {

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Bell, Check, Trash2, RefreshCw } from 'lucide-react';
-import api from '../../services/api.ts';
-import { useAuth } from '../../hooks/useAuth.ts';
+import api from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-hot-toast';
-import { Notification } from '../../types/auth.ts';
+import { Notification } from '../../types/auth';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 

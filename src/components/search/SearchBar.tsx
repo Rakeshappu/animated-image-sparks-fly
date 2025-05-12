@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, Filter, Loader, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api.ts';
-import { generateText } from '../../services/openai.service.ts';
-import { useOutsideClick } from '../../hooks/useOutsideClick.ts';
+import api from '../../services/api';
+import { generateText } from '../../services/openai.service';
+import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 // Define the SearchFilters type
 interface SearchFilters {

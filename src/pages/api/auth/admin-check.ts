@@ -1,8 +1,8 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import jwt from 'jsonwebtoken';
-import connectDB from '../../../lib/db/connect.ts';
-import { User } from '../../../lib/db/models/User.ts';
+import connectDB from '../../../lib/db/connect';
+import { User } from '../../../lib/db/models/User';
 import cors from 'cors';
 
 // CORS middleware

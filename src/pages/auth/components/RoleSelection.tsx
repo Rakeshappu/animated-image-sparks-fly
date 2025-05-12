@@ -1,6 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
-import { UserRole } from '../../../types/auth.ts';
+import { UserRole } from '../../../types/auth';
 import { GraduationCap, Users, Share2, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 

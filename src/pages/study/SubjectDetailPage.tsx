@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Filter } from 'lucide-react';
-import { ResourceItem } from '../../components/study/ResourceItem.ts';
-import { FacultyResource } from '../../types/faculty.ts';
+import { ResourceItem } from '../../components/study/ResourceItem';
+import { FacultyResource } from '../../types/faculty';
 import { motion } from 'framer-motion';
 
 export const SubjectDetailPage = () => {

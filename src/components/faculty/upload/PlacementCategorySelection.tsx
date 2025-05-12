@@ -1,5 +1,5 @@
 import { ChevronLeft } from 'lucide-react';
-import { placementCategories } from '../../../utils/placementCategoryUtils.ts';
+import { placementCategories } from '../../../utils/placementCategoryUtils';
 
 interface PlacementCategorySelectionProps {
   onCategorySelect: (categoryId: string, categoryName: string) => void;

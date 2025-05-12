@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Code, Award, TrendingUp, Trophy, ExternalLink, Star, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../contexts/AuthContext.ts';
-import api from '../../services/api.ts';
+import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 
 // Define platform types

@@ -1,4 +1,4 @@
-mport api from './api.js';
+import api from './api.js';
 import { ActivityDocument } from '../types/activity';
 
 export const fetchUserActivities = async (limit = 10): Promise<ActivityDocument[]> => {

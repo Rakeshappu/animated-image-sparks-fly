@@ -1,6 +1,6 @@
 
 import { toast } from 'react-hot-toast';
-import api from '../services/api.ts';
+import api from '../services/api';
 
 // Function to decode JWT token and extract payload
 export const decodeToken = (token: string): any => {

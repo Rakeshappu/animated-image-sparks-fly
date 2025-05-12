@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../hooks/useAuth.ts';
+import { useAuth } from '../../hooks/useAuth';
 
 interface OtpVerificationProps {
   email: string;

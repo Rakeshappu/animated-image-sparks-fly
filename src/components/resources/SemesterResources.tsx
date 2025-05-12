@@ -1,8 +1,8 @@
 
-import { ResourceCard } from './ResourceCard.ts';
+import { ResourceCard } from './ResourceCard';
 import { useState, useEffect } from 'react';
-import { FacultyResource } from '../../types/faculty.ts';
-import { getStandardizedCategory, getCategoryNameById } from '../../utils/placementCategoryUtils.ts';
+import { FacultyResource } from '../../types/faculty';
+import { getStandardizedCategory, getCategoryNameById } from '../../utils/placementCategoryUtils';
 import { motion } from 'framer-motion';
 
 interface SemesterResourcesProps {

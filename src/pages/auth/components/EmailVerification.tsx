@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { authService } from '../../../services/auth.service.ts';
-import { useAuth } from '../../../contexts/AuthContext.ts';
+import { authService } from '../../../services/auth.service';
+import { useAuth } from '../../../contexts/AuthContext';
 import { Mail } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 

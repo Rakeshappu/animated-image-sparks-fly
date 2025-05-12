@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../../contexts/AuthContext.ts';
-import { FormField } from '../../../components/auth/FormField.ts';
+import { useAuth } from '../../../contexts/AuthContext';
+import { FormField } from '../../../components/auth/FormField';
 import { LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';

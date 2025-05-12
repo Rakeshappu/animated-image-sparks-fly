@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { AdminApprovalPending } from '../../components/auth/AdminApprovalPending.ts';
+import { AdminApprovalPending } from '../../components/auth/AdminApprovalPending';
 
 export const AdminApprovalPendingPage = () => {
   const location = useLocation();

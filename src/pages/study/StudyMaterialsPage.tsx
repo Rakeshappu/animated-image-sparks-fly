@@ -1,16 +1,16 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { LocalSearch } from '../../components/search/LocalSearch.ts';
-import { SubjectFolder } from '../../components/study/SubjectFolder.ts';
-import { StudyMaterialsHeader } from '../../components/study/StudyMaterialsHeader.ts';
-import { groupBySemester, groupBySubject } from '../../utils/studyUtils.ts';
-import { FacultyResource } from '../../types/faculty.ts';
+import { LocalSearch } from '../../components/search/LocalSearch';
+import { SubjectFolder } from '../../components/study/SubjectFolder';
+import { StudyMaterialsHeader } from '../../components/study/StudyMaterialsHeader';
+import { groupBySemester, groupBySubject } from '../../utils/studyUtils';
+import { FacultyResource } from '../../types/faculty';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../hooks/useAuth.ts';
+import { useAuth } from '../../hooks/useAuth';
 import { Book, X } from 'lucide-react';
-import  checkDatabaseConnection  from '../../services/resource.service.ts';
-import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner.ts';
-import { ResourceItem } from '../../components/study/ResourceItem.ts';
+import { checkDatabaseConnection } from '../../services/resource.service';
+import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
+import { ResourceItem } from '../../components/study/ResourceItem';
 
 export const StudyMaterialsPage = () => {
   const { user } = useAuth();

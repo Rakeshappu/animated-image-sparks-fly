@@ -1,11 +1,11 @@
 
 import { Request, Response } from 'express';
-import { s3Config } from '../../lib/config/services.ts';
+import { s3Config } from '../../lib/config/services';
 import { S3 } from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
-import { localStorageConfig } from '../../lib/config/services.ts';
+import { localStorageConfig } from '../../lib/config/services';
 
 export default async function handler(req: Request, res: Response) {
   if (req.method !== 'POST') {

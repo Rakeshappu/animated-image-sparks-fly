@@ -1,7 +1,7 @@
 
 import { Request, Response } from 'express';
-import { User } from '../../lib/db/models/User.ts';
-import connectDB from '../../lib/db/connect.ts';
+import { User } from '../../lib/db/models/User';
+import connectDB from '../../lib/db/connect';
 
 export default async function handler(req: Request, res: Response) {
   if (req.method !== 'POST') {

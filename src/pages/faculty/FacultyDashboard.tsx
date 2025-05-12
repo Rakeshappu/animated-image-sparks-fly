@@ -1,15 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { ResourceUpload } from '../../components/faculty/ResourceUpload.ts';
-import { ResourceList } from '../../components/faculty/ResourceList.ts';
-import { UploadFormData, FacultyResource } from '../../types/faculty.ts';
-import { UploadWorkflow } from '../../components/faculty/UploadWorkflow.ts';
+import { ResourceUpload } from '../../components/faculty/ResourceUpload';
+import { ResourceList } from '../../components/faculty/ResourceList';
+import { UploadFormData, FacultyResource } from '../../types/faculty';
+import { UploadWorkflow } from '../../components/faculty/UploadWorkflow';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../../services/api.ts';
-import { useAuth } from '../../hooks/useAuth.ts';
-import checkDatabaseConnection  from '../../services/resource.service.ts';
-import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner.ts';
-import { API_ROUTES } from '../../lib/api/routes.ts';
+import api from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
+import checkDatabaseConnection  from '../../services/resource.service';
+import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
+import { API_ROUTES } from '../../lib/api/routes';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 

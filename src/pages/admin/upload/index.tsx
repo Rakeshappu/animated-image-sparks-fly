@@ -1,9 +1,9 @@
 
 import { useNavigate } from 'react-router-dom';
-import { UploadWorkflow } from '../../../components/faculty/UploadWorkflow.ts';
+import { UploadWorkflow } from '../../../components/faculty/UploadWorkflow';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { createResource } from '../../../services/resource.service.ts';
+import  createResource  from '../../../services/resource.service';
 import { ArrowLeft } from 'lucide-react';
 
 const AdminUploadPage = () => {
@@ -40,7 +40,7 @@ const AdminUploadPage = () => {
         }
         
         // Upload the resource directly using the service
-        const response = await createResource(formData);
+        const response = await createResource();
         console.log('Resource uploaded by admin:', response);
         
         // After successful upload, navigate to dashboard

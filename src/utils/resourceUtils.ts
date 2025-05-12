@@ -1,6 +1,6 @@
 
-import { Resource } from '../types/index.ts';
-import { FacultyResource } from '../types/faculty.ts';
+import { Resource } from '../types/index';
+import { FacultyResource } from '../types/faculty';
 
 export const filterResourcesBySemester = (
   resources: Resource[],
