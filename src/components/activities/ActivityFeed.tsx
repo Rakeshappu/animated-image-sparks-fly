@@ -2,9 +2,9 @@
 import { useEffect, useState } from 'react';
 import { Clock, Eye, Download, Upload, Heart, MessageSquare, Share } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import api from '../../services/api.ts';
 import toast from 'react-hot-toast';
-import { activityService } from '../../services/activity.service';
+import { activityService } from '../../services/activity.service.ts';
 
 interface Activity {
   _id: string;

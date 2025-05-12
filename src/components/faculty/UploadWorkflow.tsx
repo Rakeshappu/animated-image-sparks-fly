@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { SubjectData, SubjectFolder } from '../../types/faculty';
-import { UploadOptionSelection } from './upload/UploadOptionSelection';
-import { SemesterSelection } from './upload/SemesterSelection';
-import { SubjectCreationForm } from './upload/SubjectCreationForm';
-import { PlacementCategorySelection } from './upload/PlacementCategorySelection';
+import { SubjectData, SubjectFolder } from '../../types/faculty.ts';
+import { UploadOptionSelection } from './upload/UploadOptionSelection.ts';
+import { SemesterSelection } from './upload/SemesterSelection.ts';
+import { SubjectCreationForm } from './upload/SubjectCreationForm.ts';
+import { PlacementCategorySelection } from './upload/PlacementCategorySelection.ts';
 import { ResourceUpload } from './ResourceUpload.tsx';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';

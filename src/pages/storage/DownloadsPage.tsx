@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { Download, FileText, Star, Trash } from 'lucide-react';
-import { useDownloads } from '../../hooks/useDownloads';
-import { Skeleton } from '../../components/ui/skeleton';
-import api from '../../services/api';
+import { useDownloads } from '../../hooks/useDownloads.ts';
+import { Skeleton } from '../../components/ui/skeleton.ts';
+import api from '../../services/api.ts';
 
 export const DownloadsPage = () => {
   const { downloadedItems, isLoading, refreshDownloads } = useDownloads();

@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext.ts';
+import api from '../../services/api.ts';
 import { toast } from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { ResourceAnalyticsView } from '../../components/faculty/ResourceAnalytics';
+import { ResourceAnalyticsView } from '../../components/faculty/ResourceAnalytics.ts';
 import { useSearchParams } from 'react-router-dom';
-import { activityService } from '../../services/activity.service';
+import { activityService } from '../../services/activity.service.ts';
 
 export interface ResourceAnalytics {
   views: number;

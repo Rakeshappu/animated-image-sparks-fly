@@ -1,9 +1,9 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { User } from '../../../lib/db/models/User';
-import { generateToken } from '../../../lib/auth/jwt';
-import connectDB from '../../../lib/db/connect';
-import { Activity } from '../../../lib/db/models/Activity';
+import { User } from '../../../lib/db/models/User.ts';
+import { generateToken } from '../../../lib/auth/jwt.ts';
+import connectDB from '../../../lib/db/connect.ts';
+import { Activity } from '../../../lib/db/models/Activity.ts';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers

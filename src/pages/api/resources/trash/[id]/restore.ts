@@ -1,8 +1,8 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Resource } from '../../../../../lib/db/models/Resource';
-import { verifyToken } from '../../../../../lib/auth/jwt';
-import { runCorsMiddleware } from '../../../_middleware';
+import { Resource } from '../../../../../lib/db/models/Resource.ts';
+import { verifyToken } from '../../../../../lib/auth/jwt.ts';
+import { runCorsMiddleware } from '../../../_middleware.ts';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

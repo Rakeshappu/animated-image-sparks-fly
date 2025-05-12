@@ -1,5 +1,5 @@
-import api from './api';
-import { UserRole } from '../types/auth';
+import api from './api.ts';
+import { UserRole } from '../types/auth.ts';
 
 // Auth Service with forgot password functionality
 export const authService = {

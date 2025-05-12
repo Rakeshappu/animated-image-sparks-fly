@@ -1,6 +1,6 @@
 
-import api from './api';
-import { getPresignedDownloadUrl, getKeyFromUrl, deleteFileFromS3 } from '../lib/storage/s3';
+import api from './api.ts';
+import { getPresignedDownloadUrl, getKeyFromUrl, deleteFileFromS3 } from '../lib/storage/s3.ts';
 
 /**
  * Upload a file to storage (AWS S3)

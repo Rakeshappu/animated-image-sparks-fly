@@ -1,6 +1,6 @@
 
-import { FacultyResource } from '../types/faculty';
-import api from '../services/api';
+import { FacultyResource } from '../types/faculty.ts';
+import api from '../services/api.ts';
 
 // Use FacultyResource instead of Resource
 export const groupBySemester = (resources: FacultyResource[]): Record<number, FacultyResource[]> => {

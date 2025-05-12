@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Filter, X } from 'lucide-react';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
+import { useOutsideClick } from '../../hooks/useOutsideClick.ts';
 
 interface LocalSearchProps {
   resources: any[];

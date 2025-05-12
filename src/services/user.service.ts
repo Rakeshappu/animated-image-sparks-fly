@@ -1,6 +1,6 @@
 
-import { api } from './api';
-import { Notification, User } from '../types/auth';
+import  api  from './api.ts';
+import { Notification, User } from '../types/auth.ts';
 
 class UserService {
   // Get user profile

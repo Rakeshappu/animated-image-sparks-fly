@@ -1,7 +1,7 @@
 
 import React, { forwardRef } from 'react';
 import { ExternalLink, Download, Youtube, Calendar, Eye } from 'lucide-react';
-import { SearchResource } from '../../../types/faculty';
+import { SearchResource } from '../../../types/faculty.ts';
 import { motion } from 'framer-motion';
 
 interface VideoResultProps {

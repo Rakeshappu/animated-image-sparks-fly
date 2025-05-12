@@ -1,6 +1,6 @@
 
 import { Client } from '@elastic/elasticsearch';
-import { elasticsearchConfig } from '../config/services';
+import { elasticsearchConfig } from '../config/services.ts';
 
 let esClient: Client | null = null;
 

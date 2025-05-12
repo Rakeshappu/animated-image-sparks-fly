@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import api from '../../services/api';
+import api from '../../services/api.ts';
 import { toast } from 'react-hot-toast';
 import { UserPlus, Trash, FileSpreadsheet, Plus, Search, X, Check } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext.ts';
 
 interface EligibleUSN {
   _id: string;

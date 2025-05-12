@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext.ts';
 import { Mail } from 'lucide-react';
 
 export const VerifyEmailPage = () => {

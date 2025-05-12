@@ -1,10 +1,10 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/db/connect';
+import connectDB from '../../../lib/db/connect.ts';
 import mongoose from 'mongoose';
-import { verifyToken } from '../../../lib/auth/jwt';
-import { runCorsMiddleware } from '../_middleware';
-import { getErrorMessage } from '../../../utils/errorUtils';
+import { verifyToken } from '../../../lib/auth/jwt.ts';
+import { runCorsMiddleware } from '../_middleware.ts';
+import { getErrorMessage } from '../../../utils/errorUtils.ts';
 
 // Create subject folder schema
 const SubjectFolderSchema = new mongoose.Schema({

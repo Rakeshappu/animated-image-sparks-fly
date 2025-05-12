@@ -1,5 +1,5 @@
 
-import { UserRole } from './auth';
+import { UserRole } from './auth.ts';
 
 export interface User {
   _id?: string;
@@ -46,4 +46,4 @@ export interface Activity {
   timestamp: string;
 }
 
-export type { UserRole } from './auth';
+export type { UserRole } from './auth.ts';

@@ -1,9 +1,9 @@
 
 import { useNavigate } from 'react-router-dom';
-import { UploadWorkflow } from '../../../components/faculty/UploadWorkflow';
+import { UploadWorkflow } from '../../../components/faculty/UploadWorkflow.ts';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { createResource } from '../../../services/resource.service';
+import { createResource } from '../../../services/resource.service.ts';
 import { ArrowLeft } from 'lucide-react';
 
 const AdminUploadPage = () => {

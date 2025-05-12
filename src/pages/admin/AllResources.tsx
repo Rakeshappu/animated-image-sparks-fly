@@ -5,13 +5,13 @@ import {
   MessageSquare, Eye, Video, Link as LinkIcon, File, Pencil, BarChart2, Clock, Calendar,
   Check, X, ExternalLink, CircleSlash
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext.ts';
+import api from '../../services/api.ts';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { formatDate } from '../../utils/dateUtils';
-import { FacultyResource } from '../../types/faculty';
-import { ConfirmationDialog } from '../../components/ui/ConfirmationDialog';
+import { formatDate } from '../../utils/dateUtils.ts';
+import { FacultyResource } from '../../types/faculty.ts';
+import { ConfirmationDialog } from '../../components/ui/ConfirmationDialog.ts';
 
 interface ResourceStats {
   views: number;

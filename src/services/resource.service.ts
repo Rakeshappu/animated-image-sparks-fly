@@ -1,5 +1,5 @@
-import api from './api';
-import { API_ROUTES } from '../lib/api/routes';
+import api from './api.ts';
+import { API_ROUTES } from '../lib/api/routes.ts';
 
 export const getResources = async (params = {}) => {
   try {

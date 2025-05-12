@@ -2,15 +2,15 @@
 import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Search, BookOpen, Loader2, ExternalLink, Download, X, Youtube, FileText, Info, Bookmark, Filter } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
-import { SearchResource } from '../../types/faculty';
+import api from '../../services/api.ts';
+import { useAuth } from '../../contexts/AuthContext.ts';
+import { SearchResource } from '../../types/faculty.ts';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Lazy loaded components
-const VideoResult = lazy(() => import('./results/VideoResult'));
-const DocumentResult = lazy(() => import('./results/DocumentResult'));
-const InfoResult = lazy(() => import('./results/InfoResult'));
+const VideoResult = lazy(() => import('./results/VideoResult.ts'));
+const DocumentResult = lazy(() => import('./results/DocumentResult.ts'));
+const InfoResult = lazy(() => import('./results/InfoResult.ts'));
 
 interface EnhancedAISearchProps {
   initialSearchType?: 'educational' | 'placement' | 'videos' | 'documents';

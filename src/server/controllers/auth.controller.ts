@@ -1,11 +1,11 @@
 
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { User } from '../../lib/db/models/User';
-import { EligibleUSN } from '../../lib/db/models/EligibleUSN';
-import { generateToken } from '../utils/auth';
-import { sendVerificationEmail, sendWelcomeEmail } from '../../lib/email/sendEmail';
-import { generateOTP } from '../../lib/auth/otp';
+import { User } from '../../lib/db/models/User.ts';
+import { EligibleUSN } from '../../lib/db/models/EligibleUSN.ts';
+import { generateToken } from '../utils/auth.ts';
+import { sendVerificationEmail, sendWelcomeEmail } from '../../lib/email/sendEmail.ts';
+import { generateOTP } from '../../lib/auth/otp.ts';
 
 // Signup controller with proper validation and response
 export const signup = async (req: Request, res: Response) => {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Clock, Check, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import api from '../../services/api';
+import api from '../../services/api.ts';
 
 export const AdminApprovalPending = ({ email }: { email: string }) => {
   const navigate = useNavigate();

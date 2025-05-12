@@ -1,6 +1,6 @@
 
 import { X, FolderPlus, Upload, Book, Briefcase, FolderOpen } from 'lucide-react';
-import { SubjectFolder } from '../../../types/faculty';
+import { SubjectFolder } from '../../../types/faculty.ts';
 
 type UploadOption = 'semester' | 'placement' | 'subject-folder' | 'direct-upload';
 

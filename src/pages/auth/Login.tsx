@@ -1,14 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LoginForm } from '../../components/auth/LoginForm';
-import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
-import { authService } from '../../services/auth.service';
-import { LoginFormData } from '../../types/auth';
-import { checkDatabaseConnection } from '../../services/resource.service';
-import { useAuth } from '../../contexts/AuthContext';
+import { LoginForm } from '../../components/auth/LoginForm.ts';
+import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner.ts';
+import { authService } from '../../services/auth.service.ts';
+import { LoginFormData } from '../../types/auth.ts';
+import checkDatabaseConnection  from '../../services/resource.service.ts';
+import { useAuth } from '../../contexts/AuthContext.ts';
 import { toast } from 'react-hot-toast';
-import { decodeToken } from '../../utils/authUtils';
+import { decodeToken } from '../../utils/authUtils.ts';
 
 export const Login = () => {
   const { login, clearError } = useAuth();

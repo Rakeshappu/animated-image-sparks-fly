@@ -3,9 +3,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { FileText, Video, Link as LinkIcon, File, Download, Calendar, Eye, Bookmark, ThumbsUp, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { DocumentViewer } from '../document/DocumentViewer';
-import { useAuth } from '../../contexts/AuthContext';
-import { activityService } from '../../services/activity.service';
+import { DocumentViewer } from '../document/DocumentViewer.ts';
+import { useAuth } from '../../contexts/AuthContext.ts';
+import { activityService } from '../../services/activity.service.ts';
 
 interface ResourceCardProps {
   resource: any;

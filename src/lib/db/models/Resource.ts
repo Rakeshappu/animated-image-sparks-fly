@@ -1,7 +1,7 @@
 
 //src\lib\db\models\Resource.ts
 import mongoose from 'mongoose';
-import { getAllCategoryIds, getStandardizedCategory } from '../../../utils/placementCategoryUtils';
+import { getAllCategoryIds, getStandardizedCategory } from '../../../utils/placementCategoryUtils.ts';
 
 // Define a daily view schema for statistics
 const DailyViewSchema = new mongoose.Schema({

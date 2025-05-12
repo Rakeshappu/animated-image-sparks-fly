@@ -1,15 +1,15 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/db/connect';
-import { Resource } from '../../../lib/db/models/Resource';
-import { verifyToken } from '../../../lib/auth/jwt';
-import { runCorsMiddleware } from '../_middleware';
+import connectDB from '../../../lib/db/connect.ts';
+import { Resource } from '../../../lib/db/models/Resource.ts';
+import { verifyToken } from '../../../lib/auth/jwt.ts';
+import { runCorsMiddleware } from '../_middleware.ts';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
 import mongoose from 'mongoose';
-import { getErrorMessage } from '../../../utils/errorUtils';
-import { getStandardizedCategory, getAllCategoryIds } from '../../../utils/placementCategoryUtils';
+import { getErrorMessage } from '../../../utils/errorUtils.ts';
+import { getStandardizedCategory, getAllCategoryIds } from '../../../utils/placementCategoryUtils.ts';
 
 export const config = {
   api: {

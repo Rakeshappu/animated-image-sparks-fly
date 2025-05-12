@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { FileText, File, X, Maximize, Minimize } from 'lucide-react';
-import { getFileMimeType } from '../../utils/resourceUtils';
+import { getFileMimeType } from '../../utils/resourceUtils.ts';
 
 interface DocumentViewerProps {
   fileUrl: string;

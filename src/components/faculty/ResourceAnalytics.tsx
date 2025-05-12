@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { User, ThumbsUp, MessageSquare } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/api.ts';
 import { toast } from 'react-hot-toast';
 
 interface ResourceAnalyticsProps {

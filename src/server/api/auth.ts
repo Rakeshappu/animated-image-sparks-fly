@@ -1,9 +1,9 @@
 import express from 'express';
-import { User } from '../../lib/db/models/User';
-import { generateOTP, generateVerificationToken } from '../../lib/auth/jwt';
-import { sendVerificationEmail } from '../../lib/email/sendEmail';
-import { verifyEmailConfig } from '../../lib/email/config';
-import connectDB from '../../lib/db/connect';
+import { User } from '../../lib/db/models/User.ts';
+import { generateOTP, generateVerificationToken } from '../../lib/auth/jwt.ts';
+import { sendVerificationEmail } from '../../lib/email/sendEmail.ts';
+import { verifyEmailConfig } from '../../lib/email/config.ts';
+import connectDB from '../../lib/db/connect.ts';
 import nodemailer from 'nodemailer';
 
 const router = express.Router();

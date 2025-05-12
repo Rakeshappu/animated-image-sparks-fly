@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../utils/auth';
-import { User } from '../../lib/db/models/User';
+import { verifyToken } from '../utils/auth.ts';
+import { User } from '../../lib/db/models/User.ts';
 
 export const authenticateJWT = async (req: Request, res: Response, next: NextFunction) => {
   try {

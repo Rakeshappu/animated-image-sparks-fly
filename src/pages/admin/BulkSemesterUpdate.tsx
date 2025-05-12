@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api';
+import api from '../../services/api.ts';
 import { Search, RefreshCw } from 'lucide-react';
 
 interface Student {

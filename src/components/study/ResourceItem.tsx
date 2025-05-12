@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { FacultyResource } from '../../types/faculty';
+import { FacultyResource } from '../../types/faculty.ts';
 import { FileText, Link as LinkIcon, MessageSquare, ThumbsUp, Video, Eye, Download, Bookmark } from 'lucide-react';
-import { DocumentViewer } from '../document/DocumentViewer';
-import api from '../../services/api';
+import { DocumentViewer } from '../document/DocumentViewer.ts';
+import api from '../../services/api.ts';
 import { toast } from 'react-hot-toast';
-import { trackResourceView, updateResourceViewCount } from '../../utils/studyUtils';
-import { useAuth } from '../../contexts/AuthContext';
-import { formatTimeAgo } from '../../utils/dateUtils';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
+import { trackResourceView, updateResourceViewCount } from '../../utils/studyUtils.ts';
+import { useAuth } from '../../contexts/AuthContext.ts';
+import { formatTimeAgo } from '../../utils/dateUtils.ts';
+import { useOutsideClick } from '../../hooks/useOutsideClick.ts';
 
 interface ResourceItemProps {
   resource: FacultyResource;

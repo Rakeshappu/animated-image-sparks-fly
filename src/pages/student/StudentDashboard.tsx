@@ -1,19 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
-import { checkDatabaseConnection } from '../../services/resource.service';
+import { useAuth } from '../../hooks/useAuth.ts';
+import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner.ts';
+import  checkDatabaseConnection  from '../../services/resource.service.ts';
 import { motion } from 'framer-motion';
 import { Book, BookOpen, Award, Calendar, User, Clock, Bookmark, FileText, Video, Link as LinkIcon, BarChart3, ArrowRight } from 'lucide-react';
-import DashboardCard from '../../components/dashboard/DashboardCard';
-import { useAuth as useAuthContext } from '../../contexts/AuthContext';
-import { CircularProgress } from '../../components/ui/CircularProgress';
-import { ActivityCalendar } from '../../components/student/ActivityCalendar';
-import { StudentStatsChart } from '../../components/student/StudentStatsChart';
-import { ActivityFeed } from '../../components/user/ActivityFeed';
-import { activityService } from '../../services/activity.service';
-import api from '../../services/api';
+import DashboardCard from '../../components/dashboard/DashboardCard.ts';
+import { useAuth as useAuthContext } from '../../contexts/AuthContext.ts';
+import { CircularProgress } from '../../components/ui/CircularProgress.ts';
+import { ActivityCalendar } from '../../components/student/ActivityCalendar.ts';
+import { StudentStatsChart } from '../../components/student/StudentStatsChart.ts';
+import { ActivityFeed } from '../../components/user/ActivityFeed.ts';
+import { activityService } from '../../services/activity.service.ts';
+import api from '../../services/api.ts';
 
 const StudentDashboard = () => {
   const navigate = useNavigate();

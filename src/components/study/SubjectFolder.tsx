@@ -1,6 +1,6 @@
 
 import { Folder, Book, Eye } from 'lucide-react';
-import { FacultyResource } from '../../types/faculty';
+import { FacultyResource } from '../../types/faculty.ts';
 import { useNavigate } from 'react-router-dom';
 
 interface SubjectFolderProps {

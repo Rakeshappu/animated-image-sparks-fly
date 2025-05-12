@@ -1,8 +1,8 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/db/connect';
-import { User } from '../../../lib/db/models/User';
-import { Notification } from '../../../lib/db/models/Notification';
+import connectDB from '../../../lib/db/connect.ts';
+import { User } from '../../../lib/db/models/User.ts';
+import { Notification } from '../../../lib/db/models/Notification.ts';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 

@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { activityService } from '../../services/activity.service';
+import { activityService } from '../../services/activity.service.ts';
 import { Clock, Eye, ThumbsUp, Download, MessageSquare, BookOpen } from 'lucide-react';
-import { useInterval } from '../../hooks/useInterval';
+import { useInterval } from '../../hooks/useInterval.ts';
 import { useNavigate } from 'react-router-dom';
-import { formatTimeAgo } from '../../utils/dateUtils';
+import { formatTimeAgo } from '../../utils/dateUtils.ts';
 
 interface ActivityFeedProps {
   limit?: number;

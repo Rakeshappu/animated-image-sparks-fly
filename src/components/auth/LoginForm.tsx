@@ -1,10 +1,10 @@
 import { useState, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { LoginFormData } from '../../types/auth';
-import { FormField } from './FormField';
+import { LoginFormData } from '../../types/auth.ts';
+import { FormField } from './FormField.ts';
 import { Share2, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext.ts';
 
 interface LoginFormProps {
   onSubmit: (data: LoginFormData) => void;

@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
 import { Search, BookOpen, Loader2, ExternalLink, Download, X } from 'lucide-react';
-import serperService from '../../services/serper.service';
+import serperService from '../../services/serper.service.ts';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api.ts';
+import { useAuth } from '../../contexts/AuthContext.ts';
 
 interface SearchResult {
   title: string;

@@ -1,5 +1,5 @@
 
-import { SubjectFolder } from '../../types/faculty';
+import { SubjectFolder } from '../../types/faculty.ts';
 
 // Mock resources when database is not available
 export const mockResources = [
@@ -80,37 +80,37 @@ export const mockSubjectFolders: SubjectFolder[] = [
     id: 'sf1',
     name: 'Computer Science',
     semester: 3,
-    resourceCount: 15,
+    // resourceCount: 15,
   },
   {
     id: 'sf2',
     name: 'Mathematics',
     semester: 4,
-    resourceCount: 12,
+    // resourceCount: 12,
   },
   {
     id: 'sf3',
     name: 'Economics',
     semester: 2,
-    resourceCount: 8,
+    // resourceCount: 8,
   },
   {
     id: 'sf4',
     name: 'Physics',
     semester: 3,
-    resourceCount: 10,
+    // resourceCount: 10,
   },
   {
     id: 'sf5',
     name: 'Chemistry',
     semester: 1,
-    resourceCount: 6,
+    // resourceCount: 6,
   },
 ];
 
 // Add mock data to window for global access in development
 if (process.env.NODE_ENV === 'development') {
-  window.mockResources = mockResources;
+  // window.mockResources = mockResources;
   window.subjectFolders = mockSubjectFolders;
 }
 

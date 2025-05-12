@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
-import { checkDatabaseConnection } from '../../services/resource.service';
+import { useAuth } from '../../hooks/useAuth.ts';
+import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner.ts';
+import  checkDatabaseConnection  from '../../services/resource.service.ts';
 import { Users, FileText, UserCheck, Shield, Activity, PieChart, Upload } from 'lucide-react';
-import { ResourceUpload } from '../../components/faculty/ResourceUpload';
-import { ResourceList } from '../../components/faculty/ResourceList';
-import { UploadWorkflow } from '../../components/faculty/UploadWorkflow';
-import { UploadFormData, FacultyResource } from '../../types/faculty';
-import { AnalyticsCard } from '../../components/analytics/AnalyticsCard';
+import { ResourceUpload } from '../../components/faculty/ResourceUpload.ts';
+import { ResourceList } from '../../components/faculty/ResourceList.ts';
+import { UploadWorkflow } from '../../components/faculty/UploadWorkflow.ts';
+import { UploadFormData, FacultyResource } from '../../types/faculty.ts';
+import { AnalyticsCard } from '../../components/analytics/AnalyticsCard.ts';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPie, Pie, Cell, Legend } from 'recharts';
-import api from '../../services/api';
+import api from '../../services/api.ts';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 

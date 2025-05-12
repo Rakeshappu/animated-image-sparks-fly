@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext.ts';
 import { toast } from 'react-hot-toast';
 import { Save, Lock, Bell, Shield } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/api.ts';
 
 export const SettingsPage = () => {
   const { user } = useAuth();

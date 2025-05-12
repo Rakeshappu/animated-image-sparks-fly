@@ -3,8 +3,8 @@ import {
   User, Search, Trash2, CheckCircle, XCircle,
   Eye, Shield, Users as UsersIcon, Laptop, Mail, UserPlus
 } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
-import api from '../../services/api';
+import { useAuth } from '../../hooks/useAuth.ts';
+import api from '../../services/api.ts';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';

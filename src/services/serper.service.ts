@@ -1,5 +1,5 @@
 
-import api from './api';
+import api from './api.ts';
 
 interface SerperSearchOptions {
   q: string;

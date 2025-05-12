@@ -1,9 +1,9 @@
 
 import { Request, Response } from 'express';
-import { searchResources } from '../../lib/search/elasticsearch';
-import { getCache, setCache } from '../../lib/cache/redis';
-import connectDB from '../../lib/db/connect';
-import { elasticsearchConfig } from '../../lib/config/services';
+import { searchResources } from '../../lib/search/elasticsearch.ts';
+import { getCache, setCache } from '../../lib/cache/redis.ts';
+import connectDB from '../../lib/db/connect.ts';
+import { elasticsearchConfig } from '../../lib/config/services.ts';
 import mongoose from 'mongoose';
 
 // Import or define the Resource model explicitly to avoid the implicit any type

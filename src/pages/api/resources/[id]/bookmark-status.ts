@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../../lib/db/connect';
-import { Bookmark } from '../../../../lib/db/models/Bookmark';
-import { verifyToken } from '../../../../lib/auth/jwt';
+import connectDB from '../../../../lib/db/connect.ts';
+import { Bookmark } from '../../../../lib/db/models/Bookmark.ts';
+import { verifyToken } from '../../../../lib/auth/jwt.ts';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Handle CORS preflight

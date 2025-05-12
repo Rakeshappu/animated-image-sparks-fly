@@ -1,7 +1,7 @@
 
 import { forwardRef } from 'react';
 import { ExternalLink, Download } from 'lucide-react';
-import { SearchResource } from '../../../types/faculty';
+import { SearchResource } from '../../../types/faculty.ts';
 import { motion } from 'framer-motion';
 
 interface InfoResultProps {

@@ -1,5 +1,5 @@
 
-import { UserRole } from '../../types/auth';
+import { UserRole } from '../../types/auth.ts';
 import { GraduationCap, Users, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 

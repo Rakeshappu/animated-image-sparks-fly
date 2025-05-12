@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth.ts';
 import { Trash, FileText, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { formatDateSafely, addDaysSafely } from '../../utils/dateUtils';
+import { formatDateSafely, addDaysSafely } from '../../utils/dateUtils.ts';
 
 interface TrashedItem {
   id: string;
@@ -161,10 +161,10 @@ const TrashPage = () => {
                         <span className="mx-1">•</span>
                         <span>{item.size}</span>
                         <span className="mx-1">•</span>
-                        <span>Deleted on {formatDateSafely(item.deletedAt, 'MMM dd, yyyy')}</span>
+                        <span>Deleted on {formatDateSafely(item.deletedAt)}</span>
                       </p>
                       <p className="text-xs text-red-500">
-                        Will be deleted permanently on {addDaysSafely(item.deletedAt, 30, 'MMM dd, yyyy')}
+                        Will be deleted permanently on {addDaysSafely(item.deletedAt, 30)}
                       </p>
                     </div>
                   </div>

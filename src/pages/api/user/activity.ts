@@ -1,7 +1,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/db/connect';
-import { Activity } from '../../../lib/db/models/Activity';
+import connectDB from '../../../lib/db/connect.ts';
+import { Activity } from '../../../lib/db/models/Activity.ts';
 import jwt from 'jsonwebtoken';
 
 const authenticateUser = async (req: NextApiRequest, res: NextApiResponse) => {

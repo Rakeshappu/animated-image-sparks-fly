@@ -1,8 +1,8 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB, { verifyDbConnection } from '../../../lib/db/connect';
-import { Resource } from '../../../lib/db/models/Resource';
-import { Activity } from '../../../lib/db/models/Activity';
+import connectDB, { verifyDbConnection } from '../../../lib/db/connect.ts';
+import { Resource } from '../../../lib/db/models/Resource.ts';
+import { Activity } from '../../../lib/db/models/Activity.ts';
 import mongoose from 'mongoose';
 
 // Define types to fix TypeScript errors

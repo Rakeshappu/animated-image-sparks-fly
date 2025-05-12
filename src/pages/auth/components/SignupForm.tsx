@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SignupFormData } from '../../../types/auth';
-import { authService } from '../../../services/auth.service';
-import { useAuth } from '../../../contexts/AuthContext';
-import { SignupForm as SignupFormComponent } from '../../../components/auth/SignupForm';
+import { SignupFormData } from '../../../types/auth.ts';
+import { authService } from '../../../services/auth.service.ts';
+import { useAuth } from '../../../contexts/AuthContext.ts';
+import { SignupForm as SignupFormComponent } from '../../../components/auth/SignupForm.ts';
 import { toast } from 'react-hot-toast';
-import api from '../../../services/api';
+import api from '../../../services/api.ts';
 
 export const SignupForm = () => {
   const navigate = useNavigate();

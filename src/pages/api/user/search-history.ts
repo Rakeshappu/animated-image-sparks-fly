@@ -1,6 +1,6 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/db/connect';
+import connectDB from '../../../lib/db/connect.ts';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 

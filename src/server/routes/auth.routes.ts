@@ -1,8 +1,8 @@
 import express from 'express';
-import { User } from '../../lib/db/models/User.js';
-import { generateToken, verifyToken } from '../../lib/auth/jwt.js';
-import { sendVerificationEmail } from '../../lib/email/sendEmail.js';
-import { connectDB } from '../../lib/db/connect.js';
+import { User } from '../../lib/db/models/User.js.ts';
+import { generateToken, verifyToken } from '../../lib/auth/jwt.js.ts';
+import { sendVerificationEmail } from '../../lib/email/sendEmail.js.ts';
+import { connectDB } from '../../lib/db/connect.js.ts';
 
 const router = express.Router();
 

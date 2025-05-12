@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext.ts';
 import { toast } from 'react-hot-toast';
 import { User, Lock, Shield, Bell, Eye, EyeOff } from 'lucide-react';
 

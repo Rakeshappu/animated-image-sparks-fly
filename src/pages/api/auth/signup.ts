@@ -1,10 +1,10 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { User } from '../../../lib/db/models/User';
-import { EligibleUSN } from '../../../lib/db/models/EligibleUSN';
-import { generateOTP, generateVerificationToken } from '../../../lib/auth/jwt';
-import { sendVerificationEmail } from '../../../lib/email/sendEmail';
-import connectDB from '../../../lib/db/connect';
+import { User } from '../../../lib/db/models/User.ts';
+import { EligibleUSN } from '../../../lib/db/models/EligibleUSN.ts';
+import { generateOTP, generateVerificationToken } from '../../../lib/auth/jwt.ts';
+import { sendVerificationEmail } from '../../../lib/email/sendEmail.ts';
+import connectDB from '../../../lib/db/connect.ts';
 import cors from 'cors';
 
 const corsMiddleware = cors({

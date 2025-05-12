@@ -1,7 +1,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { verifyDbConnection } from '../../../lib/db/connect';
-import { s3Config, redisConfig, elasticsearchConfig } from '../../../lib/config/services';
+import { verifyDbConnection } from '../../../lib/db/connect.ts';
+import { s3Config, redisConfig, elasticsearchConfig } from '../../../lib/config/services.ts';
 import cors from 'cors';
 
 // Configure CORS for this endpoint

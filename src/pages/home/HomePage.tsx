@@ -5,12 +5,12 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 // Lazy loaded components
-const EnhancedAISearch = lazy(() => import('../../components/search/EnhancedAISearch'));
-const PaginatedResourceList = lazy(() => import('../../components/resources/PaginatedResourceList'));
-const QuickAccess = lazy(() => import('../../components/resources/QuickAccess'));
+const EnhancedAISearch = lazy(() => import('../../components/search/EnhancedAISearch.ts'));
+const PaginatedResourceList = lazy(() => import('../../components/resources/PaginatedResourceList.ts'));
+const QuickAccess = lazy(() => import('../../components/resources/QuickAccess.ts'));
 
 // Import service
-import { getResources } from '../../services/resource.service';
+import { getResources } from '../../services/resource.service.ts';
 
 export const HomePage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
