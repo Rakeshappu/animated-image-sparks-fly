@@ -22,6 +22,7 @@ export interface FacultyResource extends Omit<UploadFormData, 'file'> {
   category?: 'study' | 'placement' | 'common';
   uploadedByName?: string;
   uploaderId?: string;
+  uploadedBy?: string; // Add this field for compatibility
   stats: {
     views: number;
     likes: number;

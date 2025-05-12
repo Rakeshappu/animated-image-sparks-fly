@@ -5,13 +5,13 @@ import { useAuth } from '../hooks/useAuth';
 
 export const Header = () => {
   const { user, logout } = useAuth();
-  const [profileImage, setProfileImage] = useState<string>('');
+  const [profileImage, setProfileImage] = useState<string>('/default-avatar.png');
   
   useEffect(() => {
     if (user?.photoURL) {
       setProfileImage(user.photoURL);
     } else {
-      // Set a default image but ensure it's a string, not null
+      // Set a default image
       setProfileImage('/default-avatar.png');
     }
   }, [user]);

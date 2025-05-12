@@ -1,22 +1,25 @@
 
 import { Types } from 'mongoose';
 
+export type ActivitySourceType = 'study-materials' | 'bookmarks' | 'placement' | 'other';
+export type ActivityActionType = 'view' | 'download' | 'like' | 'comment' | 'upload' | 'search' | 'bookmark' | 'share';
+
 export interface ActivityDocument {
   _id: Types.ObjectId | string;
   user: Types.ObjectId | string;
-  type: 'view' | 'download' | 'like' | 'comment' | 'upload' | 'search' | 'bookmark' | 'share';
+  type: ActivityActionType;
   resource?: Types.ObjectId | string;
   resourceId?: string;
   timestamp: Date;
   message: string;
   details: any;
-  source: 'study-materials' | 'bookmarks' | 'placement' | 'other';
+  source: ActivitySourceType;
 }
 
 // Interface for client-side activity representation
 export interface Activity {
   _id: string;
-  type: 'view' | 'download' | 'like' | 'comment' | 'upload' | 'share';
+  type: ActivityActionType;
   timestamp: string;
   message?: string;
   resource?: {

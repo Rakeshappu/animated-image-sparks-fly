@@ -91,7 +91,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           downloads: 0,
           likes: 0,
           comments: 0,
-          lastViewed: new Date()
+          lastViewed: new Date(),
+          dailyViews: [],
+          studentFeedback: []
         };
       }
       
@@ -132,13 +134,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ error: 'Resource not found' });
       }
       
+      // Ensure comments array exists
+      if (!resource.comments || !Array.isArray(resource.comments)) {
+        return res.status(404).json({ error: 'No comments found for this resource' });
+      }
+      
       // Find comment index
-      const commentIndex = resource.comments?.findIndex(
+      const commentIndex = resource.comments.findIndex(
         (comment: any) => comment._id.toString() === commentId && 
                          (comment.author.toString() === decoded.userId || resource.uploadedBy?.toString() === decoded.userId)
       );
       
-      if (commentIndex === undefined || commentIndex === -1) {
+      if (commentIndex === -1) {
         return res.status(403).json({ 
           error: 'Comment not found or you do not have permission to delete it'
         });
@@ -148,7 +155,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       resource.comments.splice(commentIndex, 1);
       
       // Update comment count in stats
-      if (resource.stats && resource.stats.comments) {
+      if (resource.stats && resource.stats.comments !== undefined) {
         resource.stats.comments = Math.max(0, resource.stats.comments - 1);
       }
       

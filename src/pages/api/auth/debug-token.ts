@@ -79,12 +79,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         tokenExpires: new Date(decoded.exp * 1000).toISOString(),
         timestamp: new Date().toISOString()
       });
-    } catch (jwtError) {
-      console.error('JWT verification failed in debug-token:', jwtError);
-      return res.status(401).json({ error: 'Invalid or expired token', details: jwtError.message });
+    } catch (jwtError: unknown) {
+      const errorMessage = jwtError instanceof Error ? jwtError.message : 'Unknown JWT error';
+      console.error('JWT verification failed in debug-token:', errorMessage);
+      return res.status(401).json({ error: 'Invalid or expired token', details: errorMessage });
     }
   } catch (error) {
     console.error('Error in debug-token handler:', error);
-    res.status(500).json({ error: 'Internal server error', details: String(error) });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: 'Internal server error', details: errorMessage });
   }
 }

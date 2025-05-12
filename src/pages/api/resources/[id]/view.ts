@@ -130,7 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           resource: resource._id,
           timestamp: new Date(),
           message: message,
-          source: source
+          source: source as 'study-materials' | 'bookmarks' | 'placement' | 'other'
         });
         
         console.log(`Activity record created for user ${userId}, resource ${id}`);

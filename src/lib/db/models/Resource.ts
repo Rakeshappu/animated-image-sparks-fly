@@ -53,11 +53,11 @@ const StatsSchema = new mongoose.Schema({
   },
   dailyViews: {
     type: [DailyViewSchema],
-    default: () => []
+    default: function() { return []; }
   },
   studentFeedback: {
     type: [StudentFeedbackSchema],
-    default: () => []
+    default: function() { return []; }
   }
 });
 
@@ -116,15 +116,17 @@ const ResourceSchema = new mongoose.Schema({
   },
   stats: {
     type: StatsSchema,
-    default: () => ({ 
-      views: 0,
-      downloads: 0,
-      likes: 0,
-      comments: 0,
-      lastViewed: new Date(),
-      dailyViews: [],
-      studentFeedback: []
-    })
+    default: function() {
+      return {
+        views: 0,
+        downloads: 0,
+        likes: 0,
+        comments: 0,
+        lastViewed: new Date(),
+        dailyViews: [],
+        studentFeedback: []
+      };
+    }
   },
   category: {
     type: String,
@@ -159,7 +161,7 @@ const ResourceSchema = new mongoose.Schema({
         default: Date.now
       }
     }],
-    default: () => []
+    default: function() { return []; }
   },
   createdAt: {
     type: Date,

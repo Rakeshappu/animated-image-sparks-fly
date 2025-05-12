@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
@@ -38,6 +39,19 @@ const BulkSemesterUpdate = () => {
     }
   };
 
+  // Helper function to handle number input
+  const handleSemesterChange = (
+    setter: React.Dispatch<React.SetStateAction<number | ''>>
+  ) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setter('');
+    } else {
+      const numberValue = parseInt(value, 10);
+      setter(isNaN(numberValue) ? '' : numberValue);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-semibold mb-4">Bulk Semester Update</h1>
@@ -64,7 +78,7 @@ const BulkSemesterUpdate = () => {
             id="currentSemester"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             value={currentSemester}
-            onChange={(e) => setCurrentSemester(e.target.value)}
+            onChange={handleSemesterChange(setCurrentSemester)}
             placeholder="Enter current semester"
           />
         </div>
@@ -77,7 +91,7 @@ const BulkSemesterUpdate = () => {
             id="newSemester"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             value={newSemester}
-            onChange={(e) => setNewSemester(e.target.value)}
+            onChange={handleSemesterChange(setNewSemester)}
             placeholder="Enter new semester"
           />
         </div>
