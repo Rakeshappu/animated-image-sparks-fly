@@ -1,6 +1,7 @@
 
 import mongoose, { Document, Schema } from 'mongoose';
-import { ActivityActionType, ActivitySourceType } from '../../../types/activity';
+// Import from the type definition file
+import { ActivityActionType, ActivitySourceType } from '../../../types/activity.d';
 
 export interface IActivity extends Document {
   user: mongoose.Types.ObjectId;
@@ -23,7 +24,7 @@ const ActivitySchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['view', 'download', 'like', 'comment', 'upload', 'search', 'bookmark'],
+    enum: ['view', 'download', 'like', 'comment', 'upload', 'search', 'bookmark', 'share'],
   },
   resource: {
     type: mongoose.Schema.Types.ObjectId,

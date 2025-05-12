@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SignupFormData } from '../../../types/auth';
@@ -10,7 +9,7 @@ import api from '../../../services/api';
 
 export const SignupForm = () => {
   const navigate = useNavigate();
-  const { setError } = useAuth();
+  const { user } = useAuth();
   const selectedRole = localStorage.getItem('selectedRole') as 'student' | 'faculty' | 'admin';
   
   const handleSubmit = async (formData: SignupFormData) => {
@@ -52,13 +51,11 @@ export const SignupForm = () => {
       } catch (apiError: any) {
         console.error('API signup error:', apiError);
         const errorMessage = apiError.message || 'Registration failed';
-        setError(errorMessage);
         toast.error(errorMessage);
       }
     } catch (err: any) {
       console.error('Signup error:', err);
-      setError(err.message || 'An unexpected error occurred');
-      toast.error(err.message || 'Registration failed');
+      toast.error(err.message || 'An unexpected error occurred');
     }
   };
 

@@ -1,4 +1,3 @@
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../../lib/db/connect';
 import { Resource } from '../../../../lib/db/models/Resource';
@@ -92,13 +91,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         (resource.stats?.dailyViews || []);
       
       // Generate department distribution from activities
-      const departmentDistribution: Record<string, number> = {};
-      viewActivities.forEach(activity => {
-        if (activity.user && activity.user.department) {
-          const dept = activity.user.department;
-          departmentDistribution[dept] = (departmentDistribution[dept] || 0) + 1;
-        }
-      });
+      const userDepartmentCounts = viewActivities.reduce((acc: Record<string, number>, activity: any) => {
+        // Access department through the populated user object if available
+        const department = activity.user && typeof activity.user === 'object' ? activity.user.department : 'Unknown';
+        acc[department] = (acc[department] || 0) + 1;
+        return acc;
+      }, {});
       
       // Get the real counts based on activity records
       const uniqueViewers = new Set(viewActivities.map(a => a.user?._id?.toString()).filter(Boolean)).size;
@@ -122,7 +120,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         dailyViews: dailyViews,
         
         // Department distribution from real data
-        departmentDistribution: Object.entries(departmentDistribution).map(([name, count]) => ({ 
+        departmentDistribution: Object.entries(userDepartmentCounts).map(([name, count]) => ({ 
           name, 
           count 
         })) || [],

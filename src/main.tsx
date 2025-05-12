@@ -2,7 +2,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import App from './App.ts';
+import App from './App';
 import './index.css';
 import { Toaster } from 'react-hot-toast';
 
@@ -15,16 +15,20 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false,
       refetchOnMount: true,
-      onError: (error: any) => {
-        // Log query errors but don't show toast - the API interceptor handles that
-        console.error('Query error:', error);
+      // Using meta for error handling instead of onError
+      meta: {
+        onError: (error: any) => {
+          console.error('Query error:', error);
+        },
       },
     },
     mutations: {
       retry: 1,
-      onError: (error: any) => {
-        // Log mutation errors but don't show toast - the API interceptor handles that
-        console.error('Mutation error:', error);
+      // Using meta for error handling instead of onError
+      meta: {
+        onError: (error: any) => {
+          console.error('Mutation error:', error);
+        },
       },
     },
   },

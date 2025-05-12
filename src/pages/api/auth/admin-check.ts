@@ -103,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         timestamp: new Date().toISOString()
       });
-    } catch (jwtError) {
+    } catch (jwtError:any) {
       console.error('JWT verification failed in admin-check:', jwtError);
       return res.status(401).json({ error: 'Invalid or expired token', details: jwtError.message });
     }

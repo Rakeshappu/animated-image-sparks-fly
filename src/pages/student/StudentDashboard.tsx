@@ -28,11 +28,12 @@ const StudentDashboard = () => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
+        // Pass undefined for userId to use the current user's ID from the backend
         const userStreak = await activityService.getUserDailyStreak();
         setStreak(userStreak);
         
-        const todayActivityCount = await activityService.getTodayActivities();
-        setTodayActivities(todayActivityCount);
+        const todayActivityData = await activityService.getTodayActivities();
+        setTodayActivities(todayActivityData.length || 0);
         
         const weekActivity = await activityService.getWeeklyActivities();
         setWeeklyActivity(weekActivity);

@@ -1,25 +1,30 @@
+
 import { FacultyResource } from '../types/faculty';
 import api from '../services/api';
 
 // Use FacultyResource instead of Resource
 export const groupBySemester = (resources: FacultyResource[]): Record<number, FacultyResource[]> => {
   return resources.reduce((acc, resource) => {
-    const semester = resource.semester;
-    if (!acc[semester]) {
-      acc[semester] = [];
+    const semester = resource.semester || 0; // Provide default value
+    if (semester !== undefined) {  // Check if semester is defined
+      if (!acc[semester]) {
+        acc[semester] = [];
+      }
+      acc[semester].push(resource);
     }
-    acc[semester].push(resource);
     return acc;
   }, {} as Record<number, FacultyResource[]>);
 };
 
 export const groupBySubject = (resources: FacultyResource[]): Record<string, FacultyResource[]> => {
   return resources.reduce((acc, resource) => {
-    const subject = resource.subject;
-    if (!acc[subject]) {
-      acc[subject] = [];
+    const subject = resource.subject || 'Uncategorized'; // Provide default value
+    if (subject !== undefined) {  // Check if subject is defined
+      if (!acc[subject]) {
+        acc[subject] = [];
+      }
+      acc[subject].push(resource);
     }
-    acc[subject].push(resource);
     return acc;
   }, {} as Record<string, FacultyResource[]>);
 };
@@ -52,8 +57,7 @@ export const updateResourceViewCount = (resourceId: string, newCount: number) =>
   if (typeof window !== 'undefined' && window.sharedResources) {
     // Type cast to ensure TypeScript knows we're making a valid update
     window.sharedResources = window.sharedResources.map((resource) => {
-      // if (resource.id === resourceId || resource._id === resourceId) {
-      if (resource.id === resourceId ) {
+      if (resource.id === resourceId) {
         return {
           ...resource,
           stats: {

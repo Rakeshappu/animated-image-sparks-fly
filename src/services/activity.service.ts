@@ -1,81 +1,104 @@
 
-import api from './api.js';
-import { ActivityDocument } from '../types/activity';
+import api from './api';
 
-export class ActivityService {
-  async fetchUserActivities(limit = 10): Promise<ActivityDocument[]> {
+const activityService = {
+  trackActivity: async (activityData: any) => {
     try {
-      const response = await api.get(`/api/user/activity?limit=${limit}`);
-      return response.data.activities;
+      const response = await api.post('/api/user/activity', activityData);
+      return response.data;
+    } catch (error) {
+      console.error('Error tracking activity:', error);
+      throw error;
+    }
+  },
+  
+  getUserActivities: async (userId?: string, page = 1, limit = 10) => {
+    try {
+      const response = await api.get(`/api/user/activity/${userId || 'current'}?page=${page}&limit=${limit}`);
+      return response.data;
     } catch (error) {
       console.error('Error fetching user activities:', error);
       throw error;
     }
-  }
-
-  async fetchActivityStats() {
+  },
+  
+  getUserDailyStreak: async (userId?: string) => {
     try {
-      const response = await api.get('/api/user/activity/stats');
-      return response.data;
+      const response = await api.get(`/api/user/activity/stats?metric=streak&userId=${userId || 'current'}`);
+      return response.data?.streak || 0;
     } catch (error) {
-      console.error('Error fetching activity stats:', error);
-      throw error;
+      console.error('Error fetching user streak:', error);
+      return 0;
     }
-  }
+  },
 
-  async fetchDailyActivityCount(days = 30) {
+  getTodayActivities: async (userId?: string) => {
     try {
-      const response = await api.get(`/api/user/activity/stats/daily?days=${days}`);
-      return response.data.dailyCount;
+      const response = await api.get(`/api/user/activity?period=today&userId=${userId || 'current'}`);
+      return response.data?.activities || [];
     } catch (error) {
-      console.error('Error fetching daily activity count:', error);
-      throw error;
+      console.error('Error fetching today activities:', error);
+      return [];
     }
-  }
+  },
 
-  async logActivity(activityData: Partial<ActivityDocument>): Promise<void> {
+  getWeeklyActivities: async (userId?: string) => {
     try {
-      await api.post('/api/user/activity', activityData);
+      const response = await api.get(`/api/user/activity?period=week&userId=${userId || 'current'}`);
+      return response.data?.activities || [];
     } catch (error) {
-      console.error('Error logging activity:', error);
-      // Don't throw - we don't want tracking errors to affect user experience
+      console.error('Error fetching weekly activities:', error);
+      return [];
     }
-  }
+  },
 
-  // Add the missing methods
-  async refreshActivities(limit = 10): Promise<ActivityDocument[]> {
+  incrementResourceView: async (resourceId: string) => {
     try {
-      const timestamp = new Date().getTime();
-      const response = await api.get(`/api/user/activity?limit=${limit}&_nocache=${timestamp}`);
-      return response.data.activities;
-    } catch (error) {
-      console.error('Error refreshing activities:', error);
-      throw error;
-    }
-  }
-
-  async incrementResourceView(resourceId: string) {
-    try {
+      if (!resourceId) {
+        console.error('No resource ID provided for view tracking');
+        return { success: false };
+      }
       const response = await api.post(`/api/resources/${resourceId}/view`);
-      return response.data;
+      return { 
+        success: true, 
+        views: response.data?.viewCount || 0 
+      };
     } catch (error) {
       console.error('Error incrementing resource view:', error);
       return { success: false };
     }
-  }
+  },
 
-  async getRecentActivities(limit = 5): Promise<ActivityDocument[]> {
+  // Add the missing methods
+  logActivity: async (activityData: { type: string; resourceId: string; message: string }) => {
     try {
-      const response = await api.get(`/api/user/activity?limit=${limit}`);
-      return response.data.activities;
+      const response = await api.post('/api/user/activity/log', activityData);
+      return response.data;
+    } catch (error) {
+      console.error('Error logging activity:', error);
+      return null;
+    }
+  },
+
+  refreshActivities: async () => {
+    try {
+      const response = await api.get('/api/user/activity/recent');
+      return response.data?.activities || [];
+    } catch (error) {
+      console.error('Error refreshing activities:', error);
+      return [];
+    }
+  },
+
+  getRecentActivities: async (limit = 5) => {
+    try {
+      const response = await api.get(`/api/user/activity/recent?limit=${limit}`);
+      return response.data?.activities || [];
     } catch (error) {
       console.error('Error fetching recent activities:', error);
       return [];
     }
   }
-  // async getWeeklyActivities(): Promise<ActivityDocument[]> {
-    
-  // }
-}
+};
 
-export const activityService = new ActivityService();
+export { activityService };

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
 import { DownloadCloud, Upload, Users, FileText, Loader } from 'lucide-react';
 import api from '../../services/api';
@@ -41,7 +41,12 @@ export const ResourcesPage = () => {
         const response = await api.get('/api/resources/stats');
         
         if (response.data) {
-          setStats(response.data);
+          // Convert the MongoDB ObjectId to string if needed
+          const processedData = {
+            ...response.data,
+            // Convert any ObjectId to string if necessary
+          };
+          setStats(processedData);
         }
       } catch (error) {
         console.error('Error fetching resource stats:', error);

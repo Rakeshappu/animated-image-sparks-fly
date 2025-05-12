@@ -1,9 +1,9 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import connectDB from '../../../lib/db/connect.ts';
-import { User } from '../../../lib/db/models/User.ts';
-import { Resource } from '../../../lib/db/models/Resource.ts';
-import { Activity } from '../../../lib/db/models/Activity.ts';
+import connectDB from '../../../lib/db/connect';
+import { User } from '../../../lib/db/models/User';
+import { Resource } from '../../../lib/db/models/Resource';
+import { Activity } from '../../../lib/db/models/Activity';
 import jwt from 'jsonwebtoken';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

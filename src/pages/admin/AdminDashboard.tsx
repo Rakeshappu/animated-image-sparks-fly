@@ -1,79 +1,45 @@
 
-// This is a targeted fix for the category type error in AdminDashboard
-// We'll only update the handleUpload function that creates a new resource
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 
-const handleUpload = async (data: UploadFormData) => {
-  console.log('Uploading resource:', data);
-  
-  let fileContent = '';
-  let fileName = '';
-  
-  if (data.file) {
-    fileName = data.file.name;
-    
-    if (data.type !== 'link') {
-      try {
-        fileContent = await readFileAsBase64(data.file);
-      } catch (error) {
-        console.error('Error reading file:', error);
-      }
-    }
-  }
-  
-  try {
-    const formData = new FormData();
-    formData.append('title', data.title);
-    formData.append('description', data.description);
-    formData.append('type', data.type);
-    formData.append('subject', data.subject);
-    formData.append('semester', data.semester.toString());
-    
-    // Ensure category is one of the allowed values
-    let category: 'study' | 'placement' | 'common' | undefined = undefined;
-    if (data.category === 'study' || data.category === 'placement' || data.category === 'common') {
-      category = data.category;
-      formData.append('category', category);
-    }
-    
-    if (data.file) {
-      formData.append('file', data.file);
-    }
-    
-    if (data.link) {
-      formData.append('link', data.link);
-    }
-    
-    const response = await api.post('/api/resources', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    
-    const newResource: FacultyResource = {
-      id: response.data.resource._id || Date.now().toString(),
-      ...data,
-      category,
-      uploadDate: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      fileName: fileName,
-      fileContent: fileContent,
-      stats: {
-        views: 0,
-        likes: 0,
-        comments: 0,
-        downloads: 0,
-        lastViewed: new Date().toISOString()
-      }
-    };
-    
-    window.sharedResources = [newResource, ...window.sharedResources];
-    setResources([newResource, ...resources]);
-    
-    toast.success('Resource uploaded successfully!');
-    setShowResourceUpload(false);
-    setCurrentView('dashboard');
-  } catch (error) {
-    console.error('Error uploading resource:', error);
-    toast.error('Failed to upload resource');
-  }
+const AdminDashboard: React.FC = () => {
+  const { user } = useAuth();
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+      <p>Welcome {user?.fullName || 'Admin'}</p>
+      
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="font-medium text-lg mb-2">User Management</h3>
+            <p className="text-gray-600 mb-4">Manage users, permissions and roles</p>
+            <a href="/admin/users" className="text-blue-600 hover:underline">
+              Manage Users →
+            </a>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="font-medium text-lg mb-2">Resource Management</h3>
+            <p className="text-gray-600 mb-4">Manage all learning resources</p>
+            <a href="/admin/resources" className="text-blue-600 hover:underline">
+              Manage Resources →
+            </a>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="font-medium text-lg mb-2">USN Management</h3>
+            <p className="text-gray-600 mb-4">Manage eligible USNs for signup</p>
+            <a href="/admin/eligible-usns" className="text-blue-600 hover:underline">
+              Manage USNs →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
+
+export default AdminDashboard;

@@ -164,10 +164,10 @@ export const FacultyDashboard = () => {
       formData.append('title', data.title);
       formData.append('description', data.description || '');
       formData.append('type', data.type);
-      formData.append('subject', data.subject);
+      formData.append('subject', data.subject || '');
       
       // Use selected semester if available, otherwise use the one from data
-      const semesterToUse = selectedSemester !== null ? selectedSemester : data.semester;
+      const semesterToUse = selectedSemester !== null ? selectedSemester : (data.semester || 1);
       formData.append('semester', semesterToUse.toString());
       
       if (data.file) {
@@ -210,8 +210,8 @@ export const FacultyDashboard = () => {
           views: 0,
           likes: 0,
           comments: 0,
-          downloads: 0,
-          lastViewed: new Date().toISOString()
+          downloads: 0
+          // Remove lastViewed as it's not in the interface
         }
       };
       

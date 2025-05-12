@@ -1,4 +1,3 @@
-
 //src\lib\db\models\Resource.ts
 import mongoose, { Document, Schema } from 'mongoose';
 import { getAllCategoryIds, getStandardizedCategory } from '../../../utils/placementCategoryUtils';
@@ -200,8 +199,8 @@ ResourceSchema.pre('save', function(next) {
       likes: 0,
       comments: 0,
       lastViewed: new Date(),
-      dailyViews: [0,0],
-      studentFeedback: [0,0]
+      dailyViews: [],
+      studentFeedback: []
     };
   }
   

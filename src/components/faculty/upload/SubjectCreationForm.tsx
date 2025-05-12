@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { SubjectData, SubjectFolder } from '../../../types/faculty';
@@ -23,6 +22,7 @@ export const SubjectCreationForm = ({
 }: SubjectCreationFormProps) => {
   const [subjects, setSubjects] = useState<SubjectData[]>([]);
   const [currentSubject, setCurrentSubject] = useState<SubjectData>({
+    name: '', // Add name property to match SubjectData interface
     subjectName: '',
     lecturerName: '',
     semester: selectedSemester || 1
@@ -34,23 +34,30 @@ export const SubjectCreationForm = ({
     if (formError) {
       setFormError(null);
     }
-  }, [currentSubject.subjectName, currentSubject.lecturerName]);
+  }, [currentSubject.subjectName, currentSubject.lecturerName, formError]);
 
   const handleAddSubject = () => {
     // Validate inputs
-    if (currentSubject.subjectName.trim() === '') {
+    if (!currentSubject.subjectName || currentSubject.subjectName.trim() === '') {
       setFormError('Subject name is required');
       return;
     }
     
-    if (currentSubject.lecturerName.trim() === '') {
+    if (!currentSubject.lecturerName || currentSubject.lecturerName.trim() === '') {
       setFormError('Lecturer name is required');
       return;
     }
+
+    // Copy name from subjectName for compatibility with both interfaces
+    const subjectToAdd: SubjectData = {
+      ...currentSubject,
+      name: currentSubject.subjectName
+    };
     
-    setSubjects([...subjects, { ...currentSubject }]);
+    setSubjects([...subjects, subjectToAdd]);
     setCurrentSubject({
       ...currentSubject,
+      name: '',
       subjectName: '',
       lecturerName: ''
     });
@@ -65,7 +72,7 @@ export const SubjectCreationForm = ({
     
     // Double check all subjects have required fields
     const invalidSubjects = subjects.filter(
-      subject => !subject.subjectName || !subject.lecturerName || !subject.semester
+      subject => !subject.name || !subject.lecturerName || !subject.semester
     );
     
     if (invalidSubjects.length > 0) {
@@ -98,7 +105,7 @@ export const SubjectCreationForm = ({
             <input
               type="text"
               value={currentSubject.subjectName}
-              onChange={(e) => setCurrentSubject({...currentSubject, subjectName: e.target.value})}
+              onChange={(e) => setCurrentSubject({...currentSubject, subjectName: e.target.value, name: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="e.g. Data Structures"
               required
@@ -147,7 +154,7 @@ export const SubjectCreationForm = ({
               <tbody className="bg-white divide-y divide-gray-200">
                 {subjects.map((subject, index) => (
                   <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{subject.subjectName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{subject.subjectName || subject.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subject.lecturerName}</td>
                   </tr>
                 ))}

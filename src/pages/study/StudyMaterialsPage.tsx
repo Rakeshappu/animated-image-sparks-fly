@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { LocalSearch } from '../../components/search/LocalSearch';
 import { SubjectFolder } from '../../components/study/SubjectFolder';

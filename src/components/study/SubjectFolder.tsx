@@ -1,14 +1,15 @@
+
 import { Folder, Book, Eye } from 'lucide-react';
-import { FacultyResource } from '../../types/faculty.js';
+import { FacultyResource } from '../../types/faculty';
 import { useNavigate } from 'react-router-dom';
 
 interface SubjectFolderProps {
   subject: string;
   resources: FacultyResource[];
-  sortBy: 'recent' | 'popular' | 'alphabetical';
+  sortBy?: 'recent' | 'popular' | 'alphabetical'; // Make sortBy optional
 }
 
-export const SubjectFolder = ({ subject, resources, sortBy }: SubjectFolderProps) => {
+export const SubjectFolder = ({ subject, resources, sortBy = 'recent' }: SubjectFolderProps) => {
   const navigate = useNavigate();
   
   const navigateToSubject = () => {
@@ -18,7 +19,7 @@ export const SubjectFolder = ({ subject, resources, sortBy }: SubjectFolderProps
   
   // Calculate folder metrics with safe navigation
   const totalViews = resources.reduce((sum, resource) => 
-    sum + (resource.stats?.views || 0), 0);
+    sum + ((resource.stats?.views) || 0), 0);
   const resourceCount = resources.length;
 
   return (

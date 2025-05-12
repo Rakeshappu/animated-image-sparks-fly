@@ -691,10 +691,20 @@ export const PlacementResourcesPage = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Upload {getCategoryNameById(selectedCategory)} Resource</h2>
             <ResourceUpload 
-              onCancel={() => setShowUploadForm(false)} 
-              onSubmit={handleUpload} 
-              resourceType="placement"
+              onUpload={handleUpload}
+              initialSubject={`Placement - ${getCategoryNameById(selectedCategory)}`}
+              initialCategory="placement"
+              isPlacementResource={true}
+              placementCategory={selectedCategory}
             />
+            <div className="mt-4 flex justify-end">
+              <button 
+                onClick={() => setShowUploadForm(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

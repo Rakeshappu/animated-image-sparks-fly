@@ -1,69 +1,77 @@
-import api from './api';
-import { UserRole } from '../types/auth';
 
-// Auth Service with forgot password functionality
+import api from './api';
+import { SignupFormData, UserRole } from '../types/auth';
+
 export const authService = {
-  // Login with email and password
-  async login(email: string, password: string) {
-    const response = await api.post('/api/auth/login', { email, password });
-    return response.data;
+  login: async (email: string, password: string) => {
+    try {
+      const response = await api.post('/api/auth/login', { email, password });
+      return response.data;
+    } catch (err: any) {
+      console.error('Login failed:', err);
+      throw err.response?.data || { message: 'Login failed. Please try again.' };
+    }
   },
   
-  // Register a new user
-  async signup(userData: {
-    email: string;
-    password: string;
-    fullName: string;
-    role: UserRole;
-    department?: string;
-    phoneNumber?: string;
-    semester?: number;
-    secretNumber?: string;
-    usn?: string;
-  }) {
-    const response = await api.post('/api/auth/signup', userData);
-    return response.data;
+  signup: async (userData: {
+    email: string,
+    password: string,
+    fullName: string,
+    role: UserRole,
+    department?: string,
+    phoneNumber?: string,
+    semester?: number,
+    secretNumber?: string,
+    usn?: string
+  }) => {
+    try {
+      const response = await api.post('/api/auth/signup', userData);
+      return response.data;
+    } catch (err: any) {
+      console.error('Signup failed:', err);
+      throw err.response?.data || { message: 'Signup failed. Please try again.' };
+    }
   },
   
-  // Verify email with token and OTP
-  async verifyEmail(token: string, otp: string) {
-    const response = await api.post('/api/auth/verify-email', { token, otp });
-    return response.data;
+  logout: async () => {
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      return { success: true };
+    } catch (err) {
+      console.error('Logout failed:', err);
+      throw { message: 'Logout failed. Please try again.' };
+    }
   },
   
-  // Resend verification email
-  async resendVerification(email: string) {
-    const response = await api.post('/api/auth/resend-verification', { email });
-    return response.data;
+  // Add the missing methods
+  verifyEmail: async (token: string) => {
+    try {
+      const response = await api.post('/api/auth/verify-email', { token });
+      return response.data;
+    } catch (err: any) {
+      console.error('Email verification failed:', err);
+      throw err.response?.data || { message: 'Email verification failed. Please try again.' };
+    }
   },
   
-  // Reset password request (forgot password)
-  async forgotPassword(email: string) {
-    const response = await api.post('/api/auth/forgot-password', { email });
-    return response.data;
+  verifyOTP: async (email: string, otp: string) => {
+    try {
+      const response = await api.post('/api/auth/verify-otp', { email, otp });
+      return response.data;
+    } catch (err: any) {
+      console.error('OTP verification failed:', err);
+      throw err.response?.data || { message: 'OTP verification failed. Please try again.' };
+    }
   },
   
-  // Reset password with token and new password
-  async resetPassword(token: string, otp: string, newPassword: string) {
-    const response = await api.post('/api/auth/reset-password', {
-      token,
-      otp,
-      newPassword
-    });
-    return response.data;
-  },
-  
-  // Get current user
-  async getCurrentUser() {
-    const response = await api.get('/api/auth/me');
-    return response.data;
-  },
-  
-  // Logout (clear token from storage)
-  async logout() {
-    localStorage.removeItem('token');
-    sessionStorage.removeItem('token');
+  resendOTP: async (email: string) => {
+    try {
+      const response = await api.post('/api/auth/send-otp', { email });
+      return response.data;
+    } catch (err: any) {
+      console.error('Resending OTP failed:', err);
+      throw err.response?.data || { message: 'Resending OTP failed. Please try again.' };
+    }
   }
 };
-
-export default authService;

@@ -1,5 +1,5 @@
 
-import { UserRole } from './auth.ts';
+import { UserRole } from './auth';
 
 export interface User {
   _id?: string;
