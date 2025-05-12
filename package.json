@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-   "dev": "vite",
+    "dev": "vite",
     "dev:server": "node --inspect dist/server.js",
     "build": "tsc && vite build",
     "build:backend": "tsc -p tsconfig.server.json",
@@ -12,6 +12,7 @@
     "start": "NODE_ENV=production node dist/server.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+    "build:dev": "vite build --mode development",
     "dev:full": "npm run build:backend && concurrently \"npm run dev\" \"npm run dev:server\""
   },
   "dependencies": {

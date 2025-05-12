@@ -1,4 +1,3 @@
-
 import api from './api';
 import { API_ROUTES } from '../lib/api/routes';
 
@@ -12,7 +11,7 @@ export const getResources = async (params = {}) => {
   }
 };
 
-export const getResourceById = async (id: string) => {
+export const getResourceById = async (id) => {
   try {
     const response = await api.get(`${API_ROUTES.RESOURCES.LIST}/${id}`);
     return response.data;
@@ -22,7 +21,7 @@ export const getResourceById = async (id: string) => {
   }
 };
 
-export const createResource = async (resourceData: FormData) => {
+export const createResource = async (resourceData) => {
   try {
     const response = await api.post(API_ROUTES.RESOURCES.LIST, resourceData, {
       headers: {
@@ -36,7 +35,7 @@ export const createResource = async (resourceData: FormData) => {
   }
 };
 
-export const updateResource = async (id: string, resourceData: any) => {
+export const updateResource = async (id, resourceData) => {
   try {
     const response = await api.put(`${API_ROUTES.RESOURCES.LIST}/${id}`, resourceData);
     return response.data;
@@ -46,7 +45,7 @@ export const updateResource = async (id: string, resourceData: any) => {
   }
 };
 
-export const deleteResource = async (id: string) => {
+export const deleteResource = async (id) => {
   try {
     const response = await api.delete(`${API_ROUTES.RESOURCES.LIST}/${id}`);
     return response.data;
@@ -56,64 +55,4 @@ export const deleteResource = async (id: string) => {
   }
 };
 
-export const getResourcesBySubject = async (subject: string) => {
-  try {
-    const response = await api.get(API_ROUTES.RESOURCES.LIST, {
-      params: { subject },
-    });
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching resources for subject ${subject}:`, error);
-    throw error;
-  }
-};
-
-export const getFacultyResources = async () => {
-  try {
-    const response = await api.get(API_ROUTES.RESOURCES.FACULTY);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching faculty resources:', error);
-    throw error;
-  }
-};
-
-export const getPlacementResources = async () => {
-  try {
-    const response = await api.get(API_ROUTES.RESOURCES.PLACEMENT);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching placement resources:', error);
-    throw error;
-  }
-};
-
-export const getTrashedResources = async () => {
-  try {
-    const response = await api.get(API_ROUTES.RESOURCES.TRASH);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching trashed resources:', error);
-    throw error;
-  }
-};
-
-export const restoreResource = async (id: string) => {
-  try {
-    const response = await api.post(`${API_ROUTES.RESOURCES.TRASH}/${id}/restore`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error restoring resource ${id}:`, error);
-    throw error;
-  }
-};
-
-export const getResourcesCount = async () => {
-  try {
-    const response = await api.get(`${API_ROUTES.RESOURCES.LIST}/stats`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching resources count:', error);
-    throw error;
-  }
-};
+export default createResource;

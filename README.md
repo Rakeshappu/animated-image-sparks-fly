@@ -11,6 +11,18 @@ Before deploying, make sure to add a `build:dev` script to the package.json file
 }
 ```
 
+## Manual Package.json Update (Required!)
+
+⚠️ **IMPORTANT** ⚠️
+
+You **MUST** manually add the following script to your package.json file:
+
+```bash
+npm pkg set "scripts.build:dev=vite build --mode development"
+```
+
+This script is required for Lovable to build the project.
+
 ## Deployment Instructions for Render
 
 1. Connect your GitHub repository to Render
@@ -19,7 +31,7 @@ Before deploying, make sure to add a `build:dev` script to the package.json file
    - Name: versatile-share
    - Environment: Node.js
    - Build Command: `./build.sh`
-   - Start Command: `npm run start`
+   - Start Command: `node dist/server.js`
    - Port: 8080
 
 ### Environment Variables
