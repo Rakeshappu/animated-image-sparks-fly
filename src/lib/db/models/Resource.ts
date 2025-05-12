@@ -1,4 +1,3 @@
-
 //src\lib\db\models\Resource.ts
 import mongoose from 'mongoose';
 import { getAllCategoryIds, getStandardizedCategory } from '../../../utils/placementCategoryUtils';
@@ -53,11 +52,11 @@ const StatsSchema = new mongoose.Schema({
   },
   dailyViews: {
     type: [DailyViewSchema],
-    default: () => []
+    default: function() { return []; }
   },
   studentFeedback: {
     type: [StudentFeedbackSchema],
-    default: () => []
+    default: function() { return []; }
   }
 });
 
@@ -116,7 +115,17 @@ const ResourceSchema = new mongoose.Schema({
   },
   stats: {
     type: StatsSchema,
-    default: () => ({})
+    default: function() { 
+      return {
+        views: 0,
+        downloads: 0,
+        likes: 0,
+        comments: 0,
+        lastViewed: new Date(),
+        dailyViews: [],
+        studentFeedback: []
+      }; 
+    }
   },
   category: {
     type: String,
@@ -151,7 +160,7 @@ const ResourceSchema = new mongoose.Schema({
         default: Date.now
       }
     }],
-    default: () => []
+    default: function() { return []; }
   },
   createdAt: {
     type: Date,
@@ -195,12 +204,10 @@ ResourceSchema.pre('save', function(next) {
     };
   }
   
-  // Initialize arrays if they don't exist
+  // Initialize arrays as proper mongoose arrays
   if (!this.likedBy) this.likedBy = [];
   if (!this.comments) this.comments = [];
   if (!this.tags) this.tags = [];
-  if (!this.stats.dailyViews) this.stats.dailyViews = [];
-  if (!this.stats.studentFeedback) this.stats.studentFeedback = [];
   
   next();
 });

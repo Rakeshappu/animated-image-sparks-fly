@@ -5,26 +5,22 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { activityService } from '../../services/activity.service';
+import { Activity, ActivityDocument } from '../../types/activity';
 
-interface Activity {
-  _id: string;
-  type: 'view' | 'download' | 'like' | 'comment' | 'upload' | 'share';
-  timestamp: string;
-  message?: string;
-  resource: {
-    _id: string;
-    title: string;
-    fileUrl?: string;
-    subject: string;
-    category?: string;
-    stats?: {
-      views: number;
-      downloads: number;
-      likes: number;
-      comments: number;
-    };
+// Helper function to convert ActivityDocument to Activity
+const convertToActivity = (doc: ActivityDocument): Activity => {
+  return {
+    _id: doc._id.toString(),
+    type: doc.type as Activity['type'],
+    timestamp: doc.timestamp.toString(),
+    message: doc.message,
+    resource: doc.resource ? {
+      _id: typeof doc.resource === 'string' ? doc.resource : doc.resource.toString(),
+      title: '',
+      subject: '',
+    } : undefined
   };
-}
+};
 
 const getActivityIcon = (type: Activity['type']) => {
   switch (type) {
@@ -86,7 +82,9 @@ export const ActivityFeed = ({
       
       if (Array.isArray(data) && data.length > 0) {
         console.log('Fetched activities from service:', data);
-        setActivities(data.slice(0, maxItems));
+        // Convert ActivityDocument[] to Activity[]
+        const convertedActivities = data.map(convertToActivity);
+        setActivities(convertedActivities.slice(0, maxItems));
       } else {
         console.log('No activities found or empty array returned');
         // Try direct API call as fallback
@@ -94,7 +92,15 @@ export const ActivityFeed = ({
         
         if (response.data && Array.isArray(response.data.activities)) {
           console.log('Fetched activities from direct API:', response.data.activities);
-          setActivities(response.data.activities.slice(0, maxItems));
+          // Ensure we have the right shape for Activity[]
+          const convertedActivities = response.data.activities.map((act: any) => ({
+            _id: act._id,
+            type: act.type,
+            timestamp: act.timestamp,
+            message: act.message,
+            resource: act.resource
+          }));
+          setActivities(convertedActivities.slice(0, maxItems));
         } else {
           console.warn('No activities found in API response');
           // Fallback to prop activities if available
