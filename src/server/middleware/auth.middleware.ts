@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../utils/auth.ts';
-import { User } from '../../lib/db/models/User.ts';
+import { verifyToken } from '../utils/auth.js';
+import { User } from '../../lib/db/models/User.js';
 
 // Extend the Express Request interface to include user
 declare global {

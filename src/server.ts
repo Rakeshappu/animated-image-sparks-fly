@@ -3,10 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { connectDB } from './lib/db/connect.js';
+import connectDB from './lib/db/connect.js';
 import authRoutes from './server/routes/auth.routes.js';
 import { errorHandler } from './server/middleware/error.middleware.js';
-import { setupSocketServer } from './lib/realtime/socket.js';
+import { initializeSocketIO } from './lib/realtime/socket.js';
 
 // Load environment variables
 dotenv.config();
@@ -49,7 +49,7 @@ const startServer = async () => {
     });
     
     // Set up Socket.io
-    setupSocketServer(server);
+    initializeSocketIO(server);
     
   } catch (err: any) {
     console.error('Failed to connect to MongoDB:', err.message);

@@ -9,9 +9,9 @@ npm install
 echo "Installing additional type definitions..."
 npm install --save-dev @types/jsonwebtoken
 
-# Add build:dev script to package.json
+# Add build:dev script to package.json if it doesn't exist
 echo "Adding build:dev script to package.json..."
-node add-build-dev.js
+npm pkg set "scripts.build:dev=vite build --mode development"
 
 # Build client
 echo "Building client..."

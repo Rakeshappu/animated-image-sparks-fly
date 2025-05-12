@@ -1,8 +1,8 @@
 import express from 'express';
-import { User } from '../../lib/db/models/User.js.ts';
-import { generateToken, verifyToken } from '../../lib/auth/jwt.js.ts';
-import { sendVerificationEmail } from '../../lib/email/sendEmail.js.ts';
-import { connectDB } from '../../lib/db/connect.js.ts';
+import { User } from '../../lib/db/models/User.js';
+import { generateToken, verifyToken } from '../../lib/auth/jwt.js';
+import { sendVerificationEmail } from '../../lib/email/sendEmail.js';
+import connectDB from '../../lib/db/connect.js';
 
 const router = express.Router();
 
@@ -59,3 +59,4 @@ router.post('/login', async (req, res) => {
 
 // Export the router
 export default router;
+ 

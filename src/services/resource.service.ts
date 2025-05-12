@@ -1,58 +1,43 @@
-import api from './api.ts';
-import { API_ROUTES } from '../lib/api/routes.ts';
+import api from './api.js';
+import { FacultyResource } from '../types/faculty.js';
 
-export const getResources = async (params = {}) => {
+export const fetchFacultyResources = async (): Promise<FacultyResource[]> => {
   try {
-    const response = await api.get(API_ROUTES.RESOURCES.LIST, { params });
-    return response.data;
+    const response = await api.get('/api/resources/faculty');
+    return response.data.resources;
   } catch (error) {
-    console.error('Error fetching resources:', error);
+    console.error('Error fetching faculty resources:', error);
     throw error;
   }
 };
 
-export const getResourceById = async (id) => {
+export const fetchResourceById = async (id: string): Promise<FacultyResource> => {
   try {
-    const response = await api.get(`${API_ROUTES.RESOURCES.LIST}/${id}`);
-    return response.data;
+    const response = await api.get(`/api/resources/${id}`);
+    return response.data.resource;
   } catch (error) {
     console.error(`Error fetching resource ${id}:`, error);
     throw error;
   }
 };
 
-export const createResource = async (resourceData) => {
+export const deleteResource = async (id: string): Promise<void> => {
   try {
-    const response = await api.post(API_ROUTES.RESOURCES.LIST, resourceData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error creating resource:', error);
-    throw error;
-  }
-};
-
-export const updateResource = async (id, resourceData) => {
-  try {
-    const response = await api.put(`${API_ROUTES.RESOURCES.LIST}/${id}`, resourceData);
-    return response.data;
-  } catch (error) {
-    console.error(`Error updating resource ${id}:`, error);
-    throw error;
-  }
-};
-
-export const deleteResource = async (id) => {
-  try {
-    const response = await api.delete(`${API_ROUTES.RESOURCES.LIST}/${id}`);
-    return response.data;
+    await api.delete(`/api/resources/${id}`);
   } catch (error) {
     console.error(`Error deleting resource ${id}:`, error);
     throw error;
   }
 };
 
-export default createResource;
+export const checkDatabaseConnection = async () => {
+  try {
+    const response = await api.get('/api/db/status');
+    return response.data;
+  } catch (error) {
+    console.error('Error checking database connection:', error);
+    return { connected: false, error: error.message };
+  }
+};
+
+export default checkDatabaseConnection;
