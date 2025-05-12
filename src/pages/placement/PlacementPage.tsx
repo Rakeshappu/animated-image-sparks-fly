@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlacementResourcesPage } from './PlacementResourcesPage.ts';
+import { PlacementResourcesPage } from './PlacementResourcesPage.tsx';
 
 export const PlacementPage = () => {
   return <PlacementResourcesPage />;

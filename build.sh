@@ -9,14 +9,9 @@ npm install
 echo "Installing additional type definitions..."
 npm install --save-dev @types/jsonwebtoken
 
-# Add build:dev script to package.json using jq (needed for Lovable)
+# Add build:dev script to package.json
 echo "Adding build:dev script to package.json..."
-if command -v jq &> /dev/null; then
-  jq '.scripts."build:dev" = "vite build --mode development"' package.json > tmp.json && mv tmp.json package.json
-else
-  echo "jq not found, using sed instead to add build:dev script"
-  sed -i 's/"scripts": {/"scripts": {\n    "build:dev": "vite build --mode development",/g' package.json
-fi
+node add-build-dev.js
 
 # Build client
 echo "Building client..."
