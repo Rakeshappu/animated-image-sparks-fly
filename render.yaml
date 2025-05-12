@@ -1,13 +1,16 @@
+
 services:
   - type: web
     name: versatile-share
     env: node
-    buildCommand: npm install && npm run build
+    buildCommand: ./build.sh
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 8080
-
-buildCommand: npm install && npm run build
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true

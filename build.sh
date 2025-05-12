@@ -1,9 +1,14 @@
+
 #!/bin/bash
 echo "Starting build process..."
 
 # Install dependencies
 echo "Installing dependencies..."
 npm install
+
+# Add types/jsonwebtoken
+echo "Installing additional type definitions..."
+npm install --save-dev @types/jsonwebtoken
 
 # Build client
 echo "Building client..."

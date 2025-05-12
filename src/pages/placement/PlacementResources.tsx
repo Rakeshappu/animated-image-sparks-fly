@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AIResourceSearch } from '../../components/search/AIResourceSearch';
 import { useAuth } from '../../contexts/AuthContext';
@@ -7,7 +6,6 @@ import { UploadFormData } from '../../types/faculty';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { API_ROUTES } from '../../lib/api/routes';
-// import { getResources, deleteResource } from '../../services/resource.service';
 import { 
   Briefcase, ChevronRight, Download, Link as LinkIcon, ArrowLeft,
   FileText, Loader, Trash2, ThumbsUp, MessageSquare, Eye, 
@@ -114,7 +112,7 @@ export const PlacementResourcesPage = () => {
       formData.append('title', data.title);
       formData.append('description', data.description || '');
       formData.append('type', data.type);
-      formData.append('subject', `Placement - ${placementCategories.find(cat => cat.id === selectedCategory)?.name}`);
+      formData.append('subject', `Placement - ${placementCategories.find((cat: any) => cat.id === selectedCategory)?.name}`);
       formData.append('semester', '0'); // Placement resources are semester-agnostic
       formData.append('category', 'placement');
       formData.append('placementCategory', selectedCategory);
@@ -158,7 +156,8 @@ export const PlacementResourcesPage = () => {
       setIsLoading(true);
       console.log('Deleting resource with ID:', resourceId);
       
-      await deleteResource(resourceId);
+      // Call API to delete the resource
+      await api.delete(`/api/resources/${resourceId}`);
       
       toast.success('Resource deleted successfully');
       
@@ -389,9 +388,9 @@ export const PlacementResourcesPage = () => {
 
   const getResourceIcon = (type: string) => {
     switch (type) {
-      case 'video':
+      case "video":
         return <div className="p-2 rounded-full bg-red-100 text-red-600"><FileText className="h-5 w-5" /></div>;
-      case 'link':
+      case "link":
         return <div className="p-2 rounded-full bg-blue-100 text-blue-600"><LinkIcon className="h-5 w-5" /></div>;
       default:
         return <div className="p-2 rounded-full bg-green-100 text-green-600"><FileText className="h-5 w-5" /></div>;
@@ -465,7 +464,7 @@ export const PlacementResourcesPage = () => {
 
         {/* Category grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {placementCategories.map((category) => (
+          {placementCategories.map((category: any) => (
             <motion.div
               key={category.id}
               variants={itemVariants}
