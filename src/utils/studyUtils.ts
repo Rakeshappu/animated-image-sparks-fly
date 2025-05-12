@@ -1,4 +1,3 @@
-
 import { FacultyResource } from '../types/faculty';
 import api from '../services/api';
 
@@ -53,7 +52,8 @@ export const updateResourceViewCount = (resourceId: string, newCount: number) =>
   if (typeof window !== 'undefined' && window.sharedResources) {
     // Type cast to ensure TypeScript knows we're making a valid update
     window.sharedResources = window.sharedResources.map((resource) => {
-      if (resource.id === resourceId || resource._id === resourceId) {
+      // if (resource.id === resourceId || resource._id === resourceId) {
+      if (resource.id === resourceId ) {
         return {
           ...resource,
           stats: {

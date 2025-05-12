@@ -34,7 +34,7 @@ export const checkDatabaseConnection = async () => {
   try {
     const response = await api.get('/api/db/status');
     return response.data;
-  } catch (error) {
+  } catch (error:any) {
     console.error('Error checking database connection:', error);
     return { connected: false, error: error.message };
   }

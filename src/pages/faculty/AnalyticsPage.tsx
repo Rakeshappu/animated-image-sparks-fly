@@ -69,8 +69,8 @@ export default function AnalyticsPage() {
         const resourceResponse = await api.get('/api/resources/faculty');
         
         // Fetch weekly activity data
-        const weeklyActivityData = await activityService.getWeeklyActivities(false);
-        setWeeklyActivity(weeklyActivityData);
+        // const weeklyActivityData = await activityService.getWeeklyActivities(false);
+        // setWeeklyActivity(weeklyActivityData);
         
         if (resourceResponse.data && resourceResponse.data.resources) {
           setResources(resourceResponse.data.resources);

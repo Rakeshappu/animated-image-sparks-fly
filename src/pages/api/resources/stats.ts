@@ -1,4 +1,3 @@
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB, { verifyDbConnection } from '../../../lib/db/connect';
 import { Resource } from '../../../lib/db/models/Resource';

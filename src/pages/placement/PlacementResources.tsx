@@ -691,8 +691,8 @@ export const PlacementResourcesPage = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Upload {getCategoryNameById(selectedCategory)} Resource</h2>
             <ResourceUpload 
-              onSubmit={handleUpload} 
               onCancel={() => setShowUploadForm(false)} 
+              onSubmit={handleUpload} 
               resourceType="placement"
             />
           </div>

@@ -1,4 +1,3 @@
-
 import { forwardRef } from 'react';
 import { ExternalLink, Download, FileText, Calendar, Link as LinkIcon } from 'lucide-react';
 import { SearchResource } from '../../../types/faculty';
@@ -51,10 +50,10 @@ const DocumentResult = forwardRef<HTMLDivElement, DocumentResultProps>(({ result
               <span className="mr-3">{result.source}</span>
             )}
             
-            {result.publishDate && (
+            {result.publishedDate && (
               <span className="flex items-center mr-3">
                 <Calendar className="h-3 w-3 mr-1" />
-                {new Date(result.publishDate).toLocaleDateString()}
+                {new Date(result.publishedDate).toLocaleDateString()}
               </span>
             )}
           </div>

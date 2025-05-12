@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
 import { DownloadCloud, Upload, Users, FileText, Loader } from 'lucide-react';
 import api from '../../services/api';

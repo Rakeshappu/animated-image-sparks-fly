@@ -232,7 +232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearError,
       isAuthenticated: !!user,
       verifyOTP,
-      resendOTP
+      resendOTP,
     }}>
       {children}
     </AuthContext.Provider>

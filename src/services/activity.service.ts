@@ -73,6 +73,9 @@ export class ActivityService {
       return [];
     }
   }
+  // async getWeeklyActivities(): Promise<ActivityDocument[]> {
+    
+  // }
 }
 
 export const activityService = new ActivityService();

@@ -5,7 +5,8 @@ import { toast } from 'react-hot-toast';
 import { User, Lock, Shield, Bell, Eye, EyeOff } from 'lucide-react';
 
 export const SettingsPage = () => {
-  const { user, updateUserProfile } = useAuth();
+  // const { user, updateUserProfile } = useAuth();
+  const { user} = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   
   // Profile settings state
@@ -47,11 +48,11 @@ export const SettingsPage = () => {
     try {
       setIsSaving(true);
       
-      await updateUserProfile({
-        fullName,
-        phoneNumber,
-        department
-      });
+      // await updateUserProfile({
+      //   fullName,
+      //   phoneNumber,
+      //   department
+      // });
       
       toast.success('Profile updated successfully');
     } catch (error) {

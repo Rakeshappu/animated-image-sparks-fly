@@ -1,4 +1,3 @@
-
 import React, { forwardRef } from 'react';
 import { ExternalLink, Download, Youtube, Calendar, Eye } from 'lucide-react';
 import { SearchResource } from '../../../types/faculty';

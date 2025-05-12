@@ -200,8 +200,8 @@ ResourceSchema.pre('save', function(next) {
       likes: 0,
       comments: 0,
       lastViewed: new Date(),
-      dailyViews: [],
-      studentFeedback: []
+      dailyViews: [0,0],
+      studentFeedback: [0,0]
     };
   }
   

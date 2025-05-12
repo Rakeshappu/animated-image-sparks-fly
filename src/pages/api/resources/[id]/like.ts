@@ -69,7 +69,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         downloads: 0,
         likes: 0,
         comments: 0,
-        lastViewed: new Date()
+        lastViewed: new Date(),
+        dailyViews: [],
+        studentFeedback: []
       };
     }
     

@@ -57,7 +57,7 @@ export const Login = () => {
         // For admin users, verify the token contains role information
         if (userData.role === 'admin' && (!tokenData.role || tokenData.role !== 'admin')) {
           console.warn('Admin login but token missing role information.', tokenData);
-          toast.warning('Admin session may be incomplete. Please log out and log back in if you encounter permission issues.');
+          // toast.warning('Admin session may be incomplete. Please log out and log back in if you encounter permission issues.');
         }
       }
       
