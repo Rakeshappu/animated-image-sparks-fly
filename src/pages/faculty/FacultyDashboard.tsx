@@ -12,27 +12,35 @@ import { API_ROUTES } from '../../lib/api/routes';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-// Initialize window global variables
+// Animation variants for transitions
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.3 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+};
+
+// Initialize window global variables - use consistent type declarations
 declare global {
   interface Window {
-    sharedResources: FacultyResource[];
-    subjectFolders: any[];
+    sharedResources?: FacultyResource[];
+    subjectFolders?: any[];
   }
 }
 
+// Initialize global variables if running in browser
 if (typeof window !== 'undefined') {
-  if (!window.sharedResources) {
-    window.sharedResources = [];
-  }
-
-  if (!window.subjectFolders) {
-    window.subjectFolders = [];
-  }
+  window.sharedResources = window.sharedResources || [];
+  window.subjectFolders = window.subjectFolders || [];
 }
 
 export const FacultyDashboard = () => {
   const [resources, setResources] = useState<FacultyResource[]>(
-    typeof window !== 'undefined' ? window.sharedResources || [] : []
+    typeof window !== 'undefined' && window.sharedResources ? [...window.sharedResources] : []
   );
   const [selectedResource, setSelectedResource] = useState<FacultyResource | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
@@ -148,7 +156,7 @@ export const FacultyDashboard = () => {
       formData.append('title', data.title);
       formData.append('description', data.description || '');
       formData.append('type', data.type);
-      formData.append('subject', data.subject || '');
+      formData.append('subject', data.subject);
       
       // Use selected semester if available, otherwise use the one from data
       const semesterToUse = selectedSemester !== null ? selectedSemester : (data.semester || 1);
@@ -195,13 +203,16 @@ export const FacultyDashboard = () => {
           likes: 0,
           comments: 0,
           downloads: 0
-          // Remove lastViewed as it's not in the interface
         }
       };
       
       setResources(prev => [newResource, ...prev]);
       if (typeof window !== 'undefined') {
-        window.sharedResources = [newResource, ...window.sharedResources];
+        if (window.sharedResources) {
+          window.sharedResources = [newResource, ...window.sharedResources];
+        } else {
+          window.sharedResources = [newResource];
+        }
       }
       
       // Send notifications to students about the new resource

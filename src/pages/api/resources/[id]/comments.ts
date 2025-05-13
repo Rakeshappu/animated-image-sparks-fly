@@ -72,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       // Initialize comments array if it doesn't exist
       if (!resource.comments) {
-        resource.comments = mongoose.Types.DocumentArray.create([]);
+        resource.comments = [];
       }
       
       // Add comment
@@ -82,7 +82,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         createdAt: new Date()
       };
       
-      resource.comments.push(newComment);
+      if (resource.comments) {
+        resource.comments.push(newComment);
+      }
       
       // Update comment count in stats
       if (!resource.stats) {
@@ -92,8 +94,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           likes: 0,
           comments: 0,
           lastViewed: new Date(),
-          dailyViews: mongoose.Types.DocumentArray.create([]),
-          studentFeedback: mongoose.Types.DocumentArray.create([])
+          dailyViews: [],
+          studentFeedback: []
         };
       }
       
@@ -142,7 +144,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Find comment index
       const commentIndex = resource.comments.findIndex(
         (comment: any) => comment._id.toString() === commentId && 
-                         (comment.author.toString() === decoded.userId || resource.uploadedBy?.toString() === decoded.userId)
+                       (comment.author.toString() === decoded.userId || resource.uploadedBy?.toString() === decoded.userId)
       );
       
       if (commentIndex === -1) {

@@ -1,3 +1,4 @@
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Resource } from '../../../../lib/db/models/Resource';
 import { Activity } from '../../../../lib/db/models/Activity';
@@ -54,11 +55,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         likes: 0,
         comments: 0,
         lastViewed: new Date(),
-        dailyViews: mongoose.Types.DocumentArray.create([{
+        dailyViews: [{
           date: today,
           count: 1
-        }]),
-        studentFeedback: mongoose.Types.DocumentArray.create([])
+        }],
+        studentFeedback: []
       };
     } else {
       // Update existing stats
@@ -67,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       // Initialize daily views array if it doesn't exist
       if (!resource.stats.dailyViews) {
-        resource.stats.dailyViews = mongoose.Types.DocumentArray.create([]);
+        resource.stats.dailyViews = [];
       }
       
       // Update daily views with today's date

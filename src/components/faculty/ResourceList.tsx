@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { FileText, Video, Link as LinkIcon, BarChart2, Eye, ThumbsUp, MessageSquare, Trash2 } from 'lucide-react';
 import { FacultyResource } from '../../types/faculty';
@@ -17,11 +16,11 @@ interface ResourceListProps {
 type FilterOption = 'all' | 'document' | 'video' | 'note' | 'link';
 type SortOption = 'date' | 'views' | 'likes' | 'comments';
 
-// Define properly typed window interface extension
+// Define window interface - must match the one in FacultyDashboard.tsx
 declare global {
   interface Window {
     sharedResources?: FacultyResource[];
-    subjectFolders?: any[]; // Add other window properties that might be used
+    subjectFolders?: any[];
   }
 }
 

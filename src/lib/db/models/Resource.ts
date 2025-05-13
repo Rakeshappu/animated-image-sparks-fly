@@ -51,15 +51,11 @@ const StatsSchema = new mongoose.Schema({
   },
   dailyViews: {
     type: [DailyViewSchema],
-    default: function() { 
-      return mongoose.Types.DocumentArray.create([]); 
-    }
+    default: []
   },
   studentFeedback: {
     type: [StudentFeedbackSchema],
-    default: function() { 
-      return mongoose.Types.DocumentArray.create([]); 
-    }
+    default: []
   }
 });
 
@@ -125,8 +121,8 @@ const ResourceSchema = new mongoose.Schema({
         likes: 0,
         comments: 0,
         lastViewed: new Date(),
-        dailyViews: mongoose.Types.DocumentArray.create([]),
-        studentFeedback: mongoose.Types.DocumentArray.create([])
+        dailyViews: [],
+        studentFeedback: []
       };
     }
   },
@@ -163,9 +159,7 @@ const ResourceSchema = new mongoose.Schema({
         default: Date.now
       }
     }],
-    default: function() { 
-      return mongoose.Types.DocumentArray.create([]); 
-    }
+    default: []
   },
   createdAt: {
     type: Date,
@@ -268,12 +262,12 @@ export interface IResource extends Document {
     likes: number;
     comments: number;
     lastViewed: Date;
-    dailyViews: mongoose.Types.DocumentArray<{
+    dailyViews: Array<{
       date: Date;
       count: number;
       _id?: mongoose.Types.ObjectId;
     }>;
-    studentFeedback: mongoose.Types.DocumentArray<{
+    studentFeedback: Array<{
       rating: number;
       count: number;
       _id?: mongoose.Types.ObjectId;
@@ -283,7 +277,7 @@ export interface IResource extends Document {
   placementCategory?: string;
   tags?: string[];
   likedBy?: mongoose.Types.ObjectId[];
-  comments?: mongoose.Types.DocumentArray<{
+  comments?: Array<{
     content: string;
     author: mongoose.Types.ObjectId;
     createdAt: Date;

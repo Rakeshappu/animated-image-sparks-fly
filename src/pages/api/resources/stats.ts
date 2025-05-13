@@ -1,4 +1,3 @@
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB, { verifyDbConnection } from '../../../lib/db/connect';
 import { Resource } from '../../../lib/db/models/Resource';
@@ -256,7 +255,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               comments: 0,
               lastViewed: new Date(),
               dailyViews: [],
-              studentFeedback: [] // Add required studentFeedback array
+              studentFeedback: []
             };
           }
           
@@ -312,7 +311,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               comments: 0,
               lastViewed: new Date(),
               dailyViews: [],
-              studentFeedback: [] // Add required studentFeedback array
+              studentFeedback: []
             };
           }
           resource.stats.downloads += 1;
@@ -342,7 +341,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               comments: 0,
               lastViewed: new Date(),
               dailyViews: [],
-              studentFeedback: [] // Add required studentFeedback array
+              studentFeedback: []
             };
           }
           resource.stats.likes += 1;
@@ -375,7 +374,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               comments: 0,
               lastViewed: new Date(),
               dailyViews: [],
-              studentFeedback: [] // Add required studentFeedback array
+              studentFeedback: []
             };
           }
           resource.stats.comments += 1;
