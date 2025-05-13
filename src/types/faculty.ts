@@ -46,6 +46,8 @@ export interface FacultyResource {
   placementCategory?: string;
   uploadedBy?: string;
   uploaderId?: string;
+  uploadedByName?: string;
+  department?: string;  // Adding department property
   createdAt?: string | Date;
   uploadDate?: string | Date;
   stats?: {
@@ -67,7 +69,7 @@ export interface UploadFormData {
   type: string;
   file?: File;
   link?: string;
-  subject?: string;
+  subject: string;  // Make subject required
   semester?: string | number;
   category?: 'common' | 'placement' | 'study';
   placementCategory?: string;
