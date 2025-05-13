@@ -1,9 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 
+interface TrashItem {
+  _id: string;
+  title: string;
+  type?: string;
+  deletedAt?: Date;
+}
+
 const TrashPage = () => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<TrashItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,7 +53,7 @@ const TrashPage = () => {
     }
   };
 
-  const renderActions = (item: { _id: string; title: string }) => {
+  const renderActions = (item: TrashItem) => {
     return (
       <div className="flex space-x-2">
         <button
@@ -81,7 +89,7 @@ const TrashPage = () => {
               </tr>
             </thead>
             <tbody>
-              {items.map((item: any) => (
+              {items.map((item) => (
                 <tr key={item._id}>
                   <td className="py-2 px-4 border-b">{item.title}</td>
                   <td className="py-2 px-4 border-b">{renderActions(item)}</td>

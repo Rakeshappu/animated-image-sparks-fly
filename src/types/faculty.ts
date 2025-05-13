@@ -42,9 +42,10 @@ export interface FacultyResource {
   type?: string;
   subject?: string;
   semester?: number;
-  category?: string;
+  category?: 'common' | 'placement' | 'study';
   placementCategory?: string;
   uploadedBy?: string;
+  uploaderId?: string;
   createdAt?: string | Date;
   uploadDate?: string | Date;
   stats?: {
@@ -68,7 +69,7 @@ export interface UploadFormData {
   link?: string;
   subject?: string;
   semester?: string | number;
-  category?: string;
+  category?: 'common' | 'placement' | 'study';
   placementCategory?: string;
 }
 

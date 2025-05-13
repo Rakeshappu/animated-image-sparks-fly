@@ -46,4 +46,5 @@ export interface Activity {
   timestamp: string;
 }
 
-export type { UserRole } from './auth.ts';
+export type { UserRole } from './auth';
+export type { SubjectFolder, SubjectData, FacultyResource, UploadFormData } from './faculty';
