@@ -1,4 +1,3 @@
-//src\lib\db\models\Resource.ts
 import mongoose, { Document, Schema } from 'mongoose';
 import { getAllCategoryIds, getStandardizedCategory } from '../../../utils/placementCategoryUtils';
 
@@ -52,11 +51,11 @@ const StatsSchema = new mongoose.Schema({
   },
   dailyViews: {
     type: [DailyViewSchema],
-    default: () => [] // Use function to return empty array
+    default: function() { return []; }
   },
   studentFeedback: {
     type: [StudentFeedbackSchema],
-    default: () => [] // Use function to return empty array
+    default: function() { return []; }
   }
 });
 
@@ -114,18 +113,7 @@ const ResourceSchema = new mongoose.Schema({
     default: null
   },
   stats: {
-    type: StatsSchema,
-    default: function() {
-      return {
-        views: 0,
-        downloads: 0,
-        likes: 0,
-        comments: 0,
-        lastViewed: new Date(),
-        dailyViews: [], // Mongoose will handle the proper type conversion
-        studentFeedback: [] // Mongoose will handle the proper type conversion
-      };
-    }
+    type: StatsSchema
   },
   category: {
     type: String,
@@ -189,20 +177,6 @@ ResourceSchema.pre('save', function(next) {
   // Before saving, make sure placementCategory is standardized
   if (this.category === 'placement' && this.placementCategory) {
     this.placementCategory = getStandardizedCategory(this.placementCategory);
-  }
-  
-  // Initialize stats if they don't exist
-  if (!this.stats) {
-    this.stats = {
-      views: 0,
-      downloads: 0,
-      likes: 0,
-      comments: 0,
-      lastViewed: new Date(),
-      dailyViews: [],
-      studentFeedback: [],
-      
-    };
   }
   
   next();
@@ -277,17 +251,26 @@ export interface IResource extends Document {
     likes: number;
     comments: number;
     lastViewed: Date;
-    dailyViews: Array<{ date: Date; count: number }>;
-    studentFeedback: Array<{ rating: number; count: number }>;
+    dailyViews: mongoose.Types.DocumentArray<{
+      date: Date;
+      count: number;
+      _id?: mongoose.Types.ObjectId;
+    }>;
+    studentFeedback: mongoose.Types.DocumentArray<{
+      rating: number;
+      count: number;
+      _id?: mongoose.Types.ObjectId;
+    }>;
   };
   category?: 'study' | 'placement' | 'common';
   placementCategory?: string;
   tags?: string[];
   likedBy?: mongoose.Types.ObjectId[];
-  comments?: Array<{ 
-    content: string; 
-    author: mongoose.Types.ObjectId; 
+  comments?: mongoose.Types.DocumentArray<{
+    content: string;
+    author: mongoose.Types.ObjectId;
     createdAt: Date;
+    _id?: mongoose.Types.ObjectId;
   }>;
   createdAt: Date;
   updatedAt: Date;
