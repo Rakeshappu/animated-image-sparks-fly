@@ -1,10 +1,10 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { User } from '../../../lib/db/models/User.ts';
-import { generateOTP, generateVerificationToken } from '../../../lib/auth/jwt.ts';
-import { sendVerificationEmail } from '../../../lib/email/sendEmail.ts';
-import connectDB from '../../../lib/db/connect.ts';
-import { verifyEmailConfig } from '../../../lib/email/config.ts';
+import { User } from '../../../lib/db/models/User';
+import { generateOTP, generateVerificationToken } from '../../../lib/auth/jwt';
+import { sendVerificationEmail } from '../../../lib/email/sendEmail';
+import connectDB from '../../../lib/db/connect';
+import { verifyEmailConfig } from '../../../lib/email/config';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
