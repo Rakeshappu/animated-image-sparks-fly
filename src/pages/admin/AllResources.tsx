@@ -61,6 +61,7 @@ const AllResources: React.FC = () => {
     setSelectedDepartment(e.target.value);
   };
 
+  // Filter resources based on department
   const filteredResources = selectedDepartment === 'all'
     ? resources
     : resources.filter(resource => resource.department === selectedDepartment);
@@ -110,7 +111,7 @@ const AllResources: React.FC = () => {
                 <tr key={resource.id || resource._id} className="hover:bg-gray-50">
                   <td className="py-2 px-4 border-b">{resource.title}</td>
                   <td className="py-2 px-4 border-b">
-                    {getResourceTypeBadge(resource.type)}
+                    {getResourceTypeBadge(resource.type || 'document')}
                   </td>
                   <td className="py-2 px-4 border-b">{resource.subject || 'N/A'}</td>
                   <td className="py-2 px-4 border-b">{resource.description || 'No description'}</td>

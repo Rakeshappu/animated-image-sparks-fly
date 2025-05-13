@@ -47,4 +47,4 @@ export interface Activity {
 }
 
 export type { UserRole } from './auth';
-export type { SubjectFolder, SubjectData, FacultyResource, UploadFormData } from './faculty';
+export type { SubjectFolder, SubjectData, FacultyResource, UploadFormData, SearchResource } from './faculty';

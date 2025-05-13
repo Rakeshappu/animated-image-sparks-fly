@@ -313,11 +313,7 @@ function App() {
                     <Sidebar />
                     <div className="flex-1">
                       <Header />
-                      <AllResources 
-                        onViewAnalytics={(resourceId) => {
-                          window.location.href = `/admin/resources/${resourceId}/analytics`;
-                        }}
-                      />
+                      <AllResources />
                     </div>
                   </div>
                 </PrivateRoute>

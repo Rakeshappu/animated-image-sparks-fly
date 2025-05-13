@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Upload, FileText } from 'lucide-react';
 import { UploadFormData, SubjectFolder } from '../../types/faculty';
@@ -104,7 +105,7 @@ export const ResourceUpload = ({
         throw new Error('Title is required');
       }
 
-      if (!isPlacementResource && !formData.subject.trim()) {
+      if (!isPlacementResource && (!formData.subject || !formData.subject.trim())) {
         throw new Error('Subject is required');
       }
 
@@ -120,7 +121,8 @@ export const ResourceUpload = ({
         ...formData,
         semester: isPlacementResource ? 0 : selectedSemester,
         category: (isPlacementResource ? 'placement' : (formData.category || 'study')) as 'common' | 'study' | 'placement',
-        placementCategory: isPlacementResource ? placementCategory : undefined
+        placementCategory: isPlacementResource ? placementCategory : undefined,
+        subject: formData.subject || ''  // Ensure subject is not undefined
       };
 
       console.log("Submitting data:", dataToUpload);
