@@ -52,11 +52,11 @@ const StatsSchema = new mongoose.Schema({
   },
   dailyViews: {
     type: [DailyViewSchema],
-    default: function() { return []; }
+    default: () => [] // Use function to return empty array
   },
   studentFeedback: {
     type: [StudentFeedbackSchema],
-    default: function() { return []; }
+    default: () => [] // Use function to return empty array
   }
 });
 
@@ -122,8 +122,8 @@ const ResourceSchema = new mongoose.Schema({
         likes: 0,
         comments: 0,
         lastViewed: new Date(),
-        dailyViews: [],
-        studentFeedback: []
+        dailyViews: [], // Mongoose will handle the proper type conversion
+        studentFeedback: [] // Mongoose will handle the proper type conversion
       };
     }
   },
