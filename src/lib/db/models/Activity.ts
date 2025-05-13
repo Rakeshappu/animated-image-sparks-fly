@@ -1,7 +1,8 @@
 
 import mongoose, { Document, Schema } from 'mongoose';
-// Import from the type definition file
-import { ActivityActionType, ActivitySourceType } from '../../../types/activity.d';
+// Directly define the types needed instead of importing from .d.ts file
+export type ActivityActionType = 'view' | 'download' | 'like' | 'comment' | 'upload' | 'search' | 'bookmark' | 'share';
+export type ActivitySourceType = 'study-materials' | 'bookmarks' | 'placement' | 'other';
 
 export interface IActivity extends Document {
   user: mongoose.Types.ObjectId;

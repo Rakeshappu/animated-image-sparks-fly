@@ -1,6 +1,5 @@
-
 import { createClient, RedisClientType } from 'redis';
-import { redisConfig } from '../config/services';
+import { redisConfig } from '../config/services.js';
 
 let redisClient: RedisClientType | null = null;
 

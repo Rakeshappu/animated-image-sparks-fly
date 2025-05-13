@@ -1,5 +1,5 @@
-
-import { SubjectFolder } from '../../types/faculty';
+import { useState, useEffect } from 'react';
+import { FacultyResource, SubjectFolder } from '../../types/faculty.js';
 
 // Mock resources when database is not available
 export const mockResources = [
@@ -107,6 +107,29 @@ export const mockSubjectFolders: SubjectFolder[] = [
     // resourceCount: 6,
   },
 ];
+
+// Add type guard for window object
+declare global {
+  interface Window {
+    subjectFolders?: SubjectFolder[];
+    sharedResources?: FacultyResource[];
+  }
+}
+
+// Fix the usage of window.subjectFolders
+export const useMockSubjectFolders = () => {
+  const [folders, setFolders] = useState<SubjectFolder[]>([]);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.subjectFolders) {
+      setFolders(window.subjectFolders);
+    } else {
+      setFolders(mockSubjectFolders);
+    }
+  }, []);
+  
+  return folders;
+};
 
 // Add mock data to window for global access in development
 if (process.env.NODE_ENV === 'development') {

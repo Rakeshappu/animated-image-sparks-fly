@@ -1,9 +1,9 @@
 import { Server } from 'socket.io';
-import { verifyToken } from '../auth/jwt';
+import { verifyToken } from '../auth/jwt.js';
 import mongoose from 'mongoose';
-import { Resource, IResource } from '../db/models/Resource';
-import { User } from '../db/models/User';
-import { Notification } from '../db/models/Notification';
+import { Resource, IResource } from '../db/models/Resource.js';
+import { User } from '../db/models/User.js';
+import { Notification } from '../db/models/Notification.js';
 
 let io: Server;
 

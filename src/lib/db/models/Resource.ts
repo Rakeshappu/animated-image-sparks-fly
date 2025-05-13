@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { getAllCategoryIds, getStandardizedCategory } from '../../../utils/placementCategoryUtils';
+import { getAllCategoryIds, getStandardizedCategory } from '../../../utils/placementCategoryUtils.js';
 
 // Define a daily view schema for statistics
 const DailyViewSchema = new mongoose.Schema({
