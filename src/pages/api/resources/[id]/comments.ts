@@ -72,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       // Initialize comments array if it doesn't exist
       if (!resource.comments) {
-        resource.comments = [];
+        resource.comments = mongoose.Types.DocumentArray.create([]);
       }
       
       // Add comment
@@ -92,8 +92,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           likes: 0,
           comments: 0,
           lastViewed: new Date(),
-          dailyViews: [],
-          studentFeedback: []
+          dailyViews: mongoose.Types.DocumentArray.create([]),
+          studentFeedback: mongoose.Types.DocumentArray.create([])
         };
       }
       

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ResourceUpload } from '../../components/faculty/ResourceUpload';
 import { ResourceList } from '../../components/faculty/ResourceList';
@@ -13,30 +12,13 @@ import { API_ROUTES } from '../../lib/api/routes';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1,
-    transition: { 
-      duration: 0.5,
-      when: "beforeChildren",
-      staggerChildren: 0.1
-    }
-  },
-  exit: {
-    opacity: 0,
-    transition: { duration: 0.3 }
+// Initialize window global variables
+declare global {
+  interface Window {
+    sharedResources: FacultyResource[];
+    subjectFolders: any[];
   }
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { 
-    y: 0, 
-    opacity: 1,
-    transition: { type: 'spring', stiffness: 100 }
-  }
-};
+}
 
 if (typeof window !== 'undefined') {
   if (!window.sharedResources) {
@@ -49,7 +31,9 @@ if (typeof window !== 'undefined') {
 }
 
 export const FacultyDashboard = () => {
-  const [resources, setResources] = useState<FacultyResource[]>(typeof window !== 'undefined' ? window.sharedResources : []);
+  const [resources, setResources] = useState<FacultyResource[]>(
+    typeof window !== 'undefined' ? window.sharedResources || [] : []
+  );
   const [selectedResource, setSelectedResource] = useState<FacultyResource | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showUploadWorkflow, setShowUploadWorkflow] = useState(false);

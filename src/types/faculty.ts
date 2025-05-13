@@ -40,7 +40,7 @@ export interface FacultyResource {
   fileUrl?: string;
   link?: string;
   type?: string;
-  subject?: string;
+  subject: string; // Make subject required
   semester?: number;
   category?: 'common' | 'placement' | 'study';
   placementCategory?: string;

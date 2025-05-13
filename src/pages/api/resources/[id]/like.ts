@@ -70,8 +70,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         likes: 0,
         comments: 0,
         lastViewed: new Date(),
-        dailyViews: [],
-        studentFeedback: []
+        dailyViews: mongoose.Types.DocumentArray.create([]),
+        studentFeedback: mongoose.Types.DocumentArray.create([])
       };
     }
     
