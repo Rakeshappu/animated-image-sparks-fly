@@ -8,7 +8,7 @@ import connectDB from '../../../lib/db/connect';
 import cors from 'cors';
 
 const corsMiddleware = cors({
-  origin: 'http://localhost:8080',
+  origin: 'http://localhost:5173',
   methods: ['POST', 'OPTIONS'],
   credentials: true,
 });

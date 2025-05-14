@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 // Configure CORS for this endpoint
 const corsMiddleware = cors({
   origin: function(origin, callback) {
-    const allowedOrigins = ['http://localhost:8080', 'http://localhost:3000'];
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000'];
     // Allow requests with no origin
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);

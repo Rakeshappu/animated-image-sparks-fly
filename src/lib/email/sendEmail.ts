@@ -6,7 +6,7 @@ export async function sendVerificationEmail(email: string, token: string, otp: s
     console.log('Attempting to send verification email to:', email);
     console.log('Sending verification email with OTP:', otp);
     
-    const baseUrl = process.env.BASE_URL || 'http://localhost:8080';
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
     const verificationLink = `${baseUrl}/verify-email?token=${token}`;
     
     console.log('Verification link:', verificationLink);

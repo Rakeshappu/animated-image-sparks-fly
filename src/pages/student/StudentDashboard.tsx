@@ -23,23 +23,32 @@ const StudentDashboard = () => {
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dbStatus, setDbStatus] = useState<any>(null);
+  const [isCheckingDb, setIsCheckingDb] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
-        // Pass undefined for userId to use the current user's ID from the backend
-        const userStreak = await activityService.getUserDailyStreak();
+        // Get user's current streak - if userId is needed, use user?._id
+        const userStreak = await activityService.getUserDailyStreak(user?._id);
         setStreak(userStreak);
         
-        const todayActivityData = await activityService.getTodayActivities();
+        // Get today's activities - if userId is needed, use user?._id
+        const todayActivityData = await activityService.getTodayActivities(user?._id);
         setTodayActivities(todayActivityData.length || 0);
         
-        const weekActivity = await activityService.getWeeklyActivities();
+        // Get weekly activities - if userId is needed, use user?._id
+        const weekActivity = await activityService.getWeeklyActivities(user?._id);
         setWeeklyActivity(weekActivity);
         
-        const bookmarksResponse = await api.get('/api/user/bookmarks');
-        setBookmarks(bookmarksResponse.data.bookmarks || []);
+        // Get user's bookmarks
+        try {
+          const bookmarksResponse = await api.get('/api/user/bookmarks');
+          setBookmarks(bookmarksResponse.data.bookmarks || []);
+        } catch (error) {
+          console.error("Error fetching bookmarks:", error);
+          setBookmarks([]);
+        }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -48,20 +57,29 @@ const StudentDashboard = () => {
     };
     
     fetchDashboardData();
-  }, []);
+  }, [user]);
+  
+  // Function to check database connection
+  const checkConnection = async () => {
+    setIsCheckingDb(true);
+    try {
+      const status = await checkDatabaseConnection();
+      setDbStatus(status);
+      console.log('MongoDB connection status in Student Dashboard:', status);
+    } catch (err) {
+      console.error('Failed to check DB connection:', err);
+    } finally {
+      setIsCheckingDb(false);
+    }
+  };
   
   useEffect(() => {
-    const checkConnection = async () => {
-      try {
-        const status = await checkDatabaseConnection();
-        setDbStatus(status);
-        console.log('MongoDB connection status in Student Dashboard:', status);
-      } catch (err) {
-        console.error('Failed to check DB connection:', err);
-      }
-    };
-    
     checkConnection();
+    
+    // Check connection status every 30 seconds
+    const intervalId = setInterval(checkConnection, 30000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const fadeIn = {
@@ -71,7 +89,7 @@ const StudentDashboard = () => {
   
   return (
     <div>
-      <MongoDBStatusBanner status={dbStatus} />
+      <MongoDBStatusBanner status={dbStatus} onRefresh={checkConnection} />
       <div className="p-6">
         <motion.div 
           initial={{ opacity: 0 }} 

@@ -32,12 +32,12 @@ This script is required for Lovable to build the project.
    - Environment: Node.js
    - Build Command: `./build.sh`
    - Start Command: `node dist/server.js`
-   - Port: 8080
+   - Port: 5173
 
 ### Environment Variables
 Set the following environment variables in your Render dashboard:
 - NODE_ENV: production
-- PORT: 8080
+- PORT: 5173
 - MONGODB_URI: your-mongodb-connection-string
 - JWT_SECRET: will be automatically generated
 

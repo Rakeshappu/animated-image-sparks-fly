@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -6,7 +7,7 @@ import { LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 // Import logo from the correct path
-import cropped from '../../../assets/cropped.png';
+import cropped from '../../../../public/uploads/cropped.png';
 
 export const LoginForm = () => {
   const { login, error, clearError } = useAuth(); 

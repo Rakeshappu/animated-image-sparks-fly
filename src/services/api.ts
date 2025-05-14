@@ -1,12 +1,15 @@
 
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-// Fix the invalid import by using a named import from react-router-dom
-import { useNavigate } from 'react-router-dom';
+
+// Determine the base URL based on environment
+const apiBaseUrl = window.location.hostname === 'localhost' 
+  ? '/' 
+  : 'https://versatileshare-b57k.onrender.com/';
 
 // Create axios instance
 const api = axios.create({
-  baseURL: '/', // Base URL for all API requests
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -42,6 +45,9 @@ api.interceptors.request.use(
       }
     }
     
+    // Log the request for debugging in deployed environment
+    console.log(`API ${config.method?.toUpperCase()} request to: ${config.baseURL}${config.url}`);
+    
     return config;
   },
   (error) => {
@@ -58,6 +64,20 @@ api.interceptors.response.use(
   (error) => {
     // Handle error responses
     if (error.response) {
+      // Check if we received HTML instead of JSON (routing issue)
+      if (error.response.data && typeof error.response.data === 'string' && 
+          error.response.data.includes('<!doctype html>')) {
+        console.error('Received HTML instead of JSON:', error.config.url);
+        console.error('This suggests a server-side routing issue.');
+        
+        if (!window.apiRoutingErrorShown) {
+          toast.error('Server routing issue detected. Please check server configuration.', {
+            duration: 10000 // Show for 10 seconds
+          });
+          window.apiRoutingErrorShown = true;
+        }
+      }
+      
       // The request was made and the server responded with a status code
       // that falls outside of the range of 2xx
       if (error.response.status === 401) {
@@ -80,7 +100,7 @@ api.interceptors.response.use(
         // Handle forbidden access (e.g., insufficient permissions)
         console.error('Permission denied:', error.response.data);
 
-        if (error.config.url.includes('/admin/')) {
+        if (error.config.url && error.config.url.includes('/admin/')) {
           // Special handling for admin routes
           console.log('Admin permission denied:', error.config.url);
           toast.error('Admin access required for this operation. Please log out and log back in to refresh your session.');
@@ -98,6 +118,10 @@ api.interceptors.response.use(
       } else if (error.response.status === 404) {
         // Handle not found
         console.error('Resource not found:', error.response.data);
+        // If the response contains HTML instead of JSON, it's likely a routing issue
+        if (typeof error.response.data === 'string' && error.response.data.includes('<!DOCTYPE html>')) {
+          console.error('Resource not found:', error.response.data);
+        }
       } else if (error.response.status === 500) {
         // Handle server errors
         console.error('Server error:', error.response.data);
@@ -117,5 +141,12 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Add a custom type to Window interface to track if we've shown an API routing error
+declare global {
+  interface Window {
+    apiRoutingErrorShown?: boolean;
+  }
+}
 
 export default api;
