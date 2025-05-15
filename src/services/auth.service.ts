@@ -1,4 +1,4 @@
-
+//src\services\auth.service.ts
 import api from './api';
 import { SignupFormData, UserRole } from '../types/auth';
 
@@ -43,7 +43,15 @@ export const authService = {
       throw { message: 'Logout failed. Please try again.' };
     }
   },
-  
+  me: async () => {
+  try {
+    const response = await api.get('/api/auth/me');
+    return response.data;
+  } catch (err: any) {
+    console.error('Fetching user failed:', err);
+    throw err.response?.data || { message: 'Fetching user failed. Please try again.' };
+  }
+},
   // Add the missing methods
   verifyEmail: async (token: string) => {
     try {

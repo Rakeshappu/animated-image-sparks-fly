@@ -1,3 +1,4 @@
+//src\server.ts
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -7,6 +8,7 @@ import connectDB from './lib/db/connect.js';
 import authRoutes from './server/routes/auth.routes.js';
 import { errorHandler } from './server/middleware/error.middleware.js';
 import { initializeSocketIO } from './lib/realtime/socket.js';
+import mongoose from 'mongoose';
 
 // For ES modules support
 const __filename = fileURLToPath(import.meta.url);
@@ -148,8 +150,7 @@ if (process.env.NODE_ENV === 'production') {
 // Error handling middleware
 app.use(errorHandler);
 
-// Required for the DB status endpoint
-import mongoose from 'mongoose';
+
 
 // Connect to database and start server
 const startServer = async () => {
