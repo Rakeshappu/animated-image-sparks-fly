@@ -2,12 +2,17 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './lib/db/connect.js';
 import authRoutes from './server/routes/auth.routes.js';
 
 // Create Express application
 const app = express();
 const PORT = process.env.PORT || 10000;
+
+// ES Module compatibility - define __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Connect to MongoDB
 const connectToMongoDB = async () => {
@@ -26,8 +31,8 @@ connectToMongoDB();
 app.use(cors());
 app.use(express.json());
 
-// Serve static files
-app.use(express.static(path.join(__dirname, '/')));
+// Serve static files - fixing the path for ES modules
+app.use(express.static(path.join(__dirname, '../')));
 
 // API routes
 app.use('/api/auth', authRoutes);
@@ -76,7 +81,7 @@ app.get('/api/db/status', async (req, res) => {
 
 // Wildcard route to serve React app for all other routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 // Global error handler

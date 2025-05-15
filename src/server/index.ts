@@ -1,9 +1,9 @@
-
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import connectDB from '../lib/db/connect.js';
 import authRoutes from './routes/auth.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
@@ -11,6 +11,10 @@ import { initializeSocketIO } from '../lib/realtime/socket.js';
 import { initRedisClient } from '../lib/cache/redis.js';
 import { initElasticsearchClient, createResourceIndex } from '../lib/search/elasticsearch.js';
 import { redisConfig, elasticsearchConfig, localStorageConfig } from '../lib/config/services.js';
+
+// ES Module compatibility - define __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
