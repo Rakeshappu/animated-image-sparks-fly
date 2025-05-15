@@ -1,3 +1,4 @@
+
 import { Server } from 'socket.io';
 import { verifyToken } from '../auth/jwt.js';
 import mongoose from 'mongoose';
@@ -164,7 +165,7 @@ export const notifyResourceUpload = async (resourceId: string, facultyName: stri
       const notificationMessage = `New placement resource "${resourceTitleToUse}" uploaded by ${facultyName}`;
       
       // Find all students
-      const students = await User.find({ role: 'student' });
+      const students = await User.find({ role: 'student' }).exec();
       console.log(`Found ${students.length} students for placement notification`);
       
       // Create notifications in database for all students
@@ -177,7 +178,7 @@ export const notifyResourceUpload = async (resourceId: string, facultyName: stri
       }));
       
       if (notificationObjects.length > 0) {
-        await Notification.insertMany(notificationObjects);
+        await Notification.create(notificationObjects);
         console.log(`Created ${notificationObjects.length} notifications for placement resource`);
       }
       
@@ -207,7 +208,7 @@ export const notifyResourceUpload = async (resourceId: string, facultyName: stri
     const students = await User.find({ 
       role: 'student', 
       semester: targetSemester 
-    });
+    }).exec();
     
     console.log(`Found ${students.length} students in semester ${targetSemester}`);
     
@@ -230,7 +231,7 @@ export const notifyResourceUpload = async (resourceId: string, facultyName: stri
     }));
     
     if (notificationObjects.length > 0) {
-      await Notification.insertMany(notificationObjects);
+      await Notification.create(notificationObjects);
       console.log(`Created ${notificationObjects.length} notifications in database for semester ${targetSemester}`);
     }
     

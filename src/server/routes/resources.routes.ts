@@ -1,3 +1,4 @@
+
 import express from 'express';
 import connectDB from '../../lib/db/connect.js';
 import mongoose from 'mongoose';
@@ -76,7 +77,8 @@ router.get('/faculty', async (req, res) => {
     })
     .sort({ createdAt: -1 })
     .populate('uploadedBy', 'fullName')
-    .limit(50);
+    .limit(50)
+    .exec();
 
     console.log(`Found ${resources.length} resources for user ${userData.userId}`);
     return res.status(200).json({ resources });
@@ -97,7 +99,8 @@ router.get('/', async (req, res) => {
     const resources = await Resource.find()
       .sort({ createdAt: -1 })
       .populate('uploadedBy', 'fullName')
-      .limit(50);
+      .limit(50)
+      .exec();
 
     return res.status(200).json({ resources });
   } catch (error) {
@@ -114,7 +117,8 @@ router.get('/placement', async (req, res) => {
     const resources = await Resource.find({ category: 'placement' })
       .sort({ createdAt: -1 })
       .populate('uploadedBy', 'fullName')
-      .limit(50);
+      .limit(50)
+      .exec();
 
     return res.status(200).json({ resources });
   } catch (error) {

@@ -1,3 +1,4 @@
+
 import express from 'express';
 import { runCorsMiddleware } from '../../pages/api/_middleware.js';
 import connectDB from '../../lib/db/connect.js';
@@ -78,7 +79,8 @@ router.get('/faculty', async (req:any, res:any) => {
     })
     .sort({ createdAt: -1 })
     .populate('uploadedBy', 'fullName')
-    .limit(50);
+    .limit(50)
+    .exec();
 
     console.log(`Found ${resources.length} resources for user ${userData.userId}`);
     return res.status(200).json({ resources });
@@ -100,7 +102,8 @@ router.get('/', async (req:any, res:any) => {
     const resources = await Resource.find()
       .sort({ createdAt: -1 })
       .populate('uploadedBy', 'fullName')
-      .limit(50);
+      .limit(50)
+      .exec();
 
     return res.status(200).json({ resources });
   } catch (error) {
@@ -118,7 +121,8 @@ router.get('/placement', async (req:any, res:any) => {
     const resources = await Resource.find({ category: 'placement' })
       .sort({ createdAt: -1 })
       .populate('uploadedBy', 'fullName')
-      .limit(50);
+      .limit(50)
+      .exec();
 
     return res.status(200).json({ resources });
   } catch (error) {

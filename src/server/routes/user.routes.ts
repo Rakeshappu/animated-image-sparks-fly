@@ -1,3 +1,4 @@
+
 import express from 'express';
 import connectDB from '../../lib/db/connect.js';
 import mongoose from 'mongoose';
@@ -47,7 +48,8 @@ router.get('/notifications', async (req, res) => {
     // Get notifications for this user
     const notifications = await Notification.find({ userId: user._id })
       .sort({ createdAt: -1 })
-      .limit(50);
+      .limit(50)
+      .exec();
     
     return res.status(200).json({
       success: true,
@@ -87,7 +89,7 @@ router.put('/notifications', async (req, res) => {
       await Notification.updateMany(
         { userId: userData.userId, read: false },
         { $set: { read: true } }
-      );
+      ).exec();
     } else if (notificationIds && Array.isArray(notificationIds)) {
       // Mark specific notifications as read
       await Notification.updateMany(
@@ -97,13 +99,14 @@ router.put('/notifications', async (req, res) => {
           read: false
         },
         { $set: { read: true } }
-      );
+      ).exec();
     }
     
     // Get updated notifications
     const updatedNotifications = await Notification.find({ userId: userData.userId })
       .sort({ createdAt: -1 })
-      .limit(50);
+      .limit(50)
+      .exec();
     
     return res.status(200).json({
       success: true,
