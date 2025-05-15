@@ -65,7 +65,7 @@ export const Login = () => {
       // Show warning if MongoDB is not connected
       if (dbStatus && !dbStatus.connected) {
         console.warn('MongoDB is not connected. Using fallback authentication.');
-        toast.error('Database connection issue. Login will work but data may not be saved.');
+        toast.warning('Database connection issue. Login will work but data may not be saved.');
       }
       
       await login(formData.email, formData.password);
@@ -81,7 +81,7 @@ export const Login = () => {
         // For admin users, verify the token contains role information
         if (userData.role === 'admin' && (!tokenData.role || tokenData.role !== 'admin')) {
           console.warn('Admin login but token missing role information.', tokenData);
-          toast.error('Admin session may be incomplete. Please log out and log back in if you encounter permission issues.');
+          toast.warning('Admin session may be incomplete. Please log out and log back in if you encounter permission issues.');
         }
         
         // Log token role info for debugging
