@@ -5,18 +5,13 @@ import connectDB from '../../../lib/db/connect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,DELETE,PATCH,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-  // Handle preflight request
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
@@ -27,60 +22,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectDB();
 
     const { email, otp } = req.body;
-    console.log('Received verification request:', { email, otp });
-    
+
     if (!email || !otp) {
-      return res.status(400).json({ error: 'Email and OTP are required' });
+      return res.status(400).json({ error: 'Email and verification code are required' });
     }
 
-    console.log('Searching for user with criteria:', {
-      email,
-      verificationCode: otp,
-      verificationCodeExpiry: { $gt: new Date() }
-    });
-
-    // First, find the user by email to debug
-    const userByEmail = await User.findOne({ email });
-    console.log('User found by email:', userByEmail ? {
-      email: userByEmail.email,
-      verificationCode: userByEmail.verificationCode,
-      verificationCodeExpiry: userByEmail.verificationCodeExpiry,
-      currentTime: new Date()
-    } : 'No user found');
-  
-    // Find user with matching OTP
-    const user = await User.findOne({
-      email,
-      verificationCode: otp,
-      verificationCodeExpiry: { $gt: new Date() }
-    });
-
+    // Find the user
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ 
-        error: 'Invalid or expired OTP',
-        debug: {
-          emailFound: !!userByEmail,
-          otpMatched: userByEmail?.verificationCode === otp,
-          notExpired: userByEmail?.verificationCodeExpiry ? new Date(userByEmail.verificationCodeExpiry) > new Date() : false
-        } 
-      });
+      return res.status(404).json({ error: 'No account found with that email address' });
     }
 
-    // Update user email verification
-    user.isEmailVerified = true;
-    user.verificationCode = undefined;
-    user.verificationCodeExpiry = undefined;
-    await user.save();
-    console.log('Email verification successful for:', email);
+    // Check if the code is valid and not expired
+    if (!user.verificationCode || user.verificationCode !== otp) {
+      return res.status(400).json({ error: 'Invalid verification code' });
+    }
 
-    res.status(200).json({ 
-      message: 'Email verified successfully',
-      isAdminVerified: user.isAdminVerified,
-      requiresAdminVerification: true,
-      role: user.role
+    if (!user.verificationCodeExpiry || new Date() > user.verificationCodeExpiry) {
+      return res.status(400).json({ error: 'Verification code has expired' });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'OTP verified successfully',
+      email: email 
     });
   } catch (error) {
-    console.error('OTP verification error:', error);
-    res.status(500).json({ error: 'Internal server error', details: String(error) });
+    console.error('Verify OTP error:', error);
+    return res.status(500).json({ error: 'Failed to verify OTP' });
   }
 }

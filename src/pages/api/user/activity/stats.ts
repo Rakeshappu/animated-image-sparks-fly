@@ -68,50 +68,87 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let userStreak = 0;
     
     if (userId) {
-      // Find the user to update streak
-      const user = await User.findById(userId);
-      
-      if (user) {
-        // Check if user has activity today
-        const hasActivityToday = await Activity.exists({
-          user: userId,
-          timestamp: { $gte: today }
-        });
+      try {
+        // Find the user
+        const user = await User.findById(userId);
         
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        // If user has activity today
-        if (hasActivityToday) {
-          // If this is the first time they're active or they were active yesterday
-          if (!user.lastActive || new Date(user.lastActive).setHours(0, 0, 0, 0) === yesterday.getTime()) {
-            // Increment streak
-            userStreak = (user.streak || 0) + 1;
-            
-            // Update user with new streak and lastActive
-            await User.findByIdAndUpdate(userId, {
-              streak: userStreak,
-              lastActive: new Date()
-            });
-            console.log(`Updated ${user.email}'s streak to ${userStreak}`);
-          } else if (new Date(user.lastActive).setHours(0, 0, 0, 0) === today.getTime()) {
-            // Already active today, maintain current streak
-            userStreak = user.streak || 1;
-            console.log(`Maintained ${user.email}'s streak at ${userStreak}`);
+        if (user) {
+          // Check if user has activity today
+          const hasActivityToday = await Activity.exists({
+            user: userId,
+            timestamp: { $gte: today }
+          });
+          
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          
+          // Get yesterday's start and end
+          const yesterdayStart = new Date(yesterday);
+          yesterdayStart.setHours(0, 0, 0, 0);
+          
+          const yesterdayEnd = new Date(yesterday);
+          yesterdayEnd.setHours(23, 59, 59, 999);
+          
+          // Check if user had activity yesterday
+          const hadActivityYesterday = await Activity.exists({
+            user: userId,
+            timestamp: { 
+              $gte: yesterdayStart,
+              $lte: yesterdayEnd
+            }
+          });
+          
+          console.log(`User ${user.email}: Today activity: ${hasActivityToday ? 'yes' : 'no'}, Yesterday activity: ${hadActivityYesterday ? 'yes' : 'no'}, Current streak: ${user.streak || 0}`);
+          
+          // If user has activity today
+          if (hasActivityToday) {
+            // If they had activity yesterday, increase streak by 1 if not already updated today
+            if (hadActivityYesterday) {
+              const lastActiveDay = user.lastActive ? new Date(user.lastActive).setHours(0, 0, 0, 0) : null;
+              const todayTime = today.getTime();
+              
+              // Only update the streak if we haven't already updated it today
+              if (lastActiveDay !== todayTime) {
+                userStreak = (user.streak || 0) + 1;
+                
+                // Update user with new streak and lastActive
+                await User.findByIdAndUpdate(userId, {
+                  streak: userStreak,
+                  lastActive: new Date()
+                });
+                console.log(`Increased ${user.email}'s streak to ${userStreak}`);
+              } else {
+                // Already updated today, use current streak
+                userStreak = user.streak || 1;
+                console.log(`Streak already updated today for ${user.email}, current: ${userStreak}`);
+              }
+            } else {
+              // No activity yesterday, reset streak to 1
+              userStreak = 1;
+              await User.findByIdAndUpdate(userId, {
+                streak: 1,
+                lastActive: new Date()
+              });
+              console.log(`Reset ${user.email}'s streak to 1 (no activity yesterday)`);
+            }
+          } else if (hadActivityYesterday) {
+            // No activity today but had activity yesterday, maintain streak
+            userStreak = user.streak || 0;
+            console.log(`Maintained ${user.email}'s streak at ${userStreak} (no activity today)`);
           } else {
-            // Not consecutive days, reset streak
-            userStreak = 1;
-            await User.findByIdAndUpdate(userId, {
-              streak: 1,
-              lastActive: new Date()
-            });
-            console.log(`Reset ${user.email}'s streak to 1`);
+            // No activity today or yesterday, streak is 0
+            if (user.streak > 0) {
+              await User.findByIdAndUpdate(userId, { streak: 0 });
+              console.log(`Reset ${user.email}'s streak to 0 (no recent activity)`);
+            }
+            userStreak = 0;
           }
-        } else {
-          // No activity today, keep existing streak
-          userStreak = user.streak || 0;
-          console.log(`User ${user.email} has no activity today, streak remains ${userStreak}`);
         }
+      } catch (streakError) {
+        console.error('Error calculating streak:', streakError);
+        // Use existing streak value if calculation fails
+        const user = await User.findById(userId);
+        userStreak = user?.streak || 0;
       }
     }
     

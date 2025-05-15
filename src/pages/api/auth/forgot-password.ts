@@ -1,9 +1,9 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { User } from '../../../lib/db/models/User';
-import { generateOTP } from '../../../lib/auth/otp';
-import { transporter } from '../../../lib/email/config';
 import connectDB from '../../../lib/db/connect';
+import { generateOTP } from '../../../lib/auth/otp';
+import { sendEmail } from '../../../lib/email/sendEmail';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
@@ -24,50 +24,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectDB();
 
     const { email } = req.body;
+
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Check if user exists
+    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ error: 'No account found with that email address' });
     }
 
-    // Generate reset code
-    const resetCode = generateOTP();
-    const resetCodeExpiry = new Date();
-    resetCodeExpiry.setHours(resetCodeExpiry.getHours() + 1); // 1 hour expiry
+    // Generate verification code (6-digit OTP)
+    const verificationCode = generateOTP();
+    
+    // Set expiration to 1 hour from now
+    const expiryTime = new Date();
+    expiryTime.setHours(expiryTime.getHours() + 1);
 
-    // Save reset code to user
-    user.verificationCode = resetCode;
-    user.verificationCodeExpiry = resetCodeExpiry;
+    // Update user with verification code
+    user.verificationCode = verificationCode;
+    user.verificationCodeExpiry = expiryTime;
     await user.save();
-
-    // Send password reset email
-    const mailOptions = {
-      from: `"VersatileShare" <${process.env.EMAIL_USER || 'noreply@example.com'}>`,
+    
+    // Send email with verification code
+    const emailSubject = 'Password Reset Request';
+    const emailBody = `
+      <h1>Password Reset</h1>
+      <p>You requested a password reset. Please use the following code to reset your password:</p>
+      <h2 style="font-size: 24px; letter-spacing: 5px; background: #f0f0f0; padding: 10px; text-align: center;">${verificationCode}</h2>
+      <p>This code will expire in 1 hour.</p>
+      <p>If you did not request a password reset, please ignore this email.</p>
+    `;
+    
+    await sendEmail({
       to: email,
-      subject: 'Password Reset Request',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #4F46E5;">Password Reset</h2>
-          <p>Hello ${user.fullName},</p>
-          <p>We received a request to reset your password. Use the code below to reset your password:</p>
-          <div style="background-color: #f3f4f6; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
-            <h3 style="font-size: 24px; margin: 0; letter-spacing: 5px; color: #4F46E5;">${resetCode}</h3>
-          </div>
-          <p>This code will expire in 1 hour.</p>
-          <p>If you didn't request a password reset, please ignore this email or contact support.</p>
-          <p>Thank you,<br>VersatileShare Team</p>
-        </div>
-      `,
-    };
+      subject: emailSubject,
+      html: emailBody
+    });
 
-    await transporter.sendMail(mailOptions);
-    console.log('Password reset email sent to:', email);
-
-    return res.status(200).json({ success: true, message: 'Password reset instructions sent to your email' });
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Password reset instructions sent to your email' 
+    });
   } catch (error) {
     console.error('Forgot password error:', error);
     return res.status(500).json({ error: 'Failed to process password reset request' });
