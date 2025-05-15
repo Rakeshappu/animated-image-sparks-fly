@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -58,6 +58,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     user.verificationCodeExpiry = undefined;
     await user.save();
 
+    console.log(`Password reset successful for user: ${email}`);
+    
     return res.status(200).json({ success: true, message: 'Password has been successfully reset' });
   } catch (error) {
     console.error('Reset password error:', error);

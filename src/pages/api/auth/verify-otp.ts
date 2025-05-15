@@ -5,7 +5,7 @@ import connectDB from '../../../lib/db/connect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -27,6 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Email and verification code are required' });
     }
 
+    console.log(`Verifying OTP for ${email}: ${otp}`);
+
     // Find the user
     const user = await User.findOne({ email });
     if (!user) {
@@ -35,12 +37,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check if the code is valid and not expired
     if (!user.verificationCode || user.verificationCode !== otp) {
+      console.log(`Invalid OTP. Expected: ${user.verificationCode}, Got: ${otp}`);
       return res.status(400).json({ error: 'Invalid verification code' });
     }
 
     if (!user.verificationCodeExpiry || new Date() > user.verificationCodeExpiry) {
+      console.log(`OTP expired. Expiry: ${user.verificationCodeExpiry}`);
       return res.status(400).json({ error: 'Verification code has expired' });
     }
+
+    console.log('OTP verification successful');
 
     return res.status(200).json({ 
       success: true, 

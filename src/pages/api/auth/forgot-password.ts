@@ -7,7 +7,7 @@ import { sendEmail } from '../../../lib/email/sendEmail';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -37,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Generate verification code (6-digit OTP)
     const verificationCode = generateOTP();
+    console.log('Generated OTP for', email, ':', verificationCode);
     
     // Set expiration to 1 hour from now
     const expiryTime = new Date();

@@ -92,16 +92,21 @@ export const OtpVerification = ({ email, onResendOtp, onVerificationSuccess, pas
     e.preventDefault();
     
     const otpString = otp.join('');
-    if (otpString.length !== 6) return;
+    if (otpString.length !== 6) {
+      toast.error('Please enter a complete 6-digit OTP');
+      return;
+    }
     
     setIsSubmitting(true);
     try {
       if (passwordReset) {
         // Verify OTP for password reset
-        const response = await api.post('/api/auth/verify-otp', { email, otp: otpString });
-        if (response.data.success) {
+        const verifyResponse = await api.post('/api/auth/verify-otp', { email, otp: otpString });
+        if (verifyResponse.data.success) {
           toast.success('OTP verified successfully');
           setOtpVerified(true);
+        } else {
+          toast.error(verifyResponse.data.error || 'Failed to verify OTP');
         }
       } else if (verifyOTP) {
         // Use context method for normal OTP verification
@@ -140,10 +145,12 @@ export const OtpVerification = ({ email, onResendOtp, onVerificationSuccess, pas
         newPassword
       });
       
-      toast.success('Password has been reset successfully. You can now login with your new password.');
+      toast.success('Password has been reset successfully');
       
-      // Redirect to login page
-      window.location.href = '/auth/login';
+      // Callback to notify parent component
+      if (onVerificationSuccess) {
+        onVerificationSuccess();
+      }
     } catch (err: any) {
       console.error('Password reset failed:', err);
       toast.error(err.response?.data?.error || 'Failed to reset password');

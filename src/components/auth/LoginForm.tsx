@@ -51,9 +51,13 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
 
     setIsSubmitting(true);
     try {
-      await api.post('/api/auth/forgot-password', { email: forgotEmail });
-      toast.success('Password reset OTP sent to your email');
-      setOtpSent(true);
+      const response = await api.post('/api/auth/forgot-password', { email: forgotEmail });
+      if (response.data.success) {
+        toast.success('Password reset OTP sent to your email');
+        setOtpSent(true);
+      } else {
+        toast.error(response.data.error || 'Failed to send OTP');
+      }
     } catch (error: any) {
       console.error('Forgot password error:', error);
       if (error.response?.data?.error) {
@@ -61,7 +65,6 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
       } else {
         toast.error('Failed to process request. Please try again later.');
       }
-      setOtpSent(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -70,8 +73,12 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
   const handleResendOtp = async () => {
     try {
       setIsSubmitting(true);
-      await api.post('/api/auth/forgot-password', { email: forgotEmail });
-      toast.success('Password reset OTP resent to your email');
+      const response = await api.post('/api/auth/forgot-password', { email: forgotEmail });
+      if (response.data.success) {
+        toast.success('Password reset OTP resent to your email');
+      } else {
+        toast.error(response.data.error || 'Failed to resend OTP');
+      }
     } catch (error: any) {
       console.error('Resend OTP error:', error);
       if (error.response?.data?.error) {
@@ -82,6 +89,15 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleVerificationSuccess = () => {
+    // Only reset the form state after successful password reset
+    // This will be called from OtpVerification component
+    setShowForgotPassword(false);
+    setOtpSent(false);
+    setForgotEmail('');
+    toast.success('Password has been reset successfully. Please log in with your new password.');
   };
 
   return (
@@ -128,7 +144,8 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
             {otpSent ? (
               <OtpVerification 
                 email={forgotEmail} 
-                onResendOtp={handleResendOtp} 
+                onResendOtp={handleResendOtp}
+                onVerificationSuccess={handleVerificationSuccess}
                 passwordReset={true}
               />
             ) : (
