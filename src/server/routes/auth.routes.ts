@@ -1,4 +1,3 @@
-
 import express from 'express';
 import { User } from '../../lib/db/models/User.js';
 import { EligibleUSN } from '../../lib/db/models/EligibleUSN.js';
@@ -123,15 +122,12 @@ router.post('/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
     
     // Create user data object with common fields
-    const userData = {
+    const userData: any = {
       email,
       password: hashedPassword,
       fullName,
       role,
-      secretNumber,
       department,
-      semester,
-      usn,
       phoneNumber,
       verificationToken,
       verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),

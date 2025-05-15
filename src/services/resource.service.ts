@@ -25,6 +25,7 @@ const handleServiceError = (error: any, fallbackMessage: string) => {
   };
 };
 
+// Export the function directly for easy access
 export const checkDatabaseConnection = async () => {
   try {
     const response = await api.get('/api/db/status');
@@ -169,6 +170,15 @@ export const resourceService = {
       return handleServiceError(error, 'Failed to get analytics');
     }
   },
+};
+
+// Export a default function for createResource for backwards compatibility
+export const createResource = async (resourceData?: any) => {
+  return resourceService.createResource(resourceData);
+};
+
+export const getResources = async () => {
+  return resourceService.getResources();
 };
 
 export default resourceService;

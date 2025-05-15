@@ -7,7 +7,7 @@ import { PlacementCategorySelection } from './upload/PlacementCategorySelection'
 import { ResourceUpload } from './ResourceUpload';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import createResource from '../../services/resource.service';
+import { createResource } from '../../services/resource.service';
 
 type UploadOption = 'semester' | 'placement' | 'subject-folder' | 'direct-upload';
 type SemesterNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
@@ -144,7 +144,7 @@ export const UploadWorkflow = ({
       }
       
       // Upload the resource directly using the service
-      const response = await createResource();
+      const response = await createResource(formData);
       console.log('Placement resource created:', response);
       
       // Update shared resources in window if needed
@@ -204,7 +204,7 @@ export const UploadWorkflow = ({
       }
       
       // Upload the resource directly using the service
-      const response = await createResource();
+      const response = await createResource(formData);
       console.log('Resource created from sidebar:', response);
       
       // After successful upload, navigate to dashboard

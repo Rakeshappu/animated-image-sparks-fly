@@ -1,4 +1,3 @@
-
 import { Suspense, lazy, useState, useEffect } from 'react';
 import { Loader2, BookOpen, Youtube, FileText, Search, Terminal } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -11,7 +10,7 @@ const PaginatedResourceList = lazy(() => import('../../components/resources/Pagi
 const QuickAccess = lazy(() => import('../../components/resources/QuickAccess'));
 
 // Import service
-import  getResources  from '../../services/resource.service';
+import { getResources } from '../../services/resource.service';
 
 export const HomePage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');

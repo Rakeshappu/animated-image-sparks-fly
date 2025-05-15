@@ -6,7 +6,7 @@ import { UploadWorkflow } from '../../components/faculty/UploadWorkflow';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
-import checkDatabaseConnection  from '../../services/resource.service';
+import { checkDatabaseConnection } from '../../services/resource.service';
 import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
 import { API_ROUTES } from '../../lib/api/routes';
 import { toast } from 'react-hot-toast';
