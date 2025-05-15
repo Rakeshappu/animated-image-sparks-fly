@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -63,8 +64,7 @@ const AdminDashboard = () => {
     pendingUSNs: { total: 0, loading: true },
     pendingAdmins: { total: 0, loading: true },
     departments: { data: [] as { name: string; value: number }[], loading: true },
-    resourceTypes: { data: [] as { name: string; value: number }[], loading: true },
-    dailyActivity: { data: [] as { name: string; uploads: number; downloads: number; views: number }[], loading: true }
+    resourceTypes: { data: [] as { name: string; value: number }[], loading: true }
   });
   const [isLoading, setIsLoading] = useState(true);
   const [dbStatus, setDbStatus] = useState<any>(null);
@@ -107,35 +107,13 @@ const AdminDashboard = () => {
         const unusedUSNsCount = pendingUSNsData.eligibleUSNs ? 
           pendingUSNsData.eligibleUSNs.filter((usn: any) => !usn.isUsed).length : 0;
         
-        // Fetch pending admin approvals
-        const pendingAdminsResponse = await api.get('/api/admin/users?status=pending');
+        // Fetch pending admin approvals - Fixed to get accurate count
+        const pendingAdminsResponse = await api.get('/api/admin/users');
         const pendingAdminsData = pendingAdminsResponse.data;
-        const pendingAdminsCount = pendingAdminsData.users ? pendingAdminsData.users.length : 0;
-        
-        // Fetch activity data
-        const activityResponse = await api.get('/api/user/activity/stats');
-        let activityData = activityResponse.data;
-        
-        // Process activity data for chart
-        let dailyActivityChartData = [];
-        
-        if (activityData && activityData.weeklyActivity && activityData.weeklyActivity.length > 0) {
-          dailyActivityChartData = activityData.weeklyActivity;
-        } else {
-          // Fallback to resource stats daily activity if available
-          if (resourcesStatsData && resourcesStatsData.dailyActivity) {
-            dailyActivityChartData = resourcesStatsData.dailyActivity;
-          } else {
-            // Create empty chart data if no real data available
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            dailyActivityChartData = days.map(day => ({
-              name: day,
-              uploads: Math.floor(Math.random() * 5),
-              downloads: Math.floor(Math.random() * 10),
-              views: Math.floor(Math.random() * 15)
-            }));
-          }
-        }
+        const pendingAdminsCount = pendingAdminsData.users ? 
+          pendingAdminsData.users.filter((user: any) => 
+            user.role === 'admin' && user.isAdminVerified === false
+          ).length : 0;
         
         setAnalytics({
           users: { 
@@ -161,10 +139,6 @@ const AdminDashboard = () => {
           resourceTypes: {
             data: resourcesStatsData?.typeDistribution || [],
             loading: false
-          },
-          dailyActivity: {
-            data: dailyActivityChartData,
-            loading: false
           }
         });
         
@@ -177,8 +151,7 @@ const AdminDashboard = () => {
           pendingUSNs: { total: 0, loading: false },
           pendingAdmins: { total: 0, loading: false },
           departments: { data: [], loading: false },
-          resourceTypes: { data: [], loading: false },
-          dailyActivity: { data: [], loading: false }
+          resourceTypes: { data: [], loading: false }
         });
         
         setIsLoading(false);
@@ -456,39 +429,9 @@ const AdminDashboard = () => {
             </motion.div>
 
             <motion.div 
-              className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+              className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8"
               variants={itemVariants}
             >
-              <motion.div 
-                className="bg-white dark:bg-gray-800 shadow rounded-lg p-6"
-                variants={itemVariants}
-              >
-                <div className="flex items-center mb-4">
-                  <Activity className="mr-2 text-indigo-500" size={20} />
-                  <h2 className="text-lg font-semibold dark:text-gray-200">Weekly Activity</h2>
-                </div>
-                <div className="h-80">
-                  {analytics.dailyActivity.data.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={analytics.dailyActivity.data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="uploads" fill="#4F46E5" />
-                        <Bar dataKey="downloads" fill="#10B981" />
-                        <Bar dataKey="views" fill="#F59E0B" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-full flex items-center justify-center">
-                      <p className="text-gray-500">No activity data available</p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
               <motion.div 
                 className="bg-white dark:bg-gray-800 shadow rounded-lg p-6"
                 variants={itemVariants}
