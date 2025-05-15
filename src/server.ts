@@ -14,9 +14,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+// Get the directory name using ES modules approach
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:8080', 'https://versatileshare-b57k.onrender.com'],
+  origin: ['http://localhost:5173', 'https://versatileshare-b57k.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
@@ -25,6 +29,16 @@ app.use(express.urlencoded({ extended: true }));
 
 // API routes
 app.use('/api/auth', authRoutes);
+
+// Add API routes for missing endpoints that are causing 404 errors
+// Subject folders route
+app.use('/api/subject-folders', require('./server/routes/subject-folders.routes.js').default);
+
+// Resources routes
+app.use('/api/resources', require('./server/routes/resources.routes.js').default);
+
+// User routes
+app.use('/api/user', require('./server/routes/user.routes.js').default);
 
 // Database status endpoint
 app.get('/api/db/status', async (req, res) => {
@@ -58,10 +72,6 @@ app.use('/api/*', (req, res) => {
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
-  // Get the directory name
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  
   app.use(express.static(path.join(__dirname, '../dist')));
   
   // Serve React app for all non-API routes
@@ -90,7 +100,7 @@ const startServer = async () => {
     // Set up Socket.io
     initializeSocketIO(server);
     
-  } catch (err:any) {
+  } catch (err:string | any) {
     console.error('Failed to connect to MongoDB:', err.message);
     // Continue starting the server even if DB connection fails
     const server = app.listen(PORT, () => {
