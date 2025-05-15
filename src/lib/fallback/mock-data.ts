@@ -1,5 +1,4 @@
-
-import { SubjectFolder } from '../../types/faculty.js';
+import { SubjectFolder } from '../../types/faculty';
 
 // Mock resources when database is not available
 export const mockResources = [
@@ -111,7 +110,7 @@ export const mockSubjectFolders: SubjectFolder[] = [
 // Add mock data to window for global access in development
 if (process.env.NODE_ENV === 'development') {
   // window.mockResources = mockResources;
-  window.subjectFolders = mockSubjectFolders;
+  (window as any).subjectFolders = mockSubjectFolders;
 }
 
 // Helper function to get resources by query
