@@ -1,5 +1,5 @@
 
-import { SubjectFolder } from '../../types/faculty';
+import { SubjectFolder } from '../../types/faculty.js';
 
 // Mock resources when database is not available
 export const mockResources = [
