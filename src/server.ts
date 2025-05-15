@@ -31,8 +31,30 @@ connectToMongoDB();
 app.use(cors());
 app.use(express.json());
 
+// Set proper MIME types
+app.use((req, res, next) => {
+  if (req.url.endsWith('.js')) {
+    res.type('application/javascript');
+  } else if (req.url.endsWith('.css')) {
+    res.type('text/css');
+  } else if (req.url.endsWith('.svg')) {
+    res.type('image/svg+xml');
+  }
+  next();
+});
+
 // Serve static files - fixing the path for ES modules
-app.use(express.static(path.join(__dirname, '../')));
+const staticPath = path.join(__dirname, '../');
+console.log('Serving static files from:', staticPath);
+app.use(express.static(staticPath, {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
 
 // API routes
 app.use('/api/auth', authRoutes);
@@ -81,6 +103,7 @@ app.get('/api/db/status', async (req, res) => {
 
 // Wildcard route to serve React app for all other routes
 app.get('*', (req, res) => {
+  console.log('Wildcard route hit, serving:', path.join(__dirname, '../index.html'));
   res.sendFile(path.join(__dirname, '../index.html'));
 });
 

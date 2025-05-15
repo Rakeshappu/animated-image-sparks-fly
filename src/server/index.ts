@@ -35,6 +35,16 @@ app.options('*', cors({
 
 app.use(express.json());
 
+// Set proper MIME types
+app.use((req, res, next) => {
+  if (req.url.endsWith('.js')) {
+    res.type('application/javascript');
+  } else if (req.url.endsWith('.css')) {
+    res.type('text/css');
+  }
+  next();
+});
+
 // Ensure mock storage directory exists
 if (process.env.NODE_ENV === 'development') {
   try {
