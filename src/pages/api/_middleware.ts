@@ -1,9 +1,9 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next'
-import connectDB from '../../lib/db/connect';
+import connectDB from '../../lib/db/connect.js';
 import Cors from 'cors';
 import jwt from 'jsonwebtoken';
-import { User } from '../../lib/db/models/User';
+import { User } from '../../lib/db/models/User.js';
 
 type Handler = (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 
