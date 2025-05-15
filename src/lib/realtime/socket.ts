@@ -178,7 +178,7 @@ export const notifyResourceUpload = async (resourceId: string, facultyName: stri
       }));
       
       if (notificationObjects.length > 0) {
-        await Notification.create(notificationObjects);
+        await Notification.insertMany(notificationObjects);
         console.log(`Created ${notificationObjects.length} notifications for placement resource`);
       }
       
@@ -231,7 +231,7 @@ export const notifyResourceUpload = async (resourceId: string, facultyName: stri
     }));
     
     if (notificationObjects.length > 0) {
-      await Notification.create(notificationObjects);
+      await Notification.insertMany(notificationObjects);
       console.log(`Created ${notificationObjects.length} notifications in database for semester ${targetSemester}`);
     }
     
@@ -316,6 +316,7 @@ export const notifyFacultyOfInteraction = async (
     
     // Create notification in database
     try {
+      // Use insertOne instead of create for single document
       await Notification.create({
         userId: facultyId,
         message: notificationMessage,
