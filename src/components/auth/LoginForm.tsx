@@ -8,7 +8,6 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
-import { OtpVerification } from './OtpVerification';
 
 interface LoginFormProps {
   onSubmit: (data: LoginFormData) => void;
@@ -25,7 +24,6 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
 
   // Use either prop error or context error
   const displayError = propError || contextError;
@@ -52,12 +50,8 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
     setIsSubmitting(true);
     try {
       const response = await api.post('/api/auth/forgot-password', { email: forgotEmail });
-      if (response.data.success) {
-        toast.success('Password reset OTP sent to your email');
-        setOtpSent(true);
-      } else {
-        toast.error(response.data.error || 'Failed to send OTP');
-      }
+      toast.success('Password reset instructions sent to your email');
+      setShowForgotPassword(false);
     } catch (error: any) {
       console.error('Forgot password error:', error);
       if (error.response?.data?.error) {
@@ -68,36 +62,6 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleResendOtp = async () => {
-    try {
-      setIsSubmitting(true);
-      const response = await api.post('/api/auth/forgot-password', { email: forgotEmail });
-      if (response.data.success) {
-        toast.success('Password reset OTP resent to your email');
-      } else {
-        toast.error(response.data.error || 'Failed to resend OTP');
-      }
-    } catch (error: any) {
-      console.error('Resend OTP error:', error);
-      if (error.response?.data?.error) {
-        toast.error(error.response.data.error);
-      } else {
-        toast.error('Failed to resend OTP. Please try again later.');
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleVerificationSuccess = () => {
-    // Only reset the form state after successful password reset
-    // This will be called from OtpVerification component
-    setShowForgotPassword(false);
-    setOtpSent(false);
-    setForgotEmail('');
-    toast.success('Password has been reset successfully. Please log in with your new password.');
   };
 
   return (
@@ -120,12 +84,10 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
           </motion.div>
           
           <h2 className="text-3xl font-extrabold text-gray-900">
-            {showForgotPassword ? (otpSent ? 'Verify OTP' : 'Reset Password') : 'Welcome back'}
+            {showForgotPassword ? 'Reset Password' : 'Welcome back'}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {showForgotPassword ? 
-              (otpSent ? 'Enter the OTP sent to your email' : 'Enter your email to receive reset instructions') 
-              : 'Sign in to access your account'}
+            {showForgotPassword ? 'Enter your email to receive reset instructions' : 'Sign in to access your account'}
           </p>
         </div>
 
@@ -140,55 +102,44 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
         )}
 
         {showForgotPassword ? (
-          <>
-            {otpSent ? (
-              <OtpVerification 
-                email={forgotEmail} 
-                onResendOtp={handleResendOtp}
-                onVerificationSuccess={handleVerificationSuccess}
-                passwordReset={true}
+          <motion.form 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="mt-8 space-y-6"
+            onSubmit={handleForgotPassword}
+          >
+            <div className="space-y-4">
+              <FormField
+                label="Email"
+                name="forgotEmail"
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                placeholder="Email address"
               />
-            ) : (
-              <motion.form 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                className="mt-8 space-y-6"
-                onSubmit={handleForgotPassword}
-              >
-                <div className="space-y-4">
-                  <FormField
-                    label="Email"
-                    name="forgotEmail"
-                    type="email"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="Email address"
-                  />
-                </div>
-                
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  disabled={isSubmitting}
-                  type="submit"
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 disabled:bg-indigo-400"
-                >
-                  {isSubmitting ? 'Sending...' : 'Send Reset Instructions'}
-                </motion.button>
+            </div>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={isSubmitting}
+              type="submit"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 disabled:bg-indigo-400"
+            >
+              {isSubmitting ? 'Sending...' : 'Send Reset Instructions'}
+            </motion.button>
 
-                <div className="text-center text-sm pt-2">
-                  <button 
-                    type="button" 
-                    onClick={() => setShowForgotPassword(false)} 
-                    className="font-medium text-indigo-600 hover:text-indigo-500"
-                  >
-                    Back to Sign In
-                  </button>
-                </div>
-              </motion.form>
-            )}
-          </>
+            <div className="text-center text-sm pt-2">
+              <button 
+                type="button" 
+                onClick={() => setShowForgotPassword(false)} 
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Back to Sign In
+              </button>
+            </div>
+          </motion.form>
         ) : (
           <motion.form 
             initial={{ opacity: 0 }}
@@ -235,10 +186,7 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
               <div className="text-sm">
                 <button
                   type="button" 
-                  onClick={() => {
-                    setShowForgotPassword(true);
-                    setOtpSent(false);
-                  }}
+                  onClick={() => setShowForgotPassword(true)}
                   className="font-medium text-indigo-600 hover:text-indigo-500"
                 >
                   Forgot password?

@@ -1,46 +1,41 @@
 
-// Check if the function exists, if not define it
-export const sendEmail = async ({ to, subject, html }: { to: string; subject: string; html: string }) => {
+import { transporter } from './config';
+import { getVerificationEmailTemplate } from './templates';
+
+export async function sendVerificationEmail(email: string, token: string, otp: string) {
   try {
-    // This is a placeholder function if it doesn't exist in the codebase
-    // In a real implementation, this would use nodemailer or a similar service
-    console.log(`Sending email to ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Body: ${html}`);
+    console.log('Attempting to send verification email to:', email);
+    console.log('Sending verification email with OTP:', otp);
     
-    // For testing, we'll simulate sending the email
-    // In production, replace this with actual email sending logic
-    console.log('Email sending simulated successfully');
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
+    const verificationLink = `${baseUrl}/verify-email?token=${token}`;
     
-    return { success: true };
+    console.log('Verification link:', verificationLink);
+
+    const mailOptions = {
+      from: `"Versatile Share" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Your Versatile Share Verification Code',
+      html: getVerificationEmailTemplate(otp)
+    };
+
+    console.log('Mail options prepared:', {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject
+    });
+
+    const info = await transporter.sendMail(mailOptions);
+    
+    console.log('Email sent successfully:', {
+      messageId: info.messageId,
+      recipient: email,
+      preview: info.messageId ? `https://mailtrap.io/inboxes/test/messages/${info.messageId}` : undefined
+    });
+
+    return true;
   } catch (error) {
-    console.error('Error sending email:', error);
-    throw error;
+    console.error('Failed to send verification email:', error);
+    throw new Error(`Failed to send verification email: ${String(error)}`);
   }
-};
-
-// Add these functions to support the auth controller
-export const sendVerificationEmail = async (email: string, name: string, otp: string) => {
-  const subject = 'Verify Your Email';
-  const html = `
-    <h1>Welcome to VersatileShare!</h1>
-    <p>Hello ${name},</p>
-    <p>Thank you for signing up. Please use the following code to verify your email:</p>
-    <h2 style="font-size: 24px; letter-spacing: 5px; background: #f0f0f0; padding: 10px; text-align: center;">${otp}</h2>
-    <p>This code will expire in 24 hours.</p>
-  `;
-  
-  return sendEmail({ to: email, subject, html });
-};
-
-export const sendWelcomeEmail = async (email: string, name: string) => {
-  const subject = 'Welcome to VersatileShare!';
-  const html = `
-    <h1>Welcome to VersatileShare!</h1>
-    <p>Hello ${name},</p>
-    <p>Your email has been verified successfully. You can now enjoy all the features of VersatileShare.</p>
-    <p>Thank you for joining us!</p>
-  `;
-  
-  return sendEmail({ to: email, subject, html });
-};
+}
