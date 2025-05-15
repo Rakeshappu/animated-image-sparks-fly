@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 const JWT_SECRET = process.env.JWT_SECRET || 'versatile_share_secret_key_2024';
 
 export function generateToken(userId: string, role?: string): string {
+  // Always include role in the token payload
   return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: '7d' });
 }
 
