@@ -1,5 +1,5 @@
-import express from 'express';
-import { runCorsMiddleware } from '../../pages/api/_middleware.js';
+import express, { Request, Response } from 'express';
+
 import connectDB from '../../lib/db/connect.js';
 import mongoose from 'mongoose';
 import { verifyToken } from '../../lib/auth/jwt.js';
@@ -39,40 +39,40 @@ const subjectFolderSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-
-// Get or create the model
-let SubjectFolder;
-try {
-  SubjectFolder = mongoose.model('SubjectFolder');
-} catch (error) {
-  SubjectFolder = mongoose.model('SubjectFolder', subjectFolderSchema);
+interface ISubjectFolder {
+  name: string;
+  subjectName?: string;
+  semester: number;
+  lecturerName: string;
+  createdBy?: mongoose.Types.ObjectId;
+  resourceCount?: number;
+  createdAt?: Date;
 }
+const SubjectFolder = mongoose.models.SubjectFolder as mongoose.Model<ISubjectFolder> 
+  || mongoose.model<ISubjectFolder>('SubjectFolder', subjectFolderSchema);
 
 // Get all subject folders
-router.get('/', async (req, res) => {
+router.get('/', async (req: Request<{}, {}, {}, { semester?: string }>, res: Response) => {
   try {
-    await runCorsMiddleware(req, res);
     await connectDB();
-    
+
     const { semester } = req.query;
-    
-    const query = {};
-    
+
+    const query: any = {};
+
     if (semester) query.semester = parseInt(semester);
-    
+
     const folders = await SubjectFolder.find(query).sort({ semester: 1, name: 1 });
-    
+
     return res.status(200).json({ folders });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching subject folders:', error);
     return res.status(500).json({ error: error.message });
   }
 });
-
 // Create subject folders
 router.post('/', async (req, res) => {
   try {
-    await runCorsMiddleware(req, res);
     await connectDB();
     
     const authHeader = req.headers.authorization;
@@ -128,7 +128,7 @@ router.post('/', async (req, res) => {
       message: `Created ${folders.length} subject folders`,
       folders 
     });
-  } catch (error) {
+  } catch (error:any) {
     console.error('Error in createSubjectFolders:', error);
     return res.status(500).json({ error: error.message });
   }

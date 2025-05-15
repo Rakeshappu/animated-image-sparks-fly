@@ -1,5 +1,4 @@
 import express from 'express';
-import { runCorsMiddleware } from '../../pages/api/_middleware.js';
 import connectDB from '../../lib/db/connect.js';
 import mongoose from 'mongoose';
 import { verifyToken } from '../../lib/auth/jwt.js';
@@ -19,7 +18,6 @@ const Notification = mongoose.models.Notification || mongoose.model('Notificatio
 // Get notifications for the authenticated user
 router.get('/notifications', async (req, res) => {
   try {
-    await runCorsMiddleware(req, res);
     await connectDB();
     
     // Get authorization header
@@ -30,7 +28,7 @@ router.get('/notifications', async (req, res) => {
     
     // Verify token
     const token = authHeader.split(' ')[1];
-    let userData;
+    let userData:any;
     try {
       userData = verifyToken(token);
     } catch (error) {
@@ -64,7 +62,6 @@ router.get('/notifications', async (req, res) => {
 // Mark notifications as read
 router.put('/notifications', async (req, res) => {
   try {
-    await runCorsMiddleware(req, res);
     await connectDB();
     
     // Get authorization header
@@ -75,7 +72,7 @@ router.put('/notifications', async (req, res) => {
     
     // Verify token
     const token = authHeader.split(' ')[1];
-    let userData;
+    let userData:any;
     try {
       userData = verifyToken(token);
     } catch (error) {

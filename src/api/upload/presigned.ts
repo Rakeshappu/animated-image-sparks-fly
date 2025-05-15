@@ -1,4 +1,3 @@
-
 import { Request, Response } from 'express';
 import { s3Config } from '../../lib/config/services';
 import { S3 } from 'aws-sdk';
