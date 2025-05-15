@@ -1,100 +1,78 @@
 
-// Add these properties to the SearchResource interface
-export interface SearchResource {
-  _id?: string;
-  id?: string;
-  title: string;
-  description?: string;
-  link?: string;
-  fileUrl?: string;
-  type?: string;
-  createdAt?: string | Date;
-  uploadDate?: string | Date;
-  category?: string;
-  placementCategory?: string;
-  stats?: {
-    views?: number;
-    downloads?: number;
-    likes?: number;
-    comments?: number;
-    lastViewed?: string | Date;
-  };
-  // Additional properties needed for InfoResult and other components
-  url?: string;
-  source?: string;
-  author?: string;
-  publishDate?: string;
-  score?: number;
-  thumbnailUrl?: string;
-  fileContent?: string;
-  // This was missing (publishedDate was being used instead of publishDate)
-  publishedDate?: string;
-}
-
-// Add FacultyResource interface
-export interface FacultyResource {
-  _id?: string;
-  id?: string;
-  title: string;
-  description?: string;
-  fileUrl?: string;
-  link?: string;
-  type?: string;
-  subject: string; // Make subject required
-  semester?: number;
-  category?: 'common' | 'placement' | 'study';
-  placementCategory?: string;
-  uploadedBy?: string;
-  uploaderId?: string;
-  uploadedByName?: string;
-  department?: string;  // Adding department property
-  createdAt?: string | Date;
-  uploadDate?: string | Date;
-  stats?: {
-    views?: number;
-    downloads?: number;
-    likes?: number;
-    comments?: number;
-    lastViewed?: string | Date;
-  };
-  likedBy?: string[];
-  comments?: any[];
-  fileName?: string;
-}
-
-// Add UploadFormData interface
 export interface UploadFormData {
   title: string;
-  description?: string;
+  description: string;
   type: string;
-  file?: File;
+  subject: string;
+  semester: number;
+  file?: File | null;
   link?: string;
-  subject: string;  // Make subject required
-  semester?: string | number;
-  category?: 'common' | 'placement' | 'study';
+  category?: string;
   placementCategory?: string;
 }
 
-// Add SubjectFolder interface
 export interface SubjectFolder {
   _id?: string;
   id?: string;
-  name: string;
-  semester: number;
+  name?: string;
+  subjectName?: string;
+  lecturerName?: string;
+  semester?: number;
+  code?: string;
   department?: string;
-  resources?: string[];
-  createdBy?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  subjectName?: string; // Added to fix errors
-  lecturerName?: string; // Added to fix errors
 }
 
-// Update SubjectData interface to match usage in code
+// Define the SubjectData interface for subject creation
 export interface SubjectData {
-  name?: string;  // Make name optional
+  subjectName: string;
+  lecturerName: string;
   semester: number;
+  name?: string;
   department?: string;
-  subjectName?: string; // Added to fix errors
-  lecturerName?: string; // Added to fix errors
+}
+
+// Update the FacultyResource interface to include all needed properties
+export interface FacultyResource {
+  id?: string;
+  _id?: string;
+  title: string;
+  description?: string;
+  type: string;
+  subject: string;
+  semester: number;
+  category?: "common" | "study" | "placement" | undefined;
+  placementCategory?: string;
+  uploadDate?: string;
+  fileName?: string;
+  fileUrl?: string;
+  createdAt?: string;
+  likedBy?: string[];
+  comments?: any[];
+  fileContent?: string;
+  stats?: {
+    views: number;
+    likes: number;
+    comments: number;
+    downloads: number;
+    lastViewed?: string;
+  };
+}
+
+// Define SearchResource interface for search results
+export interface SearchResource {
+
+  id?: string;
+  title: string;
+  description?: string;
+  type: string;
+  subject?: string;
+  semester?: number;
+  fileUrl?: string;
+  category?: string;
+  placementCategory?: string;
+  url?: string;
+  thumbnailUrl?: string;
+  publishedDate?: string;
+  source?: string;
+  author?: string;
 }

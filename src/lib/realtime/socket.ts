@@ -1,10 +1,9 @@
-
 import { Server } from 'socket.io';
-import { verifyToken } from '../auth/jwt.js';
+import { verifyToken } from '../auth/jwt';
 import mongoose from 'mongoose';
-import { Resource, IResource } from '../db/models/Resource.js';
-import { User } from '../db/models/User.js';
-import { Notification } from '../db/models/Notification.js';
+import { Resource } from '../db/models/Resource';
+import { User } from '../db/models/User';
+import { Notification } from '../db/models/Notification';
 
 let io: Server;
 
@@ -132,7 +131,7 @@ export const notifyResourceUpload = async (resourceId: string, facultyName: stri
     }
     
     // Get resource details
-    const resource = await Resource.findById(resourceId) as IResource | null;
+    const resource = await Resource.findById(resourceId);
     if (!resource) {
       console.error('Resource not found:', resourceId);
       return;
@@ -165,7 +164,7 @@ export const notifyResourceUpload = async (resourceId: string, facultyName: stri
       const notificationMessage = `New placement resource "${resourceTitleToUse}" uploaded by ${facultyName}`;
       
       // Find all students
-      const students = await User.find({ role: 'student' }).exec();
+      const students = await User.find({ role: 'student' });
       console.log(`Found ${students.length} students for placement notification`);
       
       // Create notifications in database for all students
@@ -208,7 +207,7 @@ export const notifyResourceUpload = async (resourceId: string, facultyName: stri
     const students = await User.find({ 
       role: 'student', 
       semester: targetSemester 
-    }).exec();
+    });
     
     console.log(`Found ${students.length} students in semester ${targetSemester}`);
     
@@ -291,7 +290,7 @@ export const notifyFacultyOfInteraction = async (
     let resource, student;
     
     try {
-      resource = await Resource.findById(resourceId) as IResource | null;
+      resource = await Resource.findById(resourceId);
       student = await User.findById(studentId);
       
       if (!resource || !resource.uploadedBy || !student) {
@@ -316,7 +315,6 @@ export const notifyFacultyOfInteraction = async (
     
     // Create notification in database
     try {
-      // Use insertOne instead of create for single document
       await Notification.create({
         userId: facultyId,
         message: notificationMessage,

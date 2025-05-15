@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AIResourceSearch } from '../../components/search/AIResourceSearch';
 import { useAuth } from '../../contexts/AuthContext';
@@ -6,6 +7,7 @@ import { UploadFormData } from '../../types/faculty';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { API_ROUTES } from '../../lib/api/routes';
+// import { getResources, deleteResource } from '../../services/resource.service';
 import { 
   Briefcase, ChevronRight, Download, Link as LinkIcon, ArrowLeft,
   FileText, Loader, Trash2, ThumbsUp, MessageSquare, Eye, 
@@ -17,7 +19,7 @@ import {
   getCategoryNameById 
 } from '../../utils/placementCategoryUtils';
 import { DocumentViewer } from '../../components/document/DocumentViewer';
-import  {activityService}  from '../../services/activity.service';
+import { activityService } from '../../services/activity.service';
 import { motion } from 'framer-motion';
 
 export const PlacementResourcesPage = () => {
@@ -112,7 +114,7 @@ export const PlacementResourcesPage = () => {
       formData.append('title', data.title);
       formData.append('description', data.description || '');
       formData.append('type', data.type);
-      formData.append('subject', `Placement - ${placementCategories.find((cat: any) => cat.id === selectedCategory)?.name}`);
+      formData.append('subject', `Placement - ${placementCategories.find(cat => cat.id === selectedCategory)?.name}`);
       formData.append('semester', '0'); // Placement resources are semester-agnostic
       formData.append('category', 'placement');
       formData.append('placementCategory', selectedCategory);
@@ -156,8 +158,7 @@ export const PlacementResourcesPage = () => {
       setIsLoading(true);
       console.log('Deleting resource with ID:', resourceId);
       
-      // Call API to delete the resource
-      await api.delete(`/api/resources/${resourceId}`);
+      await deleteResource(resourceId);
       
       toast.success('Resource deleted successfully');
       
@@ -388,9 +389,9 @@ export const PlacementResourcesPage = () => {
 
   const getResourceIcon = (type: string) => {
     switch (type) {
-      case "video":
+      case 'video':
         return <div className="p-2 rounded-full bg-red-100 text-red-600"><FileText className="h-5 w-5" /></div>;
-      case "link":
+      case 'link':
         return <div className="p-2 rounded-full bg-blue-100 text-blue-600"><LinkIcon className="h-5 w-5" /></div>;
       default:
         return <div className="p-2 rounded-full bg-green-100 text-green-600"><FileText className="h-5 w-5" /></div>;
@@ -464,7 +465,7 @@ export const PlacementResourcesPage = () => {
 
         {/* Category grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {placementCategories.map((category: any) => (
+          {placementCategories.map((category) => (
             <motion.div
               key={category.id}
               variants={itemVariants}
@@ -691,20 +692,10 @@ export const PlacementResourcesPage = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Upload {getCategoryNameById(selectedCategory)} Resource</h2>
             <ResourceUpload 
-              onUpload={handleUpload}
-              initialSubject={`Placement - ${getCategoryNameById(selectedCategory)}`}
-              initialCategory="placement"
-              isPlacementResource={true}
-              placementCategory={selectedCategory}
+              onSubmit={handleUpload} 
+              onCancel={() => setShowUploadForm(false)} 
+              resourceType="placement"
             />
-            <div className="mt-4 flex justify-end">
-              <button 
-                onClick={() => setShowUploadForm(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
           </div>
         </div>
       )}

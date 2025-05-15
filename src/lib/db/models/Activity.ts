@@ -1,19 +1,4 @@
-
-import mongoose, { Document, Schema } from 'mongoose';
-// Directly define the types needed instead of importing from .d.ts file
-export type ActivityActionType = 'view' | 'download' | 'like' | 'comment' | 'upload' | 'search' | 'bookmark' | 'share';
-export type ActivitySourceType = 'study-materials' | 'bookmarks' | 'placement' | 'other';
-
-export interface IActivity extends Document {
-  user: mongoose.Types.ObjectId;
-  type: ActivityActionType;
-  resource?: mongoose.Types.ObjectId;
-  timestamp: Date;
-  message: string;
-  details: any;
-  source: ActivitySourceType;
-  toJSON(): any;
-}
+import mongoose from 'mongoose';
 
 // Define activity schema
 const ActivitySchema = new mongoose.Schema({
@@ -25,7 +10,7 @@ const ActivitySchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['view', 'download', 'like', 'comment', 'upload', 'search', 'bookmark', 'share'],
+    enum: ['view', 'download', 'like', 'comment', 'upload', 'search', 'bookmark'],
   },
   resource: {
     type: mongoose.Schema.Types.ObjectId,
@@ -65,14 +50,14 @@ ActivitySchema.methods.toJSON = function() {
 };
 
 // Safe export pattern for Next.js and Mongoose
-let Activity: mongoose.Model<IActivity>;
+let Activity;
 
 try {
   // Check if the model already exists to prevent recompilation
-  Activity = mongoose.models.Activity as mongoose.Model<IActivity>;
+  Activity = mongoose.models.Activity || mongoose.model('Activity', ActivitySchema);
 } catch (error) {
   // If model doesn't exist yet, create it
-  Activity = mongoose.model<IActivity>('Activity', ActivitySchema);
+  Activity = mongoose.model('Activity', ActivitySchema);
 }
 
 export { Activity };

@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { UploadWorkflow } from '../../../components/faculty/UploadWorkflow';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import createResource  from '../../../services/resource.service';
+// import createResource  from '../../../services/resource.service';
 import { ArrowLeft } from 'lucide-react';
 
 const FacultyUploadPage = () => {

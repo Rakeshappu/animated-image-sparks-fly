@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../hooks/useAuth.js';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface OtpVerificationProps {
   email: string;
@@ -7,13 +8,11 @@ interface OtpVerificationProps {
 }
 
 export const OtpVerification = ({ email, onResendOtp }: OtpVerificationProps) => {
-  const auth = useAuth();
-  const { verifyOTP, error } = auth || {};
+  const { verifyOTP, error } = useAuth();
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const [localError, setLocalError] = useState<string | null>(null);
 
   // Initialize refs array
   useEffect(() => {
@@ -44,7 +43,7 @@ export const OtpVerification = ({ email, onResendOtp }: OtpVerificationProps) =>
     setOtp(newOtp);
     
     // Auto-focus next input if current input is filled
-    if (value && index < 5 && inputRefs.current[index + 1]) {
+    if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -84,23 +83,15 @@ export const OtpVerification = ({ email, onResendOtp }: OtpVerificationProps) =>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocalError(null);
     
     const otpString = otp.join('');
     if (otpString.length !== 6) return;
     
     setIsSubmitting(true);
     try {
-      if (verifyOTP) {
-        await verifyOTP(email, otpString);
-      } else {
-        setLocalError("Verification function is not available");
-        console.error('OTP verification function is not available');
-      }
+      await verifyOTP(email, otpString);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'OTP verification failed';
       console.error('OTP verification failed:', err);
-      setLocalError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -120,9 +111,9 @@ export const OtpVerification = ({ email, onResendOtp }: OtpVerificationProps) =>
         </p>
       </div>
       
-      {(error || localError) && (
+      {error && (
         <div className="rounded-md bg-red-50 p-4">
-          <div className="text-sm text-red-700">{error || localError}</div>
+          <div className="text-sm text-red-700">{error}</div>
         </div>
       )}
       

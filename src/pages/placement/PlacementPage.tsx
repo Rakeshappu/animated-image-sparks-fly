@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlacementResourcesPage } from './PlacementResourcesPage.js';
+import { PlacementResourcesPage } from './PlacementResourcesPage';
 
 export const PlacementPage = () => {
   return <PlacementResourcesPage />;

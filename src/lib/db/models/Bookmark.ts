@@ -1,15 +1,14 @@
 
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-// Define the Bookmark schema
-const BookmarkSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
+const bookmarkSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  resource: {
-    type: Schema.Types.ObjectId,
+  resourceId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Resource',
     required: true
   },
@@ -19,64 +18,60 @@ const BookmarkSchema = new Schema({
   }
 });
 
-// Create a compound index on user and resource
-BookmarkSchema.index({ user: 1, resource: 1 }, { unique: true });
+// Ensure uniqueness for user-resource combination
+bookmarkSchema.index({ userId: 1, resourceId: 1 }, { unique: true });
 
-// Interface for Bookmark document
-export interface IBookmark extends Document {
-  user: mongoose.Types.ObjectId;
-  resource: mongoose.Types.ObjectId;
-  createdAt: Date;
-}
+// Static methods
+bookmarkSchema.statics.getBookmarkedResources = async function(userId) {
+  return this.find({ userId }).populate('resourceId').sort({ createdAt: -1 });
+};
 
-// Interface for Bookmark model with static methods
-export interface IBookmarkModel extends mongoose.Model<IBookmark> {
-  toggleBookmark(
-    userId: string | mongoose.Types.ObjectId, 
-    resourceId: string | mongoose.Types.ObjectId
-  ): Promise<{ bookmarked: boolean }>;
-}
+bookmarkSchema.statics.isBookmarked = async function(userId, resourceId) {
+  const bookmark = await this.findOne({ userId, resourceId });
+  return !!bookmark;
+};
 
-// Add toggleBookmark static method
-BookmarkSchema.statics.toggleBookmark = async function(
-  userId: string | mongoose.Types.ObjectId,
-  resourceId: string | mongoose.Types.ObjectId
-): Promise<{ bookmarked: boolean }> {
-  
-  // Convert string IDs to ObjectIds if needed
-  const userObjectId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
-  const resourceObjectId = typeof resourceId === 'string' ? new mongoose.Types.ObjectId(resourceId) : resourceId;
-  
-  // Check if bookmark exists
-  const existingBookmark = await this.findOne({
-    user: userObjectId,
-    resource: resourceObjectId
-  });
-  
-  if (existingBookmark) {
-    // If bookmark exists, remove it
-    await this.deleteOne({
-      user: userObjectId,
-      resource: resourceObjectId
+bookmarkSchema.statics.toggleBookmark = async function(userId, resourceId) {
+  try {
+    // Convert string IDs to ObjectIDs if they aren't already
+    const userObjectId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
+    const resourceObjectId = typeof resourceId === 'string' ? new mongoose.Types.ObjectId(resourceId) : resourceId;
+    
+    // Check if bookmark exists
+    const bookmark = await this.findOne({ 
+      userId: userObjectId, 
+      resourceId: resourceObjectId 
     });
-    return { bookmarked: false };
-  } else {
-    // If bookmark doesn't exist, create it
-    await this.create({
-      user: userObjectId,
-      resource: resourceObjectId
-    });
-    return { bookmarked: true };
+    
+    if (bookmark) {
+      // If bookmark exists, remove it
+      await this.deleteOne({ 
+        userId: userObjectId, 
+        resourceId: resourceObjectId 
+      });
+      return { bookmarked: false };
+    } else {
+      // If bookmark doesn't exist, create it
+      await this.create({ 
+        userId: userObjectId, 
+        resourceId: resourceObjectId 
+      });
+      return { bookmarked: true };
+    }
+  } catch (error) {
+    console.error('Error toggling bookmark:', error);
+    throw error;
   }
 };
 
-// Define and export the Bookmark model
-let Bookmark: IBookmarkModel;
+// Safety check for model definition
+const BookmarkModel = mongoose.models.Bookmark || mongoose.model('Bookmark', bookmarkSchema);
 
-try {
-  Bookmark = mongoose.models.Bookmark as IBookmarkModel;
-} catch (error) {
-  Bookmark = mongoose.model<IBookmark, IBookmarkModel>('Bookmark', BookmarkSchema);
+export interface IBookmark {
+  _id?: string;
+  userId: string;
+  resourceId: string;
+  createdAt: Date | string;
 }
 
-export { Bookmark };
+export { BookmarkModel as Bookmark };

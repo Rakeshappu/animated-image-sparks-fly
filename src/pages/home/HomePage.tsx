@@ -1,8 +1,8 @@
+
 import { Suspense, lazy, useState, useEffect } from 'react';
 import { Loader2, BookOpen, Youtube, FileText, Search, Terminal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Resource } from '../../types';
 
 // Lazy loaded components
 const EnhancedAISearch = lazy(() => import('../../components/search/EnhancedAISearch'));
@@ -14,7 +14,7 @@ import { getResources } from '../../services/resource.service';
 
 export const HomePage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [resources, setResources] = useState<Resource[]>([]);
+  const [resources, setResources] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch resources on component mount
@@ -39,7 +39,14 @@ export const HomePage = () => {
   const fetchPagedResources = async (page: number, limit: number, filters: any = {}) => {
     try {
       setIsLoading(true);
-      const resources = await getResources();
+      const resources = await getResources({
+        page,
+        limit,
+        type: filters.type,
+        semester: filters.semester,
+        search: filters.search,
+        sortOrder: filters.sortOrder,
+      });
       
       setIsLoading(false);
       return {

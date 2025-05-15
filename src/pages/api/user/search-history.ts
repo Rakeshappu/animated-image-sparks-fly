@@ -100,7 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     // Method not allowed
     return res.status(405).json({ error: 'Method not allowed' });
-  } catch (error:any) {
+  } catch (error) {
     console.error('Search history API error:', error);
     return res.status(500).json({ error: 'Internal server error', details: error.message });
   }

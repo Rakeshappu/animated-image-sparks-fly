@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { SubjectData, SubjectFolder } from '../../types/faculty';
 import { UploadOptionSelection } from './upload/UploadOptionSelection';
@@ -7,7 +8,7 @@ import { PlacementCategorySelection } from './upload/PlacementCategorySelection'
 import { ResourceUpload } from './ResourceUpload';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { createResource } from '../../services/resource.service';
+// import  createResource  from '../../services/resource.service';
 
 type UploadOption = 'semester' | 'placement' | 'subject-folder' | 'direct-upload';
 type SemesterNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;

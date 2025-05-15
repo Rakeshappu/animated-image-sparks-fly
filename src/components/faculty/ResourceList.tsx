@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { FileText, Video, Link as LinkIcon, BarChart2, Eye, ThumbsUp, MessageSquare, Trash2 } from 'lucide-react';
 import { FacultyResource } from '../../types/faculty';
@@ -16,11 +17,9 @@ interface ResourceListProps {
 type FilterOption = 'all' | 'document' | 'video' | 'note' | 'link';
 type SortOption = 'date' | 'views' | 'likes' | 'comments';
 
-// Define window interface - must match the one in FacultyDashboard.tsx
 declare global {
   interface Window {
-    sharedResources?: FacultyResource[];
-    subjectFolders?: any[];
+    sharedResources: FacultyResource[];
   }
 }
 
@@ -42,16 +41,6 @@ export const ResourceList = ({ resources, onViewAnalytics, showDeleteButton = fa
         return <LinkIcon className="h-5 w-5" />;
       default:
         return <FileText className="h-5 w-5" />;
-    }
-  };
-
-  const formatDate = (dateStr: string | Date | undefined) => {
-    if (!dateStr) return 'Unknown date';
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
-    } catch (e) {
-      return 'Unknown date';
     }
   };
 

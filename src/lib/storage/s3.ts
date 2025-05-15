@@ -1,5 +1,6 @@
+
 import AWS from 'aws-sdk';
-import { s3Config } from '../config/services.js';
+import { s3Config } from '../config/services';
 
 // Mock storage for development without S3 credentials
 const mockStorage = new Map<string, { content: any, contentType: string }>();

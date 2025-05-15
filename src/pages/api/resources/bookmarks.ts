@@ -4,7 +4,6 @@ import connectDB from '../../../lib/db/connect';
 import { Resource } from '../../../lib/db/models/Resource';
 import { Bookmark } from '../../../lib/db/models/Bookmark';
 import { verifyToken } from '../../../lib/auth/jwt';
-import { mongoDocToPlain } from '../../../lib/db/converters';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Handle CORS preflight
@@ -34,35 +33,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId = decoded.userId;
     
     // Get all bookmarks for the user
-    const bookmarks = await Bookmark.find({ user: userId })
-      .populate('resource')
-      .sort({ createdAt: -1 })
-      .lean();
+    const bookmarks = await Bookmark.find({ userId });
     
     if (!bookmarks || bookmarks.length === 0) {
       return res.status(200).json({ resources: [] });
     }
     
-    // Transform bookmark data for the response
-    const bookmarksData = bookmarks.map((bookmark) => {
-      const resource = mongoDocToPlain(bookmark.resource);
-      if (!resource) return null;
-      
-      return {
-        bookmarkId: bookmark._id.toString(),
-        resourceId: resource._id.toString(),
-        title: resource.title,
-        description: resource.description,
-        type: resource.type,
-        subject: resource.subject,
-        semester: resource.semester,
-        createdAt: bookmark.createdAt,
-        fileUrl: resource.fileUrl,
-        stats: resource.stats || { views: 0, downloads: 0, likes: 0, comments: 0 }
-      };
-    }).filter(Boolean);
+    // Extract resource IDs
+    const resourceIds = bookmarks.map(bookmark => bookmark.resourceId);
     
-    return res.status(200).json({ resources: bookmarksData });
+    // Fetch the resources
+    const resources = await Resource.find({ _id: { $in: resourceIds } })
+      .sort({ createdAt: -1 });
+    
+    // Add a bookmarked flag to each resource
+    const bookmarkedResources = resources.map(resource => ({
+      ...resource.toObject(),
+      isBookmarked: true
+    }));
+    
+    return res.status(200).json({ resources: bookmarkedResources });
   } catch (error) {
     console.error('Error fetching bookmarked resources:', error);
     return res.status(500).json({ error: 'Internal server error', details: (error as Error).message });

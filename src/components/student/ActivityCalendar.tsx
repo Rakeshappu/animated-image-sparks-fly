@@ -50,8 +50,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({
       if (!a || !a.date) return false;
       
       // Handle different date formats
-      // const aDate = typeof a.date === 'string' ? a.date : a.date.toString();
-      const aDate = typeof a.date === 'string' ? a.date : a.date;
+      const aDate = typeof a.date === 'string' ? a.date : a.date.toString();
       return aDate.includes(dateStr);
     });
     

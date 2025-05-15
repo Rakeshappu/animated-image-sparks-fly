@@ -13,7 +13,6 @@ export interface AuthContextType {
   error: string | null;
   clearError: () => void;
   updateUser?: (userData: Partial<User>) => void;
-  setError?: (error: string | null) => void;
 }
 
 // User type definition
@@ -25,8 +24,6 @@ export interface User {
   department: string;
   phoneNumber?: string;
   avatar?: string;
-  photoURL?: string; // Added for compatibility
-  displayName?: string; // Added for compatibility
   semester?: number;
   secretNumber?: string;
   streak?: number;

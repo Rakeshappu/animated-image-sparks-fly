@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ResourceUpload } from '../../components/faculty/ResourceUpload';
 import { ResourceList } from '../../components/faculty/ResourceList';
@@ -6,42 +7,49 @@ import { UploadWorkflow } from '../../components/faculty/UploadWorkflow';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
-import { checkDatabaseConnection } from '../../services/resource.service';
+import checkDatabaseConnection  from '../../services/resource.service';
 import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
 import { API_ROUTES } from '../../lib/api/routes';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-// Animation variants for transitions
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.3 } },
-  exit: { opacity: 0, transition: { duration: 0.2 } }
+  visible: { 
+    opacity: 1,
+    transition: { 
+      duration: 0.5,
+      when: "beforeChildren",
+      staggerChildren: 0.1
+    }
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.3 }
+  }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { type: 'spring', stiffness: 100 }
+  }
 };
 
-// Initialize window global variables - use consistent type declarations
-declare global {
-  interface Window {
-    sharedResources?: FacultyResource[];
-    subjectFolders?: any[];
+if (typeof window !== 'undefined') {
+  if (!window.sharedResources) {
+    window.sharedResources = [];
+  }
+
+  if (!window.subjectFolders) {
+    window.subjectFolders = [];
   }
 }
 
-// Initialize global variables if running in browser
-if (typeof window !== 'undefined') {
-  window.sharedResources = window.sharedResources || [];
-  window.subjectFolders = window.subjectFolders || [];
-}
-
 export const FacultyDashboard = () => {
-  const [resources, setResources] = useState<FacultyResource[]>(
-    typeof window !== 'undefined' && window.sharedResources ? [...window.sharedResources] : []
-  );
+  const [resources, setResources] = useState<FacultyResource[]>(typeof window !== 'undefined' ? window.sharedResources : []);
   const [selectedResource, setSelectedResource] = useState<FacultyResource | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showUploadWorkflow, setShowUploadWorkflow] = useState(false);
@@ -159,7 +167,7 @@ export const FacultyDashboard = () => {
       formData.append('subject', data.subject);
       
       // Use selected semester if available, otherwise use the one from data
-      const semesterToUse = selectedSemester !== null ? selectedSemester : (data.semester || 1);
+      const semesterToUse = selectedSemester !== null ? selectedSemester : data.semester;
       formData.append('semester', semesterToUse.toString());
       
       if (data.file) {
@@ -202,17 +210,14 @@ export const FacultyDashboard = () => {
           views: 0,
           likes: 0,
           comments: 0,
-          downloads: 0
+          downloads: 0,
+          lastViewed: new Date().toISOString()
         }
       };
       
       setResources(prev => [newResource, ...prev]);
       if (typeof window !== 'undefined') {
-        if (window.sharedResources) {
-          window.sharedResources = [newResource, ...window.sharedResources];
-        } else {
-          window.sharedResources = [newResource];
-        }
+        window.sharedResources = [newResource, ...window.sharedResources];
       }
       
       // Send notifications to students about the new resource

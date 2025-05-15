@@ -1,5 +1,5 @@
 
-import { Resource } from '../types/index';
+import { Resource } from '../types';
 import { FacultyResource } from '../types/faculty';
 
 export const filterResourcesBySemester = (

@@ -41,12 +41,7 @@ export const ResourcesPage = () => {
         const response = await api.get('/api/resources/stats');
         
         if (response.data) {
-          // Convert the MongoDB ObjectId to string if needed
-          const processedData = {
-            ...response.data,
-            // Convert any ObjectId to string if necessary
-          };
-          setStats(processedData);
+          setStats(response.data);
         }
       } catch (error) {
         console.error('Error fetching resource stats:', error);

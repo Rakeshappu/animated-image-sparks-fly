@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom';
 interface SubjectFolderProps {
   subject: string;
   resources: FacultyResource[];
-  sortBy?: 'recent' | 'popular' | 'alphabetical'; // Make sortBy optional
+  sortBy: 'recent' | 'popular' | 'alphabetical';
 }
 
-export const SubjectFolder = ({ subject, resources, sortBy = 'recent' }: SubjectFolderProps) => {
+export const SubjectFolder = ({ subject, resources, sortBy }: SubjectFolderProps) => {
   const navigate = useNavigate();
   
   const navigateToSubject = () => {
@@ -17,9 +17,8 @@ export const SubjectFolder = ({ subject, resources, sortBy = 'recent' }: Subject
     navigate(`/study/${encodeURIComponent(subject)}`);
   };
   
-  // Calculate folder metrics with safe navigation
-  const totalViews = resources.reduce((sum, resource) => 
-    sum + ((resource.stats?.views) || 0), 0);
+  // Calculate folder metrics
+  const totalViews = resources.reduce((sum, resource) => sum + resource.stats.views, 0);
   const resourceCount = resources.length;
 
   return (

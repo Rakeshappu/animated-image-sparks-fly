@@ -1,155 +1,149 @@
 
 import api from './api';
+import { toast } from 'react-hot-toast';
 
-/**
- * Gets recent activities
- * @param limit - Number of activities to retrieve
- * @returns Promise<any[]> - Array of recent activities
- */
-export const getRecentActivities = async (limit: number = 10): Promise<any[]> => {
-  try {
-    const response = await api.get(`/api/user/activity?limit=${limit}`);
-    return response.data.activities || [];
-  } catch (error) {
-    console.error("Error getting recent activities:", error);
-    return [];
-  }
-};
-
-/**
- * Logs an activity
- * @param data - Activity data object or resource ID
- * @param type - Type of activity (if first param is resource ID)
- * @param source - Source of activity (if first param is resource ID)
- * @returns Promise<any> - The logged activity
- */
-export const logActivity = async (
-  data: { type: string; resourceId: string; message: string } | string,
-  type?: string,
-  source?: string
-): Promise<any> => {
-  try {
-    // Handle both object-based and parameter-based calls
-    let payload: any;
-    
-    if (typeof data === 'object') {
-      // If first parameter is an object with activity data
-      payload = {
-        resource: data.resourceId,
-        type: data.type,
-        message: data.message,
-        source: source || 'other'
-      };
-    } else {
-      // Legacy approach: If first parameter is resourceId
-      payload = {
-        resource: data, // data is resourceId
-        type: type || 'view',
-        source: source || 'other'
-      };
+const activityService = {
+  async logActivity(data: {
+    type: 'upload' | 'download' | 'view' | 'like' | 'comment' | 'share';
+    resourceId?: string;
+    message: string;
+  }) {
+    try {
+      const response = await api.post('/api/user/activity', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to log activity:', error);
+      return null;
     }
+  },
 
-    const response = await api.post('/api/user/activity', payload);
-    return response.data;
-  } catch (error) {
-    console.error("Error logging activity:", error);
-    throw error;
-  }
-};
-
-/**
- * Increments the view count for a resource
- * @param resourceId - ID of the resource to increment view count
- * @returns Promise<any> - Updated resource view count
- */
-export const incrementResourceView = async (resourceId: string): Promise<any> => {
-  try {
-    const response = await api.post(`/api/resources/${resourceId}/view`);
-    return response.data;
-  } catch (error) {
-    console.error("Error incrementing resource view:", error);
-    return { success: false, error: "Failed to increment view count" };
-  }
-};
-
-/**
- * Refreshes activities from the server with cache busting
- * @param limit - Number of activities to retrieve
- * @returns Promise<any[]> - Array of recent activities
- */
-export const refreshActivities = async (limit: number = 10): Promise<any[]> => {
-  try {
-    // Add cache busting parameter
-    const response = await api.get(`/api/user/activity?limit=${limit}&_t=${new Date().getTime()}`);
-    return response.data.activities || [];
-  } catch (error) {
-    console.error("Error refreshing activities:", error);
-    return [];
-  }
-};
-
-/**
- * Gets user's daily streak count
- */
-export const getUserDailyStreak = async (userId?: string) => {
-  try {
-    // If user ID is provided, use it, otherwise the backend will use the current user
-    const endpoint = userId ? `/api/user/activity/stats?userId=${userId}` : '/api/user/activity/stats';
-    const response = await api.get(endpoint);
-    
-    if (response.data && response.data.streak !== undefined) {
-      return response.data.streak;
+  async getRecentActivities(limit = 3, semester?: number) {
+    try {
+      const params = new URLSearchParams();
+      params.append('limit', limit.toString());
+      if (semester) params.append('semester', semester.toString());
+      
+      const response = await api.get(`/api/user/activity?${params.toString()}`);
+      console.log('Recent activities response:', response.data);
+      return response.data.activities || [];
+    } catch (error) {
+      console.error('Failed to fetch activities:', error);
+      return [];
     }
-    
-    return 0; // Default streak value
-  } catch (error) {
-    console.error("Error getting user streak:", error);
-    return 0;
-  }
-};
+  },
 
-/**
- * Gets activities for today
- */
-export const getTodayActivities = async (userId?: string) => {
-  try {
-    // If user ID is provided, use it, otherwise the backend will use the current user
-    const endpoint = userId ? `/api/user/activity?period=today&userId=${userId}` : '/api/user/activity?period=today';
-    const response = await api.get(endpoint);
-    
-    return response.data.activities || [];
-  } catch (error) {
-    console.error("Error getting today's activities:", error);
-    return [];
-  }
-};
-
-/**
- * Gets weekly activity data for charts
- */
-export const getWeeklyActivities = async (userId?: string) => {
-  try {
-    // If user ID is provided, use it, otherwise the backend will use the current user
-    const endpoint = userId ? `/api/user/activity/stats?period=week&userId=${userId}` : '/api/user/activity/stats?period=week';
-    const response = await api.get(endpoint);
-    
-    if (response.data && Array.isArray(response.data.weeklyStats)) {
-      return response.data.weeklyStats;
+  async getUserDailyStreak() {
+    try {
+      const response = await api.get('/api/user/activity/stats');
+      return response.data.streak || 0;
+    } catch (error) {
+      console.error('Failed to fetch user streak:', error);
+      return 0;
     }
-    
-    return [];
-  } catch (error) {
-    console.error("Error getting weekly activities:", error);
-    return [];
+  },
+
+  async getTodayActivities() {
+    try {
+      const response = await api.get('/api/user/activity/stats?period=today');
+      return response.data.count || 0;
+    } catch (error) {
+      console.error('Failed to fetch today activities:', error);
+      return 0;
+    }
+  },
+  
+  async getWeeklyActivities(isAdmin = false) {
+    try {
+      const url = isAdmin ? '/api/user/activity/stats?admin=true' : '/api/user/activity/stats';
+      console.log('Fetching weekly activities from:', url);
+      const response = await api.get(url);
+      console.log('Weekly activities response:', response.data);
+      return response.data.dailyActivity || [];
+    } catch (error) {
+      console.error('Failed to fetch weekly activities:', error);
+      return [];
+    }
+  },
+
+  async getResourceViewCount(resourceId: string) {
+    try {
+      const response = await api.get(`/api/resources/${resourceId}/stats`);
+      return response.data.views || 0;
+    } catch (error) {
+      console.error('Failed to fetch resource view count:', error);
+      return 0;
+    }
+  },
+  
+  // Update view count for resources with improved error handling
+  async incrementResourceView(resourceId: string) {
+    try {
+      // Don't require token, allow anonymous views
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
+      const response = await api.post(`/api/resources/${resourceId}/view`, {}, { headers });
+      
+      console.log('View count updated response:', response.data);
+      
+      if (response.data.success) {
+        // Notify of successful view
+        const resourceCategory = response.data.category || '';
+        const resourceType = resourceCategory === 'placement' ? 'placement' : 'study';
+        
+        // Don't show toast for every view to avoid spamming
+        // toast.success(`Viewing ${resourceType} resource`);
+        
+        // Force refresh activities immediately after view
+        this.refreshActivities();
+        
+        // Return the updated view data
+        return { 
+          success: true, 
+          views: response.data.views,
+          resourceTitle: response.data.resourceTitle,
+          resourceId: response.data.resourceId,
+          timestamp: response.data.timestamp
+        };
+      } else {
+        console.error('View update returned an error:', response.data);
+        return { success: false };
+      }
+    } catch (error) {
+      console.error('Failed to increment view count:', error);
+      return { success: false };
+    }
+  },
+  
+  // New method to refresh activities after view action
+  async refreshActivities() {
+    try {
+      // Clear any cache and force a fresh fetch
+      const response = await api.get(`/api/user/activity?limit=3&_t=${Date.now()}`);
+      // Dispatch a global event that components can listen for
+      const refreshEvent = new CustomEvent('activitiesRefreshed', {
+        detail: { activities: response.data.activities || [] }
+      });
+      document.dispatchEvent(refreshEvent);
+      return response.data.activities || [];
+    } catch (error) {
+      console.error('Failed to refresh activities:', error);
+      return [];
+    }
+  },
+  
+  // Get activity details with full analytics
+  async getActivityWithAnalytics(activityId: string) {
+    try {
+      const response = await api.get(`/api/user/activity/${activityId}/analytics`);
+      return response.data || null;
+    } catch (error) {
+      console.error('Failed to fetch activity analytics:', error);
+      return null;
+    }
   }
 };
 
-export const activityService = {
-  getRecentActivities,
-  logActivity,
-  getUserDailyStreak,
-  getTodayActivities,
-  getWeeklyActivities,
-  incrementResourceView,
-  refreshActivities
-};
+// Make sure to export both the named and default export
+export { activityService };
+export default activityService;

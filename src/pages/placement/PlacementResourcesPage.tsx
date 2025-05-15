@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Book, ArrowLeft, Filter } from 'lucide-react';
-import { ResourceItem } from '../../components/study/ResourceItem.js';
-import { FacultyResource } from '../../types/faculty.js';
-import { LocalSearch } from '../../components/search/LocalSearch.js';
-import { useAuth } from '../../contexts/AuthContext.js';
-import { trackResourceView } from '../../utils/studyUtils.js';
+import { ResourceItem } from '../../components/study/ResourceItem';
+import { FacultyResource } from '../../types/faculty';
+import { LocalSearch } from '../../components/search/LocalSearch';
+import { useAuth } from '../../contexts/AuthContext';
+import { trackResourceView } from '../../utils/studyUtils';
 import { toast } from 'react-hot-toast';
 
 const categories = [

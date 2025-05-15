@@ -1,7 +1,6 @@
-//src\components\auth\PrivateRoute.tsx
 import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { AnimatedLogo } from '../common/AnimatedLogo';
 import { UserRole } from '../../types/auth';
 import { toast } from 'react-hot-toast';

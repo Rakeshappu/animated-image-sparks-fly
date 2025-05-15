@@ -27,10 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         const token = authHeader.split(' ')[1];
         const decoded = verifyToken(token);
-        // Check if decoded exists and has userId before accessing it
-        if (decoded && decoded.userId) {
-          userId = decoded.userId;
-        }
+        userId = decoded.userId;
       } catch (authError) {
         console.error('Auth token error:', authError);
         // Continue with anonymous view
@@ -133,7 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           resource: resource._id,
           timestamp: new Date(),
           message: message,
-          source: source as 'study-materials' | 'bookmarks' | 'placement' | 'other'
+          source: source
         });
         
         console.log(`Activity record created for user ${userId}, resource ${id}`);

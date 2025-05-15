@@ -32,11 +32,11 @@ export const Header = () => {
   const notificationsRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   
-  // useEffect(() => {
-  //   if (user) {
-  //     setAvatarUrl(getAvatar());
-  //   }
-  // }, [user]);
+  useEffect(() => {
+    if (user) {
+      setAvatarUrl(getAvatar());
+    }
+  }, [user]);
   
   useEffect(() => {
     const handleProfileUpdate = () => {
@@ -521,7 +521,7 @@ export const Header = () => {
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-indigo-100 dark:ring-indigo-900"
                 >
-                  {/* <img 
+                  <img 
                     src={getAvatar()}
                     alt={user?.fullName || "User"}
                     className="w-full h-full object-cover"
@@ -529,7 +529,7 @@ export const Header = () => {
                     onError={(e) => {
                       e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullName || "User")}&background=random`;
                     }}
-                  /> */}
+                  />
                 </motion.div>
                 <span className="hidden md:inline text-sm font-medium dark:text-gray-200">
                   {user?.fullName || 'User'}

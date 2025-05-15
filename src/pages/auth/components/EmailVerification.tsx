@@ -1,15 +1,14 @@
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/auth.service';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../contexts/AuthContext';
 import { Mail } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export const EmailVerification = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { setError } = useAuth();
   const [otp, setOtp] = useState('');
   const email = location.state?.email;
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +23,11 @@ export const EmailVerification = () => {
       navigate('/auth/login');
     } catch (err: any) {
       console.error('OTP verification failed:', err);
+      if (setError) {
+        setError(err.message);
+      } else {
+        console.error('Error:', err.message);
+      }
       toast.error(err.message || 'Failed to verify email');
     } finally {
       setIsLoading(false);
@@ -35,6 +39,11 @@ export const EmailVerification = () => {
       await authService.resendOTP(email);
       toast.success('OTP resent successfully');
     } catch (err: any) {
+      if (setError) {
+        setError(err.message);
+      } else {
+        console.error('Error:', err.message);
+      }
       toast.error(err.message || 'Failed to resend OTP');
     }
   };

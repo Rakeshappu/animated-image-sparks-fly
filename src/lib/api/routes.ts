@@ -1,4 +1,4 @@
-//src\lib\api\routes.ts
+
 export const API_ROUTES = {
   AUTH: {
     LOGIN: '/api/auth/login',

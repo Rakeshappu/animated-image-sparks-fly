@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -11,7 +12,7 @@ import { CircularProgress } from '../../components/ui/CircularProgress';
 import { ActivityCalendar } from '../../components/student/ActivityCalendar';
 import { StudentStatsChart } from '../../components/student/StudentStatsChart';
 import { ActivityFeed } from '../../components/user/ActivityFeed';
-import {activityService}  from '../../services/activity.service';
+import { activityService } from '../../services/activity.service';
 import api from '../../services/api';
 
 const StudentDashboard = () => {
@@ -23,32 +24,22 @@ const StudentDashboard = () => {
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dbStatus, setDbStatus] = useState<any>(null);
-  const [isCheckingDb, setIsCheckingDb] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
-        // Get user's current streak - if userId is needed, use user?._id
-        const userStreak = await activityService.getUserDailyStreak(user?._id);
+        const userStreak = await activityService.getUserDailyStreak();
         setStreak(userStreak);
         
-        // Get today's activities - if userId is needed, use user?._id
-        const todayActivityData = await activityService.getTodayActivities(user?._id);
-        setTodayActivities(todayActivityData.length || 0);
+        const todayActivityCount = await activityService.getTodayActivities();
+        setTodayActivities(todayActivityCount);
         
-        // Get weekly activities - if userId is needed, use user?._id
-        const weekActivity = await activityService.getWeeklyActivities(user?._id);
+        const weekActivity = await activityService.getWeeklyActivities();
         setWeeklyActivity(weekActivity);
         
-        // Get user's bookmarks
-        try {
-          const bookmarksResponse = await api.get('/api/user/bookmarks');
-          setBookmarks(bookmarksResponse.data.bookmarks || []);
-        } catch (error) {
-          console.error("Error fetching bookmarks:", error);
-          setBookmarks([]);
-        }
+        const bookmarksResponse = await api.get('/api/user/bookmarks');
+        setBookmarks(bookmarksResponse.data.bookmarks || []);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -57,29 +48,20 @@ const StudentDashboard = () => {
     };
     
     fetchDashboardData();
-  }, [user]);
-  
-  // Function to check database connection
-  const checkConnection = async () => {
-    setIsCheckingDb(true);
-    try {
-      const status = await checkDatabaseConnection();
-      setDbStatus(status);
-      console.log('MongoDB connection status in Student Dashboard:', status);
-    } catch (err) {
-      console.error('Failed to check DB connection:', err);
-    } finally {
-      setIsCheckingDb(false);
-    }
-  };
+  }, []);
   
   useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        const status = await checkDatabaseConnection();
+        setDbStatus(status);
+        console.log('MongoDB connection status in Student Dashboard:', status);
+      } catch (err) {
+        console.error('Failed to check DB connection:', err);
+      }
+    };
+    
     checkConnection();
-    
-    // Check connection status every 30 seconds
-    const intervalId = setInterval(checkConnection, 30000);
-    
-    return () => clearInterval(intervalId);
   }, []);
 
   const fadeIn = {
@@ -89,7 +71,7 @@ const StudentDashboard = () => {
   
   return (
     <div>
-      <MongoDBStatusBanner status={dbStatus} onRefresh={checkConnection} />
+      <MongoDBStatusBanner status={dbStatus} />
       <div className="p-6">
         <motion.div 
           initial={{ opacity: 0 }} 

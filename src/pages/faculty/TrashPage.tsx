@@ -147,7 +147,7 @@ export const TrashPage = () => {
       ) : (
         <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {trashedItems.map((item: TrashedItem) => (
+            {trashedItems.map((item) => (
               <li key={item.id}>
                 <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
                   <div className="flex items-center">

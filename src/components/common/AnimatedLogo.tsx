@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import  Logo  from '../../assets/cropped.png'; // Assuming Logo is in the same directory
+import  Logo  from './Logo'; // Assuming Logo is in the same directory
 
 interface AnimatedLogoProps {
   className?: string;

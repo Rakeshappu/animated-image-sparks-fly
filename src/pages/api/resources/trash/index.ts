@@ -29,13 +29,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Format the response
     const items = trashedResources.map(resource => ({
-      id: resource.id.toString(),
+      id: resource._id.toString(),
       name: resource.title,
       type: resource.type,
       size: resource.fileSize ? `${(resource.fileSize / 1024 / 1024).toFixed(2)} MB` : 'N/A',
       deletedAt: resource.deletedAt?.toISOString() || '',
       originalPath: resource.fileUrl || '',
-      resourceId: resource.id.toString()
+      resourceId: resource._id.toString()
     }));
 
     return res.status(200).json({ success: true, items });

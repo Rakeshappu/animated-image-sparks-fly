@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { ResourceAnalyticsView } from '../../components/faculty/ResourceAnalytics';
 import { useSearchParams } from 'react-router-dom';
-import  {activityService}  from '../../services/activity.service';
+import { activityService } from '../../services/activity.service';
 
 export interface ResourceAnalytics {
   views: number;
@@ -69,8 +69,8 @@ export default function AnalyticsPage() {
         const resourceResponse = await api.get('/api/resources/faculty');
         
         // Fetch weekly activity data
-        // const weeklyActivityData = await activityService.getWeeklyActivities(false);
-        // setWeeklyActivity(weeklyActivityData);
+        const weeklyActivityData = await activityService.getWeeklyActivities(false);
+        setWeeklyActivity(weeklyActivityData);
         
         if (resourceResponse.data && resourceResponse.data.resources) {
           setResources(resourceResponse.data.resources);

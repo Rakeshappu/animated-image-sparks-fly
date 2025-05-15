@@ -1,5 +1,5 @@
 
-import  api  from './api';
+import { api } from './api';
 import { Notification, User } from '../types/auth';
 
 class UserService {

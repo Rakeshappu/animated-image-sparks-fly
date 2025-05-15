@@ -1,5 +1,6 @@
-import { transporter } from './config.js';
-import { getVerificationEmailTemplate } from './templates.js';
+
+import { transporter } from './config';
+import { getVerificationEmailTemplate } from './templates';
 
 export async function sendVerificationEmail(email: string, token: string, otp: string) {
   try {
