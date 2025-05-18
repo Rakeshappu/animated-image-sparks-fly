@@ -1,4 +1,3 @@
-
 import api from './api';
 import toast from 'react-hot-toast';
 
@@ -62,6 +61,7 @@ const authService = {
 
   forgotPassword: async (email: string) => {
     try {
+      // Update to ensure we're using the correct endpoint with the correct domain
       const response = await api.post('/api/auth/forgot-password', { email });
       return response.data;
     } catch (error: any) {
@@ -100,7 +100,7 @@ const authService = {
     }
   },
   
-  // Add the missing OTP verification method
+  // Update the OTP verification method to properly handle purpose
   verifyOTP: async (email: string, otp: string, purpose?: string) => {
     try {
       const response = await api.post('/api/auth/verify-otp', { email, otp, purpose });
@@ -113,10 +113,11 @@ const authService = {
     }
   },
   
-  // Add method to resend OTP
-  resendOTP: async (email: string) => {
+  // Fix the resend OTP method to ensure it works correctly
+  resendOTP: async (email: string, purpose?: string) => {
     try {
-      const response = await api.post('/api/auth/send-otp', { email });
+      // Update to use send-otp endpoint
+      const response = await api.post('/api/auth/send-otp', { email, purpose });
       return response.data;
     } catch (error: any) {
       if (error.response && error.response.data?.error) {

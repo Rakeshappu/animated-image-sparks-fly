@@ -1,12 +1,13 @@
+
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { FormField } from './FormField';
 import { Share2, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { OtpVerification } from './OtpVerification';
-import api from '../../services/api';
+import authService from '../../services/auth.service';
 
 interface LoginFormProps {
   onSubmit: (data: LoginFormData) => void;
@@ -20,7 +21,6 @@ interface LoginFormData {
 
 export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
   const { error: contextError, clearError } = useAuth();
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -55,7 +55,8 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
 
     setIsSubmitting(true);
     try {
-      await api.post('/api/auth/forgot-password', { email: forgotEmail });
+      // Use authService instead of direct API call
+      await authService.forgotPassword(forgotEmail);
       toast.success('Verification code sent to your email');
       // Show OTP verification component
       setShowForgotPassword(false);
@@ -75,7 +76,8 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
   const handleResendOtp = async () => {
     setIsSubmitting(true);
     try {
-      await api.post('/api/auth/forgot-password', { email: forgotEmail });
+      // Use authService instead of direct API call
+      await authService.forgotPassword(forgotEmail);
       toast.success('New verification code sent to your email');
     } catch (error: any) {
       console.error('Resend OTP error:', error);

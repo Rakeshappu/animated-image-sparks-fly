@@ -2,7 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { User } from '../../../lib/db/models/User';
 import { generateOTP, generateVerificationToken } from '../../../lib/auth/jwt';
-import { sendVerificationEmail } from '../../../lib/email/sendEmail';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../../../lib/email/sendEmail';
 import connectDB from '../../../lib/db/connect';
 import { verifyEmailConfig } from '../../../lib/email/config';
 
@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   
   // Handle preflight request
@@ -33,12 +33,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Connect to database
     await connectDB();
     
-    const { email } = req.body;
+    const { email, purpose } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
     }
     
-    console.log('Generating new OTP for:', email);
+    console.log('Generating new OTP for:', email, 'Purpose:', purpose || 'emailVerification');
     const otp = generateOTP();
     const verificationToken = generateVerificationToken();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -60,9 +60,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'User not found' });
     }
 
-    console.log('Attempting to send email to:', email, 'with OTP:', otp);
-    await sendVerificationEmail(email, verificationToken, otp);
-    console.log('OTP sent successfully to:', email);
+    console.log('Attempting to send email to:', email, 'with OTP:', otp, 'Purpose:', purpose);
+    
+    // Send appropriate email based on purpose
+    if (purpose === 'resetPassword') {
+      await sendPasswordResetEmail(email, user.fullName, otp);
+      console.log('Password reset OTP sent successfully to:', email);
+    } else {
+      // Default to verification email
+      await sendVerificationEmail(email, verificationToken, otp);
+      console.log('Verification OTP sent successfully to:', email);
+    }
     
     res.status(200).json({ message: 'OTP sent successfully' });
   } catch (error) {

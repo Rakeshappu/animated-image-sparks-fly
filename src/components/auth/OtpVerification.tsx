@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import api from '../../services/api';
+import authService from '../../services/auth.service';
 import { toast } from 'react-hot-toast';
 import { FormField } from './FormField';
 
@@ -106,12 +106,7 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
     try {
       if (purpose === 'resetPassword') {
         // For password reset flow
-        const response = await api.post('/api/auth/verify-otp', { 
-          email, 
-          otp: otpString,
-          purpose: 'resetPassword'
-        });
-        
+        await authService.verifyOTP(email, otpString, 'resetPassword');
         setOtpVerified(true);
         toast.success('OTP verified successfully. You can now reset your password.');
       } else {
@@ -123,7 +118,7 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
       }
     } catch (err: any) {
       console.error('OTP verification failed:', err);
-      const errorMessage = err.response?.data?.error || 'Invalid or expired OTP. Please try again.';
+      const errorMessage = err.response?.data?.error || err.message || 'Invalid or expired OTP. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -147,17 +142,13 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
     try {
       // Submit the new password along with email and verified OTP
       const otpString = otp.join('');
-      await api.post('/api/auth/reset-password', {
-        email,
-        code: otpString,
-        newPassword
-      });
+      await authService.resetPassword(email, otpString, newPassword);
       
       toast.success('Your password has been reset successfully!');
       navigate('/auth/login');
     } catch (err: any) {
       console.error('Password reset failed:', err);
-      const errorMessage = err.response?.data?.error || 'Failed to reset password. Please try again.';
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to reset password. Please try again.';
       toast.error(errorMessage);
     } finally {
       setResetSubmitting(false);
@@ -165,6 +156,7 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
   };
 
   const handleResendOtp = () => {
+    // Call the resend function and reset timer
     onResendOtp();
     setTimeLeft(30);
   };
