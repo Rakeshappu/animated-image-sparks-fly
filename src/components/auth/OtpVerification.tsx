@@ -1,17 +1,29 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { motion } from 'framer-motion';
+import api from '../../services/api';
+import { toast } from 'react-hot-toast';
+import { FormField } from './FormField';
 
 interface OtpVerificationProps {
   email: string;
   onResendOtp: () => void;
+  purpose?: 'emailVerification' | 'resetPassword';
 }
 
-export const OtpVerification = ({ email, onResendOtp }: OtpVerificationProps) => {
+export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerification' }: OtpVerificationProps) => {
   const { verifyOTP, error } = useAuth();
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+  const navigate = useNavigate();
+  
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Initialize refs array
@@ -85,15 +97,63 @@ export const OtpVerification = ({ email, onResendOtp }: OtpVerificationProps) =>
     e.preventDefault();
     
     const otpString = otp.join('');
-    if (otpString.length !== 6) return;
+    if (otpString.length !== 6) {
+      toast.error('Please enter all 6 digits of the OTP');
+      return;
+    }
     
     setIsSubmitting(true);
     try {
-      await verifyOTP(email, otpString);
-    } catch (err) {
+      if (purpose === 'resetPassword') {
+        // For password reset flow
+        await api.post('/api/auth/verify-otp', { email, otp: otpString });
+        setOtpVerified(true);
+        toast.success('OTP verified successfully. You can now reset your password.');
+      } else {
+        // For email verification flow
+        await verifyOTP(email, otpString);
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
       console.error('OTP verification failed:', err);
+      const errorMessage = err.response?.data?.error || 'Invalid or expired OTP. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
+    setResetSubmitting(true);
+    try {
+      // Submit the new password along with email and verified OTP
+      const otpString = otp.join('');
+      await api.post('/api/auth/reset-password', {
+        email,
+        code: otpString,
+        newPassword
+      });
+      
+      toast.success('Your password has been reset successfully!');
+      navigate('/auth/login');
+    } catch (err: any) {
+      console.error('Password reset failed:', err);
+      const errorMessage = err.response?.data?.error || 'Failed to reset password. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setResetSubmitting(false);
     }
   };
 
@@ -103,65 +163,127 @@ export const OtpVerification = ({ email, onResendOtp }: OtpVerificationProps) =>
   };
 
   return (
-    <div className="max-w-md w-full space-y-8">
-      <div className="text-center">
-        <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Verify your email</h2>
-        <p className="mt-2 text-sm text-gray-600">
-          We've sent a 6-digit OTP to <span className="font-medium">{email}</span>
-        </p>
-      </div>
-      
-      {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <div className="text-sm text-red-700">{error}</div>
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-        <div className="flex justify-center space-x-2">
-          {otp.map((digit, index) => (
-            <input
-              key={index}
-              ref={(el) => { inputRefs.current[index] = el; }}
-              type="text"
-              maxLength={1}
-              className="w-12 h-12 text-center text-xl font-semibold border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-              value={digit}
-              onChange={e => handleChange(e, index)}
-              onKeyDown={e => handleKeyDown(e, index)}
-              onPaste={index === 0 ? handlePaste : undefined}
-              aria-label={`OTP digit ${index + 1}`}
-            />
-          ))}
-        </div>
-        
-        <div>
-          <button
-            type="submit"
-            disabled={otp.some(digit => !digit) || isSubmitting}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300"
-          >
-            {isSubmitting ? 'Verifying...' : 'Verify OTP'}
-          </button>
-        </div>
-        
-        <div className="text-center text-sm">
-          <p className="text-gray-600">
-            Didn't receive the OTP?{' '}
-            {timeLeft > 0 ? (
-              <span>Resend in {timeLeft}s</span>
-            ) : (
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Resend OTP
-              </button>
-            )}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl"
+      >
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            {otpVerified ? 'Reset Your Password' : 'Verify Your Email'}
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            {otpVerified 
+              ? 'Create a new password for your account' 
+              : `We've sent a 6-digit OTP to ${email}`
+            }
           </p>
         </div>
-      </form>
+        
+        {error && !otpVerified && (
+          <div className="rounded-md bg-red-50 p-4">
+            <div className="text-sm text-red-700">{error}</div>
+          </div>
+        )}
+        
+        {otpVerified ? (
+          // Password reset form after OTP verification
+          <motion.form 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            onSubmit={handleResetPassword} 
+            className="mt-8 space-y-6"
+          >
+            <div className="space-y-4">
+              <FormField
+                label="New Password"
+                name="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+              />
+              
+              <FormField
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
+            </div>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={resetSubmitting}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300"
+            >
+              {resetSubmitting ? 'Resetting...' : 'Reset Password'}
+            </motion.button>
+          </motion.form>
+        ) : (
+          // OTP verification form
+          <motion.form 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            onSubmit={handleSubmit} 
+            className="mt-8 space-y-6"
+          >
+            <div className="flex justify-center space-x-2">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(el) => { inputRefs.current[index] = el; }}
+                  type="text"
+                  maxLength={1}
+                  className="w-12 h-12 text-center text-xl font-semibold border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  value={digit}
+                  onChange={e => handleChange(e, index)}
+                  onKeyDown={e => handleKeyDown(e, index)}
+                  onPaste={index === 0 ? handlePaste : undefined}
+                  aria-label={`OTP digit ${index + 1}`}
+                />
+              ))}
+            </div>
+            
+            <div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={otp.some(digit => !digit) || isSubmitting}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300"
+              >
+                {isSubmitting ? 'Verifying...' : 'Verify OTP'}
+              </motion.button>
+            </div>
+            
+            <div className="text-center text-sm">
+              <p className="text-gray-600">
+                Didn't receive the OTP?{' '}
+                {timeLeft > 0 ? (
+                  <span>Resend in {timeLeft}s</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    className="font-medium text-indigo-600 hover:text-indigo-500"
+                  >
+                    Resend OTP
+                  </button>
+                )}
+              </p>
+            </div>
+          </motion.form>
+        )}
+      </motion.div>
     </div>
   );
 };

@@ -44,6 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     user.verificationCodeExpiry = resetCodeExpiry;
     await user.save();
 
+    console.log(`Generated OTP for ${email}: ${resetCode}`);
+
     // Send password reset email
     const mailOptions = {
       from: `"VersatileShare" <${process.env.EMAIL_USER || 'noreply@example.com'}>`,

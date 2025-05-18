@@ -1,12 +1,12 @@
 
-import { useState, ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
-import { LoginFormData } from '../../types/auth';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { FormField } from './FormField';
 import { Share2, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
+import { OtpVerification } from './OtpVerification';
 import api from '../../services/api';
 
 interface LoginFormProps {
@@ -14,14 +14,21 @@ interface LoginFormProps {
   error?: string | null;
 }
 
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
 export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
   const { error: contextError, clearError } = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
   });
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,7 +43,7 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
     onSubmit(formData);
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -50,8 +57,10 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
     setIsSubmitting(true);
     try {
       const response = await api.post('/api/auth/forgot-password', { email: forgotEmail });
-      toast.success('Password reset instructions sent to your email');
+      toast.success('Verification code sent to your email');
+      // Show OTP verification component instead of going back to login
       setShowForgotPassword(false);
+      setShowOtpVerification(true);
     } catch (error: any) {
       console.error('Forgot password error:', error);
       if (error.response?.data?.error) {
@@ -63,6 +72,29 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
       setIsSubmitting(false);
     }
   };
+
+  const handleResendOtp = async () => {
+    setIsSubmitting(true);
+    try {
+      await api.post('/api/auth/forgot-password', { email: forgotEmail });
+      toast.success('New verification code sent to your email');
+    } catch (error: any) {
+      console.error('Resend OTP error:', error);
+      toast.error('Failed to resend verification code');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  if (showOtpVerification) {
+    return (
+      <OtpVerification 
+        email={forgotEmail} 
+        onResendOtp={handleResendOtp} 
+        purpose="resetPassword" 
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">

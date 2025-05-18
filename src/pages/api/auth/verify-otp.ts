@@ -66,7 +66,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Update user email verification
+    // If verification is for password reset, don't mark email as verified or remove code yet
+    // Just return success so frontend can proceed to password reset step
+    if (req.body.purpose === 'resetPassword') {
+      return res.status(200).json({
+        message: 'OTP verified successfully',
+        success: true
+      });
+    }
+
+    // Update user email verification for normal verification flow
     user.isEmailVerified = true;
     user.verificationCode = undefined;
     user.verificationCodeExpiry = undefined;
