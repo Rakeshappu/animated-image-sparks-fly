@@ -1,3 +1,4 @@
+
 import api from './api';
 import toast from 'react-hot-toast';
 
@@ -61,14 +62,15 @@ const authService = {
 
   forgotPassword: async (email: string) => {
     try {
-      // Update to ensure we're using the correct endpoint with the correct domain
+      // Make a direct API call to forgot-password endpoint
       const response = await api.post('/api/auth/forgot-password', { email });
       return response.data;
     } catch (error: any) {
+      console.error('Forgot password error:', error);
       if (error.response && error.response.data?.error) {
         throw new Error(error.response.data.error);
       }
-      throw error;
+      throw new Error('Failed to process password reset request');
     }
   },
 
@@ -84,7 +86,7 @@ const authService = {
       if (error.response && error.response.data?.error) {
         throw new Error(error.response.data.error);
       }
-      throw error;
+      throw new Error('Failed to reset password');
     }
   },
 
@@ -106,10 +108,11 @@ const authService = {
       const response = await api.post('/api/auth/verify-otp', { email, otp, purpose });
       return response.data;
     } catch (error: any) {
+      console.error('OTP verification error:', error);
       if (error.response && error.response.data?.error) {
         throw new Error(error.response.data.error);
       }
-      throw error;
+      throw new Error('Invalid or expired OTP');
     }
   },
   

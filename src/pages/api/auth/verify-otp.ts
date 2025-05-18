@@ -5,20 +5,16 @@ import connectDB from '../../../lib/db/connect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,DELETE,PATCH,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   // Handle preflight request
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
-
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -39,50 +35,52 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       verificationCodeExpiry: { $gt: new Date() }
     });
 
-    // Find user by email to debug
-    const userByEmail = await User.findOne({ email });
-    console.log('User found by email:', userByEmail ? {
-      email: userByEmail.email,
-      verificationCode: userByEmail.verificationCode,
-      verificationCodeExpiry: userByEmail.verificationCodeExpiry,
+    // Find user by email first
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    console.log('User found:', {
+      email: user.email,
+      verificationCode: user.verificationCode,
+      verificationCodeExpiry: user.verificationCodeExpiry,
       currentTime: new Date()
-    } : 'No user found');
-  
-    // Find user with matching OTP
-    const user = await User.findOne({
-      email,
-      verificationCode: otp,
-      verificationCodeExpiry: { $gt: new Date() }
     });
 
-    if (!user) {
-      return res.status(400).json({ 
-        error: 'Invalid or expired OTP',
-        debug: {
-          emailFound: !!userByEmail,
-          otpMatched: userByEmail?.verificationCode === otp,
-          notExpired: userByEmail?.verificationCodeExpiry ? new Date(userByEmail.verificationCodeExpiry) > new Date() : false
-        } 
-      });
+    // Check if the OTP is valid and not expired
+    if (user.verificationCode !== otp) {
+      return res.status(400).json({ error: 'Invalid verification code' });
+    }
+    
+    if (!user.verificationCodeExpiry || new Date() > user.verificationCodeExpiry) {
+      return res.status(400).json({ error: 'Verification code has expired' });
     }
 
-    // If verification is for password reset, don't mark email as verified or remove code yet
-    // Just return success so frontend can proceed to password reset step
+    // If verification is for password reset, just return success
     if (purpose === 'resetPassword') {
+      console.log('Valid OTP for password reset purpose');
       return res.status(200).json({
-        message: 'OTP verified successfully',
-        success: true
+        success: true,
+        message: 'OTP verified successfully'
       });
     }
 
-    // Update user email verification for normal verification flow
+    // For email verification, update user status
     user.isEmailVerified = true;
-    user.verificationCode = undefined;
-    user.verificationCodeExpiry = undefined;
+    
+    // Don't clear verification code for password reset purpose
+    if (purpose !== 'resetPassword') {
+      user.verificationCode = undefined;
+      user.verificationCodeExpiry = undefined;
+    }
+    
     await user.save();
     console.log('Email verification successful for:', email);
 
     res.status(200).json({ 
+      success: true,
       message: 'Email verified successfully',
       isAdminVerified: user.isAdminVerified,
       requiresAdminVerification: true,

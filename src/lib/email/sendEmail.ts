@@ -43,9 +43,10 @@ export async function sendVerificationEmail(email: string, token: string, otp: s
 export async function sendPasswordResetEmail(email: string, fullName: string, otp: string) {
   try {
     console.log('Attempting to send password reset email to:', email);
+    console.log('Sending password reset email with OTP:', otp);
     
     const mailOptions = {
-      from: `"Versatile Share" <${process.env.EMAIL_USER}>`,
+      from: `"Versatile Share" <${process.env.EMAIL_USER || 'noreply@example.com'}>`,
       to: email,
       subject: 'Password Reset Request',
       html: `
@@ -56,7 +57,7 @@ export async function sendPasswordResetEmail(email: string, fullName: string, ot
           <div style="background-color: #f3f4f6; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
             <h3 style="font-size: 24px; margin: 0; letter-spacing: 5px; color: #4F46E5;">${otp}</h3>
           </div>
-          <p>This code will expire in 1 hour.</p>
+          <p>This code will expire in 10 minutes.</p>
           <p>If you didn't request a password reset, please ignore this email or contact support.</p>
           <p>Thank you,<br>VersatileShare Team</p>
         </div>

@@ -55,16 +55,16 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
 
     setIsSubmitting(true);
     try {
-      // Use authService instead of direct API call
+      // Use authService to send forgot password request
       await authService.forgotPassword(forgotEmail);
       toast.success('Verification code sent to your email');
-      // Show OTP verification component
+      // Show OTP verification component with reset password purpose
       setShowForgotPassword(false);
       setShowOtpVerification(true);
     } catch (error: any) {
       console.error('Forgot password error:', error);
-      if (error.response?.data?.error) {
-        toast.error(error.response.data.error);
+      if (error.message) {
+        toast.error(error.message);
       } else {
         toast.error('Failed to process request. Please try again later.');
       }
@@ -74,9 +74,10 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
   };
 
   const handleResendOtp = async () => {
+    if (!forgotEmail) return;
+    
     setIsSubmitting(true);
     try {
-      // Use authService instead of direct API call
       await authService.forgotPassword(forgotEmail);
       toast.success('New verification code sent to your email');
     } catch (error: any) {

@@ -105,10 +105,12 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
     setIsSubmitting(true);
     try {
       if (purpose === 'resetPassword') {
-        // For password reset flow
-        await authService.verifyOTP(email, otpString, 'resetPassword');
-        setOtpVerified(true);
-        toast.success('OTP verified successfully. You can now reset your password.');
+        // For password reset flow - verify OTP with resetPassword purpose
+        const response = await authService.verifyOTP(email, otpString, 'resetPassword');
+        if (response.success) {
+          setOtpVerified(true);
+          toast.success('OTP verified successfully. You can now reset your password.');
+        }
       } else {
         // For email verification flow
         if (verifyOTP) {
@@ -118,7 +120,7 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
       }
     } catch (err: any) {
       console.error('OTP verification failed:', err);
-      const errorMessage = err.response?.data?.error || err.message || 'Invalid or expired OTP. Please try again.';
+      const errorMessage = err.message || 'Invalid or expired OTP. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -148,7 +150,7 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
       navigate('/auth/login');
     } catch (err: any) {
       console.error('Password reset failed:', err);
-      const errorMessage = err.response?.data?.error || err.message || 'Failed to reset password. Please try again.';
+      const errorMessage = err.message || 'Failed to reset password. Please try again.';
       toast.error(errorMessage);
     } finally {
       setResetSubmitting(false);

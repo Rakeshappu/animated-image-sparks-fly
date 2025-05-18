@@ -1,7 +1,7 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { User } from '../../../lib/db/models/User';
-import { generateOTP, generateVerificationToken } from '../../../lib/auth/jwt';
+import { generateOTP } from '../../../lib/auth/otp';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../../../lib/email/sendEmail';
 import connectDB from '../../../lib/db/connect';
 import { verifyEmailConfig } from '../../../lib/email/config';
@@ -40,7 +40,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     console.log('Generating new OTP for:', email, 'Purpose:', purpose || 'emailVerification');
     const otp = generateOTP();
-    const verificationToken = generateVerificationToken();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     
     console.log('New OTP generated:', otp, 'Expiry:', otpExpiry);
@@ -50,8 +49,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { 
         verificationCode: otp, 
         verificationCodeExpiry: otpExpiry,
-        verificationToken: verificationToken,
-        verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
       },
       { new: true, upsert: false }
     );
@@ -68,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Password reset OTP sent successfully to:', email);
     } else {
       // Default to verification email
-      await sendVerificationEmail(email, verificationToken, otp);
+      await sendVerificationEmail(email, user._id.toString(), otp); // Use user ID as token for simplicity
       console.log('Verification OTP sent successfully to:', email);
     }
     
