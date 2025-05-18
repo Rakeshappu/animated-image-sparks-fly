@@ -26,8 +26,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await connectDB();
 
-    const { email, otp } = req.body;
-    console.log('Received verification request:', { email, otp });
+    const { email, otp, purpose } = req.body;
+    console.log('Received verification request:', { email, otp, purpose });
     
     if (!email || !otp) {
       return res.status(400).json({ error: 'Email and OTP are required' });
@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       verificationCodeExpiry: { $gt: new Date() }
     });
 
-    // First, find the user by email to debug
+    // Find user by email to debug
     const userByEmail = await User.findOne({ email });
     console.log('User found by email:', userByEmail ? {
       email: userByEmail.email,
@@ -68,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // If verification is for password reset, don't mark email as verified or remove code yet
     // Just return success so frontend can proceed to password reset step
-    if (req.body.purpose === 'resetPassword') {
+    if (purpose === 'resetPassword') {
       return res.status(200).json({
         message: 'OTP verified successfully',
         success: true

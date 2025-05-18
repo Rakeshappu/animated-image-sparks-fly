@@ -14,7 +14,7 @@ interface OtpVerificationProps {
 }
 
 export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerification' }: OtpVerificationProps) => {
-  const { verifyOTP, error } = useAuth();
+  const { verifyOTP } = useAuth();
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -106,13 +106,20 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
     try {
       if (purpose === 'resetPassword') {
         // For password reset flow
-        await api.post('/api/auth/verify-otp', { email, otp: otpString });
+        const response = await api.post('/api/auth/verify-otp', { 
+          email, 
+          otp: otpString,
+          purpose: 'resetPassword'
+        });
+        
         setOtpVerified(true);
         toast.success('OTP verified successfully. You can now reset your password.');
       } else {
         // For email verification flow
-        await verifyOTP(email, otpString);
-        navigate('/dashboard');
+        if (verifyOTP) {
+          await verifyOTP(email, otpString);
+          navigate('/dashboard');
+        }
       }
     } catch (err: any) {
       console.error('OTP verification failed:', err);
@@ -181,12 +188,6 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
             }
           </p>
         </div>
-        
-        {error && !otpVerified && (
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-700">{error}</div>
-          </div>
-        )}
         
         {otpVerified ? (
           // Password reset form after OTP verification

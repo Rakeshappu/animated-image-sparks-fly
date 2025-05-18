@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { FormField } from './FormField';
@@ -56,9 +55,9 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
 
     setIsSubmitting(true);
     try {
-      const response = await api.post('/api/auth/forgot-password', { email: forgotEmail });
+      await api.post('/api/auth/forgot-password', { email: forgotEmail });
       toast.success('Verification code sent to your email');
-      // Show OTP verification component instead of going back to login
+      // Show OTP verification component
       setShowForgotPassword(false);
       setShowOtpVerification(true);
     } catch (error: any) {

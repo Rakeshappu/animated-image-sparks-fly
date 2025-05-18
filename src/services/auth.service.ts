@@ -72,9 +72,13 @@ const authService = {
     }
   },
 
-  resetPassword: async (token: string, newPassword: string) => {
+  resetPassword: async (email: string, code: string, newPassword: string) => {
     try {
-      const response = await api.post(`/api/auth/reset-password/${token}`, { newPassword });
+      const response = await api.post('/api/auth/reset-password', { 
+        email, 
+        code, 
+        newPassword 
+      });
       return response.data;
     } catch (error: any) {
       if (error.response && error.response.data?.error) {
@@ -97,9 +101,9 @@ const authService = {
   },
   
   // Add the missing OTP verification method
-  verifyOTP: async (email: string, otp: string) => {
+  verifyOTP: async (email: string, otp: string, purpose?: string) => {
     try {
-      const response = await api.post('/api/auth/verify-otp', { email, otp });
+      const response = await api.post('/api/auth/verify-otp', { email, otp, purpose });
       return response.data;
     } catch (error: any) {
       if (error.response && error.response.data?.error) {
