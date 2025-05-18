@@ -5,7 +5,7 @@ import connectDB from '../../../lib/db/connect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -63,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Valid OTP for password reset purpose');
       return res.status(200).json({
         success: true,
-        message: 'OTP verified successfully'
+        message: 'OTP verified successfully for password reset'
       });
     }
 

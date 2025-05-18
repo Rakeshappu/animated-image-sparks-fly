@@ -1,4 +1,3 @@
-
 import api from './api';
 import toast from 'react-hot-toast';
 
@@ -62,8 +61,11 @@ const authService = {
 
   forgotPassword: async (email: string) => {
     try {
-      // Make a direct API call to forgot-password endpoint
-      const response = await api.post('/api/auth/forgot-password', { email });
+      // Use the send-otp endpoint with purpose=resetPassword
+      const response = await api.post('/api/auth/send-otp', { 
+        email, 
+        purpose: 'resetPassword' 
+      });
       return response.data;
     } catch (error: any) {
       console.error('Forgot password error:', error);
@@ -116,13 +118,15 @@ const authService = {
     }
   },
   
-  // Fix the resend OTP method to ensure it works correctly
+  // Update resend OTP method to ensure it works correctly with purpose parameter
   resendOTP: async (email: string, purpose?: string) => {
     try {
-      // Update to use send-otp endpoint
+      // Update to use send-otp endpoint with purpose parameter
+      console.log('Resending OTP for', email, 'with purpose:', purpose);
       const response = await api.post('/api/auth/send-otp', { email, purpose });
       return response.data;
     } catch (error: any) {
+      console.error('Resend OTP error:', error);
       if (error.response && error.response.data?.error) {
         throw new Error(error.response.data.error);
       }

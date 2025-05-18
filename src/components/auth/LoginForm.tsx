@@ -55,12 +55,13 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
 
     setIsSubmitting(true);
     try {
-      // Use authService to send forgot password request
-      await authService.forgotPassword(forgotEmail);
+      // Use the send-otp endpoint with resetPassword purpose
+      await authService.resendOTP(forgotEmail, 'resetPassword');
       toast.success('Verification code sent to your email');
+      
       // Show OTP verification component with reset password purpose
-      setShowForgotPassword(false);
       setShowOtpVerification(true);
+      setShowForgotPassword(false);
     } catch (error: any) {
       console.error('Forgot password error:', error);
       if (error.message) {
@@ -78,7 +79,7 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
     
     setIsSubmitting(true);
     try {
-      await authService.forgotPassword(forgotEmail);
+      await authService.resendOTP(forgotEmail, 'resetPassword');
       toast.success('New verification code sent to your email');
     } catch (error: any) {
       console.error('Resend OTP error:', error);

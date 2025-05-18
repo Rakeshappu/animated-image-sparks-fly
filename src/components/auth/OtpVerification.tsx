@@ -105,6 +105,7 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
     setIsSubmitting(true);
     try {
       if (purpose === 'resetPassword') {
+        console.log('Verifying OTP for password reset:', email, otpString);
         // For password reset flow - verify OTP with resetPassword purpose
         const response = await authService.verifyOTP(email, otpString, 'resetPassword');
         if (response.success) {
@@ -115,6 +116,7 @@ export const OtpVerification = ({ email, onResendOtp, purpose = 'emailVerificati
         // For email verification flow
         if (verifyOTP) {
           await verifyOTP(email, otpString);
+          toast.success('Email verified successfully');
           navigate('/dashboard');
         }
       }
