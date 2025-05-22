@@ -4,12 +4,10 @@ import { Clock, Check, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
-import { toast } from 'react-hot-toast';
 
 export const AdminApprovalPending = ({ email }: { email: string }) => {
   const navigate = useNavigate();
   const [pendingCount, setPendingCount] = useState<number>(0);
-  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
   
   useEffect(() => {
     // Fetch count of admin users pending approval
@@ -34,25 +32,6 @@ export const AdminApprovalPending = ({ email }: { email: string }) => {
     
     fetchPendingAdminCount();
   }, []);
-
-  // Only run countdown if explicitly started
-  useEffect(() => {
-    if (redirectCountdown !== null && redirectCountdown > 0) {
-      const timer = setTimeout(() => {
-        setRedirectCountdown(redirectCountdown - 1);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    } else if (redirectCountdown === 0) {
-      navigate('/auth/login');
-    }
-  }, [redirectCountdown, navigate]);
-
-  // Function to start countdown
-  const startRedirectCountdown = () => {
-    toast.success('Redirecting to login page in 15 seconds');
-    setRedirectCountdown(15);
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -99,33 +78,16 @@ export const AdminApprovalPending = ({ email }: { email: string }) => {
               </p>
             </div>
           )}
-
-          {redirectCountdown !== null && (
-            <div className="mt-4 text-center py-2 px-4 bg-blue-50 rounded-md">
-              <p className="text-sm text-blue-700">
-                Redirecting to login page in {redirectCountdown} seconds...
-              </p>
-            </div>
-          )}
         </div>
         
-        <div className="pt-4 flex space-x-4">
+        <div className="pt-4">
           <button
             onClick={() => navigate('/auth/login')}
-            className="flex-1 flex items-center justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="w-full flex items-center justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to login
           </button>
-          
-          {redirectCountdown === null && (
-            <button
-              onClick={startRedirectCountdown}
-              className="flex-1 flex items-center justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-            >
-              Redirect in 15s
-            </button>
-          )}
         </div>
       </motion.div>
     </div>
