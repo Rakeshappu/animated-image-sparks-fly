@@ -21,6 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectDB();
 
     const { userId, isVerified } = req.body;
+    console.log('Verify request received for user:', userId, 'Setting verified to:', isVerified);
 
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
@@ -44,6 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     await user.save();
+    console.log('User verification updated successfully. New status:', user.isAdminVerified);
 
     // Send notification email to user about the status change
     if (user.email) {

@@ -134,7 +134,7 @@ const UsersManagement = () => {
     navigate(`/admin/users/edit/${userId}`);
   };
 
-  const handleVerifyUser = async (userId: string, verify: boolean) => {
+  const handleVerifyUser = async (userId: string, isVerified: boolean) => {
     try {
       setVerifyingUser(userId);
       
@@ -145,10 +145,10 @@ const UsersManagement = () => {
         return;
       }
       
-      console.log('Verifying user with ID:', userId, 'Setting verified to:', verify);
+      console.log('Verifying user with ID:', userId, 'Setting verified to:', isVerified);
       
-      const response = await api.post('/api/admin/users/verify', 
-        { userId, verify },
+      const response = await api.put('/api/admin/users/verify', 
+        { userId, isVerified }, 
         { 
           headers: { 
             Authorization: `Bearer ${token}`,
@@ -163,16 +163,16 @@ const UsersManagement = () => {
         // Update user in state
         setUsers(users.map(user => {
           if (user._id === userId) {
-            return { ...user, isAdminVerified: verify };
+            return { ...user, isAdminVerified: isVerified };
           }
           return user;
         }));
         
-        toast.success(verify ? 'User verified successfully' : 'User verification revoked');
+        toast.success(isVerified ? 'User verified successfully' : 'User verification revoked');
       }
     } catch (error) {
       console.error('Error verifying user:', error);
-      toast.error(verify ? 'Failed to verify user. You may need to refresh your admin session.' : 'Failed to revoke verification');
+      toast.error(isVerified ? 'Failed to verify user' : 'Failed to revoke verification');
     } finally {
       setVerifyingUser(null);
     }
