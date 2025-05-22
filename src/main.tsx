@@ -14,17 +14,21 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false,
       refetchOnMount: true,
-      onError: (error: any) => {
-        // Log query errors but don't show toast - the API interceptor handles that
-        console.error('Query error:', error);
-      },
+      // Using meta for error handling
+      meta: {
+        errorHandler: (error: any) => {
+          console.error('Query error:', error);
+        }
+      }
     },
     mutations: {
       retry: 1,
-      onError: (error: any) => {
-        // Log mutation errors but don't show toast - the API interceptor handles that
-        console.error('Mutation error:', error);
-      },
+      // Using meta for error handling
+      meta: {
+        errorHandler: (error: any) => {
+          console.error('Mutation error:', error);
+        }
+      }
     },
   },
 });

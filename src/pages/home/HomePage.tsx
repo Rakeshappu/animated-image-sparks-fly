@@ -14,7 +14,7 @@ import { getResources } from '../../services/resource.service';
 
 export const HomePage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [resources, setResources] = useState([]);
+  const [resources, setResources] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch resources on component mount
@@ -22,7 +22,7 @@ export const HomePage = () => {
     const fetchResourcesData = async () => {
       try {
         setIsLoading(true);
-        const data = await getResources();
+        const data = await getResources({});
         if (Array.isArray(data)) {
           setResources(data);
         }

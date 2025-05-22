@@ -33,33 +33,38 @@ export interface SubjectData {
 
 // Update the FacultyResource interface to include all needed properties
 export interface FacultyResource {
-  id?: string;
   _id?: string;
+  id?: string;
   title: string;
   description?: string;
-  type: string;
-  subject: string;
-  semester: number;
-  category?: "common" | "study" | "placement" | undefined;
-  placementCategory?: string;
-  uploadDate?: string;
-  fileName?: string;
   fileUrl?: string;
-  createdAt?: string;
+  link?: string;
+
+  type?: string;
+  subject: string; // Make subject required
+  semester?: number;
+  category?: 'common' | 'placement' | 'study';
+  placementCategory?: string;
+  uploadedBy?: string;
+  uploaderId?: string;
+  uploadedByName?: string;
+  department?: string;  // Adding department property
+  createdAt?: string | Date;
+  uploadDate?: string | Date;
+  stats: {
+    views: number;
+    downloads?: number;
+    likes?: number;
+    comments?: number;
+    lastViewed?: string | Date;
+  };
   likedBy?: string[];
   comments?: any[];
-  fileContent?: string;
-  stats?: {
-    views: number;
-    likes: number;
-    comments: number;
-    downloads: number;
-    lastViewed?: string;
-  };
+  fileName?: string;
 }
-
 // Define SearchResource interface for search results
 export interface SearchResource {
+  score: any;
 
   id?: string;
   title: string;

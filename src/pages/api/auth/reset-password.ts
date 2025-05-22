@@ -23,7 +23,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectDB();
 
     const { email, code, newPassword } = req.body;
-    console.log('Password reset request:', { email, codeProvided: !!code });
 
     if (!email || !code || !newPassword) {
       return res.status(400).json({ error: 'Email, verification code, and new password are required' });
@@ -39,14 +38,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!user) {
       return res.status(404).json({ error: 'No account found with that email address' });
     }
-
-    console.log('User found for password reset:', {
-      email: user.email,
-      storedCode: user.verificationCode,
-      providedCode: code,
-      codeExpiry: user.verificationCodeExpiry,
-      currentTime: new Date()
-    });
 
     // Check if the code is valid and not expired
     if (!user.verificationCode || user.verificationCode !== code) {
@@ -67,11 +58,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     user.verificationCodeExpiry = undefined;
     await user.save();
 
-    console.log('Password reset successful for user:', email);
-
     return res.status(200).json({ success: true, message: 'Password has been successfully reset' });
   } catch (error) {
     console.error('Reset password error:', error);
-    return res.status(500).json({ error: 'Failed to reset password', details: String(error) });
+    return res.status(500).json({ error: 'Failed to reset password' });
   }
 }

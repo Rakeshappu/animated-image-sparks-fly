@@ -1,4 +1,3 @@
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '../../../../lib/db/connect';
 import { Activity } from '../../../../lib/db/models/Activity';
@@ -183,21 +182,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const dateStr = date.toLocaleDateString('en-US', { weekday: 'short' });
       
       // Find matching activities for each type
-      const uploads = dailyActivityData.find(item => 
+      const uploads = dailyActivityData.find((item: { _id: { year: number; month: number; day: number; type: string; }; }) => 
         item._id.year === year && 
         item._id.month === month && 
         item._id.day === day &&
         item._id.type === 'upload'
       );
       
-      const downloads = dailyActivityData.find(item => 
+      const downloads = dailyActivityData.find((item: { _id: { year: number; month: number; day: number; type: string; }; }) => 
         item._id.year === year && 
         item._id.month === month && 
         item._id.day === day &&
         item._id.type === 'download'
       );
       
-      const views = dailyActivityData.find(item => 
+      const views = dailyActivityData.find((item: { _id: { year: number; month: number; day: number; type: string; }; }) => 
         item._id.year === year && 
         item._id.month === month && 
         item._id.day === day &&

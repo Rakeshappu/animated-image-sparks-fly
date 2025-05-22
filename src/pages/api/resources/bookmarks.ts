@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .sort({ createdAt: -1 });
     
     // Add a bookmarked flag to each resource
-    const bookmarkedResources = resources.map(resource => ({
+    const bookmarkedResources = resources.map((resource: { toObject: () => any; }) => ({
       ...resource.toObject(),
       isBookmarked: true
     }));

@@ -1,37 +1,31 @@
+
 services:
   - type: web
-    name: your-app-name
+    name: versatile-share
     env: node
-    buildCommand: npm install && npm run render-build
+    buildCommand: ./build.sh
     startCommand: node dist/server.js
     envVars:
       - key: NODE_ENV
         value: production
-
-// build.sh - Create this file in your project root and make it executable (chmod +x build.sh)
-#!/bin/bash
-echo "Installing dependencies..."
-npm install
-
-echo "Building application..."
-npm run build
-
-echo "Checking build output directory..."
-ls -la dist/
-
-echo "Checking TypeScript declarations..."
-find dist -name "*.d.ts" | grep -q . && echo "Declarations found" || echo "No declarations found"
-
-echo "Build complete!"
-
-// Clean up artifacts on render
-// create a prebuild.sh script in your project root (chmod +x prebuild.sh) 
-#!/bin/bash
-echo "Cleaning up previous build artifacts..."
-rm -rf dist/
-rm -rf node_modules/.vite
-rm -rf .turbo
-
-echo "Environment information:"
-echo "Node version: $(node -v)"
-echo "NPM version: $(npm -v)"
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS  
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      # AWS S3 Configuration (for file uploads)
+      - key: AWS_S3_BUCKET_NAME
+        value: versatileshare
+      - key: AWS_S3_REGION
+        value: us-east-1
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false

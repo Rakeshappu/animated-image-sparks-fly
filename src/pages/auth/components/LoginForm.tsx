@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -6,6 +5,7 @@ import { FormField } from '../../../components/auth/FormField';
 import { LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { OtpVerification } from '../../../components/auth/OtpVerification'; // Import OTP component
 // Import logo from the correct path
 import cropped from '../../../../public/uploads/cropped.png';
 
@@ -18,6 +18,7 @@ export const LoginForm = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showOtpVerification, setShowOtpVerification] = useState(false); // Add state for OTP verification
   const [forgotEmail, setForgotEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
 
@@ -79,18 +80,23 @@ export const LoginForm = () => {
     
     setResetLoading(true);
     try {
-      // Fix the forgot password API endpoint - use auth.service instead of direct fetch
-      const response = await fetch('/api/auth/forgot-password', {
+      // Use authService instead of direct fetch
+      const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: forgotEmail }),
+        body: JSON.stringify({ 
+          email: forgotEmail,
+          purpose: 'resetPassword' 
+        }),
       });
       
       if (response.ok) {
-        const data = await response.json();
-        toast.success('Password reset instructions sent to your email');
+        await response.json();
+        toast.success('Password reset code sent to your email');
+        // Show OTP verification instead of going back to login
+        setShowOtpVerification(true);
         setShowForgotPassword(false);
       } else {
         // Handle non-JSON responses better
@@ -113,6 +119,45 @@ export const LoginForm = () => {
       setResetLoading(false);
     }
   };
+
+  // Handle OTP resend
+  const handleResendOtp = async () => {
+    try {
+      setResetLoading(true);
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email: forgotEmail,
+          purpose: 'resetPassword' 
+        }),
+      });
+      
+      if (response.ok) {
+        toast.success('New verification code sent to your email');
+      } else {
+        toast.error('Failed to resend verification code');
+      }
+    } catch (err) {
+      console.error('Resend OTP error:', err);
+      toast.error('Failed to resend verification code');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  // Render OTP verification if active
+  if (showOtpVerification) {
+    return (
+      <OtpVerification 
+        email={forgotEmail} 
+        onResendOtp={handleResendOtp} 
+        purpose="resetPassword" 
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">

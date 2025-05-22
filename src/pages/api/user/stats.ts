@@ -69,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { $group: { _id: '$type', count: { $sum: 1 } } }
     ]);
     
-    const resourceTypeDistribution = resourcesByType.map(type => ({
+    const resourceTypeDistribution = resourcesByType.map((type: { _id: any; count: any; }) => ({
       name: type._id || 'Other',
       value: type.count
     }));
@@ -80,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { $group: { _id: '$type', count: { $sum: 1 } } }
     ]);
     
-    const activityDistribution = activitiesByType.map(activity => ({
+    const activityDistribution = activitiesByType.map((activity: { _id: any; count: any; }) => ({
       name: activity._id,
       value: activity.count
     }));

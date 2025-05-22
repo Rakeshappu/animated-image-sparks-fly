@@ -1,8 +1,9 @@
 
+//src\pages\api\auth\forgot-password.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { User } from '../../../lib/db/models/User';
 import { generateOTP } from '../../../lib/auth/otp';
-import { sendPasswordResetEmail } from '../../../lib/email/sendEmail';
+import { transporter } from '../../../lib/email/config';
 import connectDB from '../../../lib/db/connect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -44,10 +45,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     user.verificationCodeExpiry = resetCodeExpiry;
     await user.save();
 
-    console.log(`Generated OTP for ${email}: ${resetCode}`);
+    // Send password reset email
+    const mailOptions = {
+      from: `"VersatileShare" <${process.env.EMAIL_USER || 'noreply@example.com'}>`,
+      to: email,
+      subject: 'Password Reset Request',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #4F46E5;">Password Reset</h2>
+          <p>Hello ${user.fullName},</p>
+          <p>We received a request to reset your password. Use the code below to reset your password:</p>
+          <div style="background-color: #f3f4f6; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+            <h3 style="font-size: 24px; margin: 0; letter-spacing: 5px; color: #4F46E5;">${resetCode}</h3>
+          </div>
+          <p>This code will expire in 1 hour.</p>
+          <p>If you didn't request a password reset, please ignore this email or contact support.</p>
+          <p>Thank you,<br>VersatileShare Team</p>
+        </div>
+      `,
+    };
 
-    // Send password reset email using the updated function
-    await sendPasswordResetEmail(email, user.fullName, resetCode);
+    await transporter.sendMail(mailOptions);
     console.log('Password reset email sent to:', email);
 
     return res.status(200).json({ success: true, message: 'Password reset instructions sent to your email' });

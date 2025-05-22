@@ -181,17 +181,17 @@ ResourceSchema.pre('save', function(next) {
       likes: 0,
       comments: 0,
       lastViewed: new Date(),
-      dailyViews: [],
-      studentFeedback: []
+      dailyViews: new mongoose.Types.DocumentArray([]),
+      studentFeedback: new mongoose.Types.DocumentArray([])
     };
   }
   
   // Initialize arrays if they don't exist
   if (!this.likedBy) this.likedBy = [];
-  if (!this.comments) this.comments = [];
+  if (!this.comments) this.comments = new mongoose.Types.DocumentArray([]);
   if (!this.tags) this.tags = [];
-  if (!this.stats.dailyViews) this.stats.dailyViews = [];
-  if (!this.stats.studentFeedback) this.stats.studentFeedback = [];
+  if (!this.stats.dailyViews) this.stats.dailyViews = new mongoose.Types.DocumentArray([]);
+  if (!this.stats.studentFeedback) this.stats.studentFeedback = new mongoose.Types.DocumentArray([]);
   
   next();
 });
@@ -247,7 +247,7 @@ ResourceSchema.set('toJSON', {
 });
 
 // Safe export pattern for Next.js and Mongoose
-let Resource;
+let Resource:any;
 
 try {
   // Check if the model already exists to prevent recompilation

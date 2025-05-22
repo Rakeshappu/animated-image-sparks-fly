@@ -95,8 +95,8 @@ const AllResources = ({ onViewAnalytics }: AllResourcesProps) => {
           setFilteredResources(formattedResources);
           
           // Extract unique subjects
-          const subjects = Array.from(new Set(
-            formattedResources.map(res => res.subject).filter(Boolean)
+          const subjects:any = Array.from(new Set(
+            formattedResources.map((res: { subject: any; }) => res.subject).filter(Boolean)
           ));
           
           setAvailableSubjects(subjects);
@@ -125,11 +125,11 @@ const AllResources = ({ onViewAnalytics }: AllResourcesProps) => {
 
   // Apply filters
   useEffect(() => {
-    let filtered = [...resources];
+    let filtered:any = [...resources];
     
     // Apply search term filter
     if (searchTerm) {
-      filtered = filtered.filter(resource => 
+      filtered = filtered.filter((resource: { title: string; description: string; subject: string; }) => 
         resource.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
         resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         resource.subject.toLowerCase().includes(searchTerm.toLowerCase())
@@ -138,21 +138,21 @@ const AllResources = ({ onViewAnalytics }: AllResourcesProps) => {
     
     // Apply type filter
     if (typeFilter !== 'all') {
-      filtered = filtered.filter(resource => resource.type === typeFilter);
+      filtered = filtered.filter((resource: { type: string; }) => resource.type === typeFilter);
     }
     
     // Apply semester filter
     if (semesterFilter !== 'all') {
-      filtered = filtered.filter(resource => resource.semester === semesterFilter);
+      filtered = filtered.filter((resource: { semester: number; }) => resource.semester === semesterFilter);
     }
     
     // Apply subject filter
     if (subjectFilter !== 'all') {
-      filtered = filtered.filter(resource => resource.subject === subjectFilter);
+      filtered = filtered.filter((resource: { subject: string; }) => resource.subject === subjectFilter);
     }
     
     // Apply sorting
-    filtered.sort((a, b) => {
+    filtered.sort((a: { stats: { views: any; likes: any; downloads: any; }; uploadDate: any; }, b: { stats: { views: any; likes: any; downloads: any; }; uploadDate: any; }) => {
       switch (sortBy) {
         case 'views':
           return (b.stats?.views || 0) - (a.stats?.views || 0);
@@ -321,7 +321,7 @@ const AllResources = ({ onViewAnalytics }: AllResourcesProps) => {
               <p className="text-gray-500 dark:text-gray-400">No resources found matching your criteria.</p>
             </div>
           ) : (
-            filteredResources.map((resource) => (
+            filteredResources.map((resource:any) => (
               <motion.div
                 key={resource.id}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"

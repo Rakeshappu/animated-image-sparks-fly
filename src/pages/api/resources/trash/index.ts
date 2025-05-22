@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }).sort({ deletedAt: -1 });
 
     // Format the response
-    const items = trashedResources.map(resource => ({
+    const items = trashedResources.map((resource: { _id: { toString: () => any; }; title: any; type: any; fileSize: number; deletedAt: { toISOString: () => any; }; fileUrl: any; }) => ({
       id: resource._id.toString(),
       name: resource.title,
       type: resource.type,

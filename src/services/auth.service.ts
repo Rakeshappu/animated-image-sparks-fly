@@ -1,3 +1,4 @@
+
 import api from './api';
 import toast from 'react-hot-toast';
 
@@ -78,17 +79,36 @@ const authService = {
 
   resetPassword: async (email: string, code: string, newPassword: string) => {
     try {
-      const response = await api.post('/api/auth/reset-password', { 
-        email, 
-        code, 
-        newPassword 
+      console.log('Resetting password for:', email);
+      // Use fetch directly to avoid CORS issues
+      const baseURL = import.meta.env.MODE === 'development' 
+        ? 'http://localhost:3000' 
+        : window.location.origin;
+      
+      const response = await fetch(`${baseURL}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, code: code, newPassword }),
+        credentials: 'omit' // Don't include credentials for this request
       });
-      return response.data;
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Network response was not ok' }));
+        console.error('Password reset failed:', errorData);
+        throw new Error(errorData.error || 'Failed to reset password');
+      }
+      
+      const data = await response.json();
+      console.log('Password reset successful:', data);
+      return data;
     } catch (error: any) {
+      console.error('Reset password error:', error);
       if (error.response && error.response.data?.error) {
         throw new Error(error.response.data.error);
       }
-      throw new Error('Failed to reset password');
+      throw error;
     }
   },
 
@@ -104,11 +124,33 @@ const authService = {
     }
   },
   
-  // Update the OTP verification method to properly handle purpose
+  // Update the OTP verification method to properly handle purpose and CORS issues
   verifyOTP: async (email: string, otp: string, purpose?: string) => {
     try {
-      const response = await api.post('/api/auth/verify-otp', { email, otp, purpose });
-      return response.data;
+      console.log('Verifying OTP:', { email, otp, purpose });
+      
+      // Make a direct fetch call to avoid Axios CORS issues
+      const baseURL = import.meta.env.MODE === 'development' 
+        ? 'http://localhost:3000' 
+        : window.location.origin;
+        
+      const response = await fetch(`${baseURL}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, otp, purpose }),
+        credentials: 'omit' // Don't include credentials for this request
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Network response was not ok' }));
+        throw new Error(errorData.error || 'Failed to verify OTP');
+      }
+      
+      const data = await response.json();
+      console.log('OTP verification response:', data);
+      return data;
     } catch (error: any) {
       console.error('OTP verification error:', error);
       if (error.response && error.response.data?.error) {

@@ -63,7 +63,7 @@ const BulkSemesterUpdate = () => {
         setSelectedStudents([]);  // Reset selected students
         
         if (filteredUsers.length === 0) {
-          toast.info('No students found for the selected criteria');
+          toast.error('No students found for the selected criteria');
         }
       } else {
         setStudents([]);

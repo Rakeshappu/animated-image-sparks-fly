@@ -58,13 +58,42 @@ export const checkDatabaseConnection = async () => {
     return { connected: false, error: (error as Error).message };
   }
 };
+export const getResources = async (params: {
+  page?: number;
+  limit?: number;
+  type?: string;
+  semester?: number;
+  search?: string;
+  sortOrder?: 'asc' | 'desc';
+}) => {
+  try {
+    const query = new URLSearchParams();
+    if (params.page) query.append('page', params.page.toString());
+    if (params.limit) query.append('limit', params.limit.toString());
+    if (params.type) query.append('type', params.type);
+    if (params.semester) query.append('semester', params.semester.toString());
+    if (params.search) query.append('search', params.search);
+    if (params.sortOrder) query.append('sortOrder', params.sortOrder);
+
+    const endpoint = `/api/resources?${query.toString()}`;
+    const response = await api.get(endpoint);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching resources:', error);
+    toast.error('Failed to fetch resources');
+    throw error;
+  }
+};
 
 // Export a default object with all methods for easier imports
 const resourceService = {
   fetchStudyMaterials,
   createResource,
   deleteResource,
-  checkDatabaseConnection
+  checkDatabaseConnection,
+  getResources,
 };
+
+
 
 export default resourceService;

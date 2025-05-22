@@ -8,6 +8,8 @@ import { PlacementCategorySelection } from './upload/PlacementCategorySelection'
 import { ResourceUpload } from './ResourceUpload';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { createResource } from '../../services/resource.service';
+
 // import  createResource  from '../../services/resource.service';
 
 type UploadOption = 'semester' | 'placement' | 'subject-folder' | 'direct-upload';

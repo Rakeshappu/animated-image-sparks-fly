@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -282,13 +281,19 @@ const AdminDashboard = () => {
         },
       });
       
+      const allowedCategories = ['study', 'placement', 'common'] as const;
+      const category = allowedCategories.includes((data as any).category)
+        ? (data as any).category as 'study' | 'placement' | 'common'
+        : undefined;
+
       const newResource: FacultyResource = {
         id: response.data.resource._id || Date.now().toString(),
         ...data,
+        category,
         uploadDate: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         fileName: fileName,
-        fileContent: fileContent,
+        // fileContent: fileContent,
         stats: {
           views: 0,
           likes: 0,
@@ -555,5 +560,4 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 export default AdminDashboard;

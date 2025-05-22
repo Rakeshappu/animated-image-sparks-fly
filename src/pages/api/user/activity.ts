@@ -107,21 +107,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const dateStr = date.toLocaleDateString('en-US', { weekday: 'short' });
         
         // Find matching activities for each type
-        const uploads = dailyActivity.find(item => 
+        const uploads = dailyActivity.find((item: { _id: { year: number; month: number; day: number; type: string; }; }) => 
           item._id.year === year && 
           item._id.month === month && 
           item._id.day === day &&
           item._id.type === 'upload'
         );
         
-        const downloads = dailyActivity.find(item => 
+        const downloads = dailyActivity.find((item: { _id: { year: number; month: number; day: number; type: string; }; }) => 
           item._id.year === year && 
           item._id.month === month && 
           item._id.day === day &&
           item._id.type === 'download'
         );
         
-        const views = dailyActivity.find(item => 
+        const views = dailyActivity.find((item: { _id: { year: number; month: number; day: number; type: string; }; }) => 
           item._id.year === year && 
           item._id.month === month && 
           item._id.day === day &&

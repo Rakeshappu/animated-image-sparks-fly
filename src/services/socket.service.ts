@@ -175,7 +175,6 @@ class SocketService {
         body: data.message,
         icon: '/favicon.ico',
         tag: `resource-${data.resourceId || Date.now()}`, // Add tag to prevent duplicate notifications
-        vibrate: [200, 100, 200]
       });
       
       notification.onclick = function() {

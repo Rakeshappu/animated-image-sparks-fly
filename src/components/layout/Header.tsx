@@ -34,7 +34,7 @@ export const Header = () => {
   
   useEffect(() => {
     if (user) {
-      setAvatarUrl(getAvatar());
+      setAvatarUrl(getAvatar() || '');
     }
   }, [user]);
   
@@ -219,7 +219,7 @@ export const Header = () => {
   };
   
   const getAvatar = () => {
-    if (!user) return null;
+    if (!user) return '';
     
     if (user.avatar) {
       return `${user.avatar}?t=${lastUpdate}`;

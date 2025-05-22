@@ -7,7 +7,7 @@ import { UploadWorkflow } from '../../components/faculty/UploadWorkflow';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
-import checkDatabaseConnection  from '../../services/resource.service';
+import {checkDatabaseConnection}  from '../../services/resource.service';
 import { MongoDBStatusBanner } from '../../components/auth/MongoDBStatusBanner';
 import { API_ROUTES } from '../../lib/api/routes';
 import { toast } from 'react-hot-toast';
@@ -49,7 +49,10 @@ if (typeof window !== 'undefined') {
 }
 
 export const FacultyDashboard = () => {
-  const [resources, setResources] = useState<FacultyResource[]>(typeof window !== 'undefined' ? window.sharedResources : []);
+  // const [resources, setResources] = useState<FacultyResource[]>(typeof window !== 'undefined' ? window.sharedResources : []);
+   const [resources, setResources] = useState<FacultyResource[]>(
+    typeof window !== 'undefined' && window.sharedResources ? [...window.sharedResources] : []
+  );
   const [selectedResource, setSelectedResource] = useState<FacultyResource | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showUploadWorkflow, setShowUploadWorkflow] = useState(false);
@@ -217,7 +220,11 @@ export const FacultyDashboard = () => {
       
       setResources(prev => [newResource, ...prev]);
       if (typeof window !== 'undefined') {
-        window.sharedResources = [newResource, ...window.sharedResources];
+        if (window.sharedResources) {
+          window.sharedResources = [newResource, ...window.sharedResources];
+        } else {
+          window.sharedResources = [newResource];
+        }
       }
       
       // Send notifications to students about the new resource

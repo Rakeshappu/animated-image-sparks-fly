@@ -1,4 +1,3 @@
-
 import { Folder, Book, Eye } from 'lucide-react';
 import { FacultyResource } from '../../types/faculty';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 interface SubjectFolderProps {
   subject: string;
   resources: FacultyResource[];
-  sortBy: 'recent' | 'popular' | 'alphabetical';
+  sortBy?: 'recent' | 'popular' | 'alphabetical';
 }
 
 export const SubjectFolder = ({ subject, resources, sortBy }: SubjectFolderProps) => {

@@ -69,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       // Update daily views with today's date
-      const existingDailyView = resource.stats.dailyViews?.find(dv => {
+      const existingDailyView = resource.stats.dailyViews?.find((dv: { date: string | number | Date; }) => {
         if (!dv.date) return false;
         const dvDate = new Date(dv.date);
         dvDate.setHours(0, 0, 0, 0);

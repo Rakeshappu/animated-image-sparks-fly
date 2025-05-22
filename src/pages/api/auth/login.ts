@@ -91,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Generate JWT token with role explicitly included
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user._id);
     console.log('Login successful for:', email, 'with role:', user.role);
 
     // Return user data and token

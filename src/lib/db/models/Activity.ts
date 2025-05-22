@@ -50,7 +50,7 @@ ActivitySchema.methods.toJSON = function() {
 };
 
 // Safe export pattern for Next.js and Mongoose
-let Activity;
+let Activity:any;
 
 try {
   // Check if the model already exists to prevent recompilation

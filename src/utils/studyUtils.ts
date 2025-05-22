@@ -5,7 +5,7 @@ import api from '../services/api';
 // Use FacultyResource instead of Resource
 export const groupBySemester = (resources: FacultyResource[]): Record<number, FacultyResource[]> => {
   return resources.reduce((acc, resource) => {
-    const semester = resource.semester;
+    const semester:any = resource.semester;
     if (!acc[semester]) {
       acc[semester] = [];
     }

@@ -1,16 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { Mail } from 'lucide-react';
+import { authService } from '../../services/auth.service';
+import { toast } from 'react-hot-toast';
 
 export const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
-  const { verifyEmail } = useAuth();
+  const { user } = useAuth();
   const token = searchParams.get('token');
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const verifyEmailToken = async (token: string) => {
+      try {
+        await authService.verifyEmail(token);
+        toast.success('Email verified successfully');
+      } catch (error) {
+        console.error('Error verifying email:', error);
+        toast.error('Failed to verify email');
+      }
+    };
+
     if (token) {
-      verifyEmail(token);
+      verifyEmailToken(token);
     }
   }, [token]);
 

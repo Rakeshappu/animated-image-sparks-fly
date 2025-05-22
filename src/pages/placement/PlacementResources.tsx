@@ -158,7 +158,8 @@ export const PlacementResourcesPage = () => {
       setIsLoading(true);
       console.log('Deleting resource with ID:', resourceId);
       
-      await deleteResource(resourceId);
+      // await deleteResource(resourceId);
+      await api.delete(`/api/resources/${resourceId}`);
       
       toast.success('Resource deleted successfully');
       
@@ -691,10 +692,17 @@ export const PlacementResourcesPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Upload {getCategoryNameById(selectedCategory)} Resource</h2>
-            <ResourceUpload 
+            {/* <ResourceUpload 
               onSubmit={handleUpload} 
               onCancel={() => setShowUploadForm(false)} 
               resourceType="placement"
+            /> */}
+            <ResourceUpload 
+              onUpload={handleUpload}
+              initialSubject={`Placement - ${getCategoryNameById(selectedCategory)}`}
+              initialCategory="placement"
+              isPlacementResource={true}
+              placementCategory={selectedCategory}
             />
           </div>
         </div>
