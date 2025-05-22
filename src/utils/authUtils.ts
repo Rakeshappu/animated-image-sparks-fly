@@ -38,6 +38,12 @@ export const validateUserRoleWithToken = async (): Promise<boolean> => {
     if (tokenPayload && !tokenPayload.role && userData.role) {
       console.warn('Token missing role information. Consider re-login.');
       
+      // Check if we've already warned about this in this session
+      const warnedAboutRole = sessionStorage.getItem('warnedAboutRoleMismatch');
+      if (warnedAboutRole) {
+        return true; // Already warned in this session, don't check again
+      }
+      
       // Verify with server
       try {
         const response = await api.get('/api/auth/debug-token');
@@ -45,7 +51,10 @@ export const validateUserRoleWithToken = async (): Promise<boolean> => {
         
         if (userData.role === 'admin') {
           // For admin users, suggest re-login if token doesn't have admin role
-          toast.error('Your admin session is incomplete. Please log out and log back in.');
+          sessionStorage.setItem('warnedAboutRoleMismatch', 'true');
+          toast.error('Your admin session is incomplete. Please log out and log back in.', {
+            id: 'admin-session-incomplete', // Add ID to prevent duplicate toasts
+          });
           return false;
         }
       } catch (error) {
@@ -56,7 +65,17 @@ export const validateUserRoleWithToken = async (): Promise<boolean> => {
     // Check for mismatch between stored user role and token role
     if (tokenPayload && tokenPayload.role && userData.role && tokenPayload.role !== userData.role) {
       console.warn('Token role and user role mismatch:', tokenPayload.role, userData.role);
-      toast.error('Please log out and log in again to refresh your permissions.');
+      
+      // Check if we've already warned about this in this session
+      const warnedAboutRole = sessionStorage.getItem('warnedAboutRoleMismatch');
+      if (warnedAboutRole) {
+        return true; // Already warned in this session, don't check again
+      }
+      
+      sessionStorage.setItem('warnedAboutRoleMismatch', 'true');
+      toast.error('Please log out and log in again to refresh your permissions.', {
+        id: 'role-mismatch', // Add ID to prevent duplicate toasts
+      });
       return false;
     }
     
@@ -69,9 +88,18 @@ export const validateUserRoleWithToken = async (): Promise<boolean> => {
 
 // Function to force re-login if issues detected
 export const forceReloginIfNeeded = async () => {
+  // Check if we've already checked in this session
+  const reloginChecked = sessionStorage.getItem('reloginChecked');
+  if (reloginChecked) {
+    return true; // Already checked in this session
+  }
+  
   const isValid = await validateUserRoleWithToken();
   if (!isValid) {
-    toast.error('Please log out and log back in to refresh your session.');
+    sessionStorage.setItem('reloginChecked', 'true');
+    toast.error('Please log out and log back in to refresh your session.', {
+      id: 'force-relogin', // Add ID to prevent duplicate toasts
+    });
     // Optionally, could implement a forced logout here
   }
   return isValid;
@@ -80,6 +108,12 @@ export const forceReloginIfNeeded = async () => {
 // Function to ensure admin role is in the token
 export const ensureAdminRoleInToken = async () => {
   try {
+    // Check if we've already checked admin role in this session
+    const adminRoleChecked = sessionStorage.getItem('adminRoleChecked');
+    if (adminRoleChecked) {
+      return true; // Already checked in this session
+    }
+    
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
     
@@ -98,7 +132,10 @@ export const ensureAdminRoleInToken = async () => {
     }
     
     // Token doesn't have admin role
-    toast.error('Your admin session needs to be refreshed. Please log out and log back in.');
+    sessionStorage.setItem('adminRoleChecked', 'true');
+    toast.error('Your admin session needs to be refreshed. Please log out and log back in.', {
+      id: 'admin-role-missing', // Add ID to prevent duplicate toasts
+    });
     return false;
   } catch (e) {
     console.error('Error checking admin role in token:', e);

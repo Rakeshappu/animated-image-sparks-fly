@@ -35,7 +35,7 @@ export const AdminApprovalPending = ({ email }: { email: string }) => {
     fetchPendingAdminCount();
   }, []);
 
-  // Optional countdown for redirection (not started by default)
+  // Only run countdown if explicitly started
   useEffect(() => {
     if (redirectCountdown !== null && redirectCountdown > 0) {
       const timer = setTimeout(() => {
