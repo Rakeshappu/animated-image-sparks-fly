@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/auth.service';
@@ -11,6 +12,7 @@ export const EmailVerification = () => {
   const authContext = useAuth();
   const [otp, setOtp] = useState('');
   const email = location.state?.email;
+  const role = location.state?.role;
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,7 +22,14 @@ export const EmailVerification = () => {
       console.log('Submitting OTP verification:', { email, otp }); 
       await authService.verifyOTP(email, otp);
       toast.success('Email verified successfully');
-      navigate('/auth/login');
+      
+      // For admin role, redirect to admin approval pending page after email verification
+      if (role === 'admin') {
+        navigate('/auth/admin-approval-pending', { state: { email: email } });
+      } else {
+        // For students and faculty, navigate to login
+        navigate('/auth/login');
+      }
     } catch (err: any) {
       console.error('OTP verification failed:', err);
       console.error('Error:', err.message);

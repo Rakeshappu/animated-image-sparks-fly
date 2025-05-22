@@ -1,9 +1,9 @@
 
-import { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { User } from '../../../lib/db/models/User';
 import { generateToken } from '../../../lib/auth/jwt';
 import connectDB from '../../../lib/db/connect';
-import { Activity } from '../../../lib/db/models/Activity';
+import bcrypt from 'bcryptjs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
@@ -24,92 +24,77 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectDB();
 
     const { email, password } = req.body;
-    console.log('Login attempt for:', email);
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
 
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
-      console.log('User not found:', email);
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Compare passwords
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     // Check if email is verified
     if (!user.isEmailVerified) {
-      console.log('User email not verified:', email);
-      return res.status(401).json({ error: 'Please verify your email first' });
-    }
-
-    // Verify password
-    const isValid = await user.comparePassword(password);
-    if (!isValid) {
-      console.log('Invalid password for user:', email);
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    // Calculate user streak
-    let streak = 0;
-    try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      // Check if user had activity today
-      const todayActivity = await Activity.findOne({
-        user: user._id,
-        timestamp: { $gte: today }
+      return res.status(401).json({ 
+        error: 'Email not verified. Please check your email for verification instructions.',
+        requireVerification: true,
+        email: user.email 
       });
-      
-      // Check if user had activity yesterday
-      const yesterdayActivity = await Activity.findOne({
-        user: user._id,
-        timestamp: { $gte: yesterday, $lt: today }
-      });
-      
-      if (todayActivity) {
-        // User has activity today, so streak is at least 1
-        streak = user.streak || 1;
-      } else if (yesterdayActivity) {
-        // User had activity yesterday but not today
-        // Maintain current streak from user record
-        streak = user.streak || 0;
-      } else {
-        // No activity today or yesterday, reset streak
-        streak = 0;
-      }
-      
-      // Update user streak in database
-      if (streak !== user.streak) {
-        user.streak = streak;
-        await user.save();
-      }
-    } catch (streakError) {
-      console.error('Error calculating streak:', streakError);
-      // Use existing streak value if calculation fails
-      streak = user.streak || 0;
     }
 
-    // Generate JWT token with role explicitly included
+    // For admin role, check if admin verified
+    if (user.role === 'admin' && !user.isAdminVerified) {
+      return res.status(401).json({ 
+        error: 'Your admin account is pending approval.',
+        requireAdminApproval: true,
+        email: user.email 
+      });
+    }
+
+    // Generate token
     const token = generateToken(user._id);
-    console.log('Login successful for:', email, 'with role:', user.role);
+    
+    // Set token expiry
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7); // 7 days expiry
 
-    // Return user data and token
+    // Update user's last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Return user data without sensitive fields
+    const userData = {
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      isEmailVerified: user.isEmailVerified,
+      isAdminVerified: user.isAdminVerified,
+      department: user.department,
+      avatar: user.avatar,
+      phoneNumber: user.phoneNumber,
+      createdAt: user.createdAt,
+      semester: user.semester,
+      batch: user.batch,
+      degree: user.degree,
+      usn: user.usn,
+    };
+
     return res.status(200).json({
       token,
-      user: {
-        id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-        department: user.department,
-        semester: user.semester,
-        streak: streak,
-        lastActive: user.lastActive
-      },
+      user: userData,
+      expiresAt: expiryDate.toISOString()
     });
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Failed to log in' });
   }
 }

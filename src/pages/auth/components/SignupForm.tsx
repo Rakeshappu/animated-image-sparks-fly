@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SignupFormData } from '../../../types/auth';
@@ -9,7 +10,6 @@ import api from '../../../services/api';
 
 export const SignupForm = () => {
   const navigate = useNavigate();
-  // Removed setError as it does not exist in AuthContextType
   const selectedRole = localStorage.getItem('selectedRole') as 'student' | 'faculty' | 'admin';
   
   const handleSubmit = async (formData: SignupFormData) => {
@@ -39,14 +39,9 @@ export const SignupForm = () => {
         if (response && response.data) {
           toast.success('Registration successful!');
           
-          // For admin role, redirect to admin approval pending page
-          if (formData.role === 'admin') {
-            navigate('/auth/admin-approval-pending', { state: { email: formData.email } });
-          } else {
-            // For students and faculty, navigate to email verification
-            toast.success('Please verify your email.');
-            navigate('/auth/verify', { state: { email: formData.email } });
-          }
+          // For all roles, first navigate to email verification
+          toast.success('Please verify your email.');
+          navigate('/auth/verify', { state: { email: formData.email, role: formData.role } });
         }
       } catch (apiError: any) {
         console.error('API signup error:', apiError);

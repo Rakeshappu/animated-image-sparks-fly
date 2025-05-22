@@ -23,6 +23,14 @@ const authService = {
       return response.data;
     } catch (error: any) {
       if (error.response && error.response.status === 401) {
+        // If user needs admin approval
+        if (error.response.data?.requireAdminApproval) {
+          throw new Error('Your admin account is pending approval.');
+        }
+        // If email needs verification
+        if (error.response.data?.requireVerification) {
+          throw new Error('Email not verified. Please check your email for verification code.');
+        }
         if (error.response.data?.error) {
           throw new Error(error.response.data.error);
         } else {

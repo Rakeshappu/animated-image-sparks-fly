@@ -92,7 +92,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       verificationToken,
       verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
       verificationCode: otp,
-      verificationCodeExpiry: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes expiry
+      verificationCodeExpiry: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes expiry
+      isAdminVerified: role !== 'admin' // Auto-verify non-admin users
     };
 
     // Add role-specific fields
