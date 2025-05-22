@@ -48,15 +48,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Verification code has expired' });
     }
 
-    // Hash the new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-    // Update the user's password
-    user.password = hashedPassword;
+    // Hash the new password directly (the pre-save hook will handle hashing)
+    user.password = newPassword;
+    
+    // Clear verification data
     user.verificationCode = undefined;
     user.verificationCodeExpiry = undefined;
+    
+    // Save the user which will trigger the password hashing in the pre-save hook
     await user.save();
+
+    console.log('Password reset successful for user:', email);
 
     return res.status(200).json({ success: true, message: 'Password has been successfully reset' });
   } catch (error) {

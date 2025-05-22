@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from '../services/api';
 import { API_ROUTES } from '../lib/api/routes';
@@ -16,8 +15,8 @@ interface AuthContextType {
   error: string | null;
   clearError: () => void;
   isAuthenticated: boolean;
-  verifyOTP?: (email: string, otp: string) => Promise<any>;
-  resendOTP?: (email: string) => Promise<any>;
+  verifyOTP?: (email: string, otp: string, purpose?: string) => Promise<any>;
+  resendOTP?: (email: string, purpose?: string) => Promise<any>;
 }
 
 interface SignupData {
@@ -198,9 +197,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   // Add OTP verification methods to support the OtpVerification component
-  const verifyOTP = async (email: string, otp: string) => {
+  const verifyOTP = async (email: string, otp: string, purpose?: string) => {
     try {
-      const response = await api.post(API_ROUTES.AUTH.VERIFY_OTP, { email, otp });
+      const response = await api.post(API_ROUTES.AUTH.VERIFY_OTP, { email, otp, purpose });
       return response.data;
     } catch (err: any) {
       const errorMessage = err.message || 'OTP verification failed. Please try again.';
@@ -209,9 +208,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const resendOTP = async (email: string) => {
+  const resendOTP = async (email: string, purpose?: string) => {
     try {
-      const response = await api.post(API_ROUTES.AUTH.SEND_OTP, { email });
+      const response = await api.post(API_ROUTES.AUTH.SEND_OTP, { email, purpose });
       return response.data;
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to resend OTP. Please try again.';
@@ -239,6 +238,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// Export the useAuth hook directly from this file
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

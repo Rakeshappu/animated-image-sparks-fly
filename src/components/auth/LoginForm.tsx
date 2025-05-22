@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { FormField } from './FormField';
 import { Share2, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -19,7 +18,7 @@ interface LoginFormData {
 }
 
 export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
-  const { error: contextError, clearError } = useAuth();
+  const [contextError, setContextError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -32,12 +31,14 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
 
   // Use either prop error or context error
   const displayError = propError || contextError;
+  
+  const clearError = () => {
+    setContextError(null);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (clearError) {
-      clearError();
-    }
+    clearError();
     onSubmit(formData);
   };
 
@@ -55,19 +56,29 @@ export const LoginForm = ({ onSubmit, error: propError }: LoginFormProps) => {
     setIsSubmitting(true);
     try {
       // Use the send-otp endpoint with resetPassword purpose
-      await authService.resendOTP(forgotEmail, 'resetPassword');
-      toast.success('Verification code sent to your email');
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email: forgotEmail, 
+          purpose: 'resetPassword' 
+        }),
+      });
       
-      // Show OTP verification component with reset password purpose
-      setShowOtpVerification(true);
-      setShowForgotPassword(false);
+      if (response.ok) {
+        toast.success('Verification code sent to your email');
+        // Show OTP verification component with reset password purpose
+        setShowOtpVerification(true);
+        setShowForgotPassword(false);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to send verification code');
+      }
     } catch (error: any) {
       console.error('Forgot password error:', error);
-      if (error.message) {
-        toast.error(error.message);
-      } else {
-        toast.error('Failed to process request. Please try again later.');
-      }
+      toast.error('Failed to process request. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }

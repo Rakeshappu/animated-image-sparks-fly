@@ -1,4 +1,3 @@
-
 import api from './api';
 import toast from 'react-hot-toast';
 
@@ -90,7 +89,7 @@ const authService = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, code: code, newPassword }),
+        body: JSON.stringify({ email, code, newPassword }),
         credentials: 'omit' // Don't include credentials for this request
       });
       
@@ -124,12 +123,12 @@ const authService = {
     }
   },
   
-  // Update the OTP verification method to properly handle purpose and CORS issues
+  // Update the OTP verification method to properly handle purpose
   verifyOTP: async (email: string, otp: string, purpose?: string) => {
     try {
       console.log('Verifying OTP:', { email, otp, purpose });
       
-      // Make a direct fetch call to avoid Axios CORS issues
+      // Make a direct fetch call to avoid CORS issues
       const baseURL = import.meta.env.MODE === 'development' 
         ? 'http://localhost:3000' 
         : window.location.origin;
