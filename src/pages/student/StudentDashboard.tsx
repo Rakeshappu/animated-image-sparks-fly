@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -12,6 +11,7 @@ import { CircularProgress } from '../../components/ui/CircularProgress';
 import { ActivityCalendar } from '../../components/student/ActivityCalendar';
 import { StudentStatsChart } from '../../components/student/StudentStatsChart';
 import { ActivityFeed } from '../../components/user/ActivityFeed';
+import { SmartRecommendations } from '../../components/recommendations/SmartRecommendations';
 import { activityService } from '../../services/activity.service';
 import api from '../../services/api';
 
@@ -87,6 +87,7 @@ const StudentDashboard = () => {
           </p>
         </motion.div>
         
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <motion.div 
             variants={fadeIn} 
@@ -149,6 +150,18 @@ const StudentDashboard = () => {
           </motion.div>
         </div>
         
+        {/* Smart Recommendations Section */}
+        <motion.div 
+          className="mb-8"
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.3 }}
+        >
+          <SmartRecommendations maxRecommendations={6} />
+        </motion.div>
+        
+        {/* Charts and Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <motion.div 
             className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
@@ -180,7 +193,7 @@ const StudentDashboard = () => {
           </motion.div>
         </div>
         
-        {/* Make ActivityFeed take full width */}
+        {/* Activity Feed */}
         <motion.div 
           className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-8"
           variants={fadeIn}
@@ -195,6 +208,7 @@ const StudentDashboard = () => {
           />
         </motion.div>
         
+        {/* Study Materials Quick Access */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div 
             className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 lg:col-span-3"
